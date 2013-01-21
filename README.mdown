@@ -1,0 +1,104 @@
+# Lint Review
+
+Lint Review helps automate a tedious part of code review - enforcing coding
+standards. By using the github API Lint Review runs a repositories configured linters
+and updates pull requests with inline comments where lint errors are introduced.
+
+Lint Review requires:
+
+* Python 2.7 (It will probably work in 2.6, but I've only tested 2.7)
+* RabbitMQ (or any other Message broker that is compatible with Celery)
+* A publically addressable hostname/IP that either github or your github:enterprise
+  can reach.
+* A github account with access to the repositories you want linted. This
+  account is used to post comments on pull reviews.
+
+Lint Review runs as two processes. A web process handles accepting webhooks from github,
+and a celery process handles cloning repositories and running lint tools.
+
+
+## Installation
+
+You install Lint Review by cloning the repository and installing dependecies.
+Its recommended that you use `virtualenv` to save shaving yaks down the road.
+
+    git clone git://github.com/markstory/lint-review.git
+    virtualenv env
+    source env/bin/activate
+    pip install .
+
+Once the dependencies are installed you should configure the lint review applications.
+
+
+## Lint Review Configuration
+
+Lint review is configured through a settings file. Both the web app and celery process
+share the same configuration file so configuration is easier to manage and share.
+
+* Copy the `settings.sample.cfg` to `settings.cfg`
+* Edit the required configuration options.
+
+
+## Running Lint Review
+
+After setting up configuration you'll need to start up both processes:
+
+    source env/bin/activate
+    runserver &
+    runcelery &
+
+Now when ever a pull request is opened or updated for a connected repository
+new jobs will be spun up and lint will be checked and commented on.
+
+
+## Setting up Repositories
+
+Once you've configured and setup the server processes, it is time to setup some
+repositories to be checked.
+
+### Installing github hooks
+
+Before Lint Review can check lint on a repository webhooks will need to be installed.
+You can install webhooks by running the built-in command line tool:
+
+    source env/bin/activate
+    register_hooks mark awesome-stuff
+
+Will register webhooks for the given user & repository.
+
+**Warning** The current web server name will be registered with github. Make sure
+it is configured properly configured before registering hooks, or you'll need to remove
+them and start over.
+
+### .lintrc files
+
+Lint Review use hidden ini files to configure the tools used on each project. The
+`.lintrc` file defines the various linting tools and any arguments for each one. Lint
+tools must be tools Lint Review knows about. See [lint tools](#lint-tools) for available
+tools. A sample `.lintrc` file would look like.
+
+    linters = pep8, jshint
+
+    [pep8_tool]
+    args = ()
+
+    [jshint_tool]
+    config = path/to/jshint.json
+
+## Lint tools
+
+Python:
+* Flake8 (incomplete)
+* pep8 (incomplete)
+
+PHP:
+* PHPCS (incomplete)
+
+Javascript:
+* JSHint (incomplete)
+
+CSS:
+* CSSHint (incomplete)
+
+### Contributing
+
