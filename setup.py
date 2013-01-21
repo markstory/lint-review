@@ -18,7 +18,8 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'webserver = lintreview.web:main',
+            'register_hooks = scripts.register_hooks:main',
+            'runserver = scripts.runserver:main',
         ],
     },
     install_requires=requirements.readlines(),
