@@ -11,11 +11,6 @@ if 'LINTREVIEW_SETTINGS' in os.environ:
     app.config.from_envvar('LINTREVIEW_SETTINGS')
 
 
-@app.route('/')
-def home():
-    return 'hello'
-
-
 @app.route('/ping')
 def ping():
     return 'pong\n'
