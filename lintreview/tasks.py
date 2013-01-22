@@ -1,4 +1,5 @@
 from celery import Celery
+from lintreview.utils.config import ReviewConfig
 import logging
 
 celery = Celery('lintreview.tasks')
@@ -12,3 +13,5 @@ def process_pull_request(user, repo, number, lintrc):
     lint tools against it.
     """
     log.info('Starting to process lint for %s, %s, %s' % (user, repo, number))
+    config = ReviewConfig(lintrc)
+
