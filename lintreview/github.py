@@ -1,8 +1,35 @@
 from flask import url_for
 from pygithub3 import Github
+import base64
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def get_client(config, user, repo):
+    """
+    Factory for the Github client
+    """
+    gh = Github(
+        base_url=config['GITHUB_URL'],
+        login=config['GITHUB_USER'],
+        password=config['GITHUB_PASSWORD'],
+        user=user,
+        repo=repo)
+    return gh
+
+
+def get_lintrc(gh):
+    """
+    Download the .lintrc from a repo
+    Since pygithub3 doesn't support this,
+    some hackery will ensue.
+    """
+    repo = gh.repos
+    parts = ['repos', repo.get_user(), repo.get_repo(), 'contents', '.lintrc']
+    path = '/'.join(parts)
+    response = repo._client.get(path)
+    return base64.b64decode(response.json['content'])
 
 
 def register_hook(app, user, repo):
@@ -11,12 +38,9 @@ def register_hook(app, user, repo):
     """
     logging.info('Registering hooks for %s/%s' % (user, repo))
     with app.app_context():
+        gh = get_client(app.config, user, repo)
         endpoint = url_for('start_review', _external=True)
-        gh = Github(
-            base_url=app.config['GITHUB_URL'],
-            login=app.config['GITHUB_USER'],
-            password=app.config['GITHUB_PASSWORD'])
-    hooks = gh.repos.hooks.list(user=user, repo=repo).all()
+    hooks = gh.repos.hooks.list().all()
     found = False
     for hook in hooks:
         if hook.name != 'web':
