@@ -1,9 +1,14 @@
-import celery
+from celery import Celery
 import logging
 
+celery = Celery('lintreview.tasks')
 log = logging.getLogger(__name__)
 
 
-@celery.task()
+@celery.task(ignore_result=True)
 def process_pull_request(user, repo, number, lintrc):
-    log.info('Got a job!')
+    """
+    Starts processing a pull request and running the various
+    lint tools against it.
+    """
+    log.info('Starting to process lint for %s, %s, %s' % (user, repo, number))
