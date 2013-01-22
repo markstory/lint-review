@@ -1,6 +1,7 @@
 import logging
 import os
 
+from celery import Celery
 from flask import Flask, request, Response
 from .github import get_client, get_lintrc
 
@@ -12,6 +13,7 @@ if 'LINTREVIEW_SETTINGS' in os.environ:
     app.config.from_envvar('LINTREVIEW_SETTINGS')
 
 log = logging.getLogger(__name__)
+jobs = Celery('lintreview.tasks')
 
 
 @app.route('/ping')
@@ -41,5 +43,13 @@ def start_review():
         lintrc = get_lintrc(gh)
     except:
         log.warn('Cannot download .lintrc file, skipping checks')
-    log.error(lintrc)
+        return Response(status=204)
+    try:
+        jobs.send_task(
+            'lintreview.tasks.ProcessPullRequest',
+            [user, repo, pull_request['number'], lintrc])
+    except:
+        log.error('Could not publish job to celery. Make sure its running')
+        return Response(status=500)
 
+    return Response(status=204)
