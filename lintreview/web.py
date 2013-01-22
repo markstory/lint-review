@@ -42,7 +42,8 @@ def start_review():
     try:
         lintrc = get_lintrc(gh)
     except:
-        log.warn('Cannot download .lintrc file, skipping checks')
+        log.warn("Cannot download .lintrc file for '%s', "
+                 "skipping lint checks.", base_repo_url)
         return Response(status=204)
     try:
         process_pull_request.delay(user, repo, pull_request['number'], lintrc)
