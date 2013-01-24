@@ -17,7 +17,7 @@ class ReviewConfig(object):
             values = self._config.get('tools', 'linters')
             return map(lambda x: x.strip(), values.split(','))
         except:
-            return []
+            return None
 
     def linter_config(self, tool):
         tool_name = 'tool_' + tool
@@ -25,4 +25,4 @@ class ReviewConfig(object):
             config = self._config.items(tool_name)
             return dict(config)
         except:
-            return {}
+            return None

@@ -22,16 +22,21 @@ derp=derplily
 
 class ReviewConfigTest(TestCase):
 
-    def test_linter_bad(self):
+    def test_linter_listing_bad(self):
         config = ReviewConfig(bad_ini)
         res = config.linters()
-        eq_(res, [])
+        eq_(res, None)
 
     def test_linter_listing(self):
         config = ReviewConfig(sample_ini)
         res = config.linters()
         expected = ['phpcs', 'pep8', 'jshint']
         eq_(res, expected)
+
+    def test_linter_config_bad(self):
+        config = ReviewConfig(bad_ini)
+        res = config.linter_config('phpcs')
+        eq_(res, None)
 
     def test_linter_config(self):
         config = ReviewConfig(sample_ini)
@@ -41,3 +46,6 @@ class ReviewConfigTest(TestCase):
             'config': 'test/phpcs.xml'
         }
         eq_(res, expected)
+
+        res = config.linter_config('not there')
+        eq_(res, None)
