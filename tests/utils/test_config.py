@@ -1,4 +1,4 @@
-from lintreview.utils.config import ReviewConfig
+from lintreview.utils.config import ReviewConfig, load_settings
 from nose.tools import eq_
 from unittest import TestCase
 
@@ -18,6 +18,11 @@ bad_ini = """
 [herp]
 derp=derplily
 """
+
+
+def test_load_settings():
+    res = load_settings()
+    assert res['GITHUB_USER'].endswith, 'Exists and is stringy'
 
 
 class ReviewConfigTest(TestCase):

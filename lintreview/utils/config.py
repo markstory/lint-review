@@ -1,5 +1,21 @@
+import os
+from flask.config import Config
+
 from ConfigParser import ConfigParser
 from StringIO import StringIO
+
+
+def load_settings():
+    """
+    Loads the settings files merging the defaults
+    with the file defined in environ.LINTREVIEW_SETTINGS if it exists.
+    """
+    config = Config(os.getcwd())
+    config.from_object('lintreview.default_settings')
+
+    if 'LINTREVIEW_SETTINGS' in os.environ:
+        config.from_envvar('LINTREVIEW_SETTINGS')
+    return config
 
 
 class ReviewConfig(object):

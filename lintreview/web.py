@@ -1,16 +1,14 @@
 import logging
-import os
 
+from celery import Celery
 from flask import Flask, request, Response
+from lintreview.config import load_settings
 from lintreview.github import get_client, get_lintrc
 from lintreview.tasks import process_pull_request
 
 app = Flask('lintreview')
 
-app.config.from_object('lintreview.default_settings')
-
-if 'LINTREVIEW_SETTINGS' in os.environ:
-    app.config.from_envvar('LINTREVIEW_SETTINGS')
+app.config.from_object(load_settings())
 
 log = logging.getLogger(__name__)
 celery = Celery('lintreview.tasks')
