@@ -28,18 +28,39 @@ class ChangeCollection(object):
     """
 
     def __init__(self, contents):
-        pass
+        self._changes = []
+        self._index = 0
+        for change in contents:
+            self._add(change)
+
+    def _add(self, content):
+        change = ChangedFile(content)
+        self._changes.append(change)
+
+    def __len__(self):
+        return len(self._changes)
 
     def __iter__(self):
-        return self
+        try:
+            result = self._changes[self.index]
+        except IndexError:
+            raise StopIteration
+        self._index += 1
+        return result
 
     def next(self):
-        pass
+        return
 
     def get_files(self):
+        """
+        Get the names of all files that have changed
+        """
         pass
 
     def get(self, filename):
+        """
+        Get all the changes that match a filename.
+        """
         pass
 
 

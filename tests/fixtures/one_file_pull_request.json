@@ -1,0 +1,14 @@
+[
+  {
+    "filename": "View/Helper/AssetCompressHelper.php",
+    "contents_url": "https://api.github.com/repos/markstory/asset_compress/contents/View/Helper/AssetCompressHelper.php?ref=ae49447aa54dbc38b91c78ccbe1c890af35416c9",
+    "additions": 11,
+    "status": "modified",
+    "patch": "@@ -451,4 +451,15 @@ public function addCss($files, $target = ':hash-default.css') {\n \t\t$defined = $this->_Config->files($target);\n \t\t$this->_Config->files($target, array_merge($defined, (array)$files));\n \t}\n+    \n+/**\n+ * Check if a build exists (is defined and have at least one file) in the ini file.\n+ *\n+ * @param string $file A string containing the name of the build that will be checked if exists.\n+ * @return boolean True if exists with files, false if not exists or exists, but have no files.\n+ */\n+\tpublic function exists($file) {\n+\t\t$buildFiles = $this->_Config->files($file);\n+\t\treturn count($buildFiles) > 0;\n+\t}\n }",
+    "blob_url": "https://github.com/markstory/asset_compress/blob/ae49447aa54dbc38b91c78ccbe1c890af35416c9/View/Helper/AssetCompressHelper.php",
+    "raw_url": "https://github.com/markstory/asset_compress/raw/ae49447aa54dbc38b91c78ccbe1c890af35416c9/View/Helper/AssetCompressHelper.php",
+    "sha": "7f73f381ad3284eeb5a23d3a451b5752c957054c",
+    "changes": 11,
+    "deletions": 0
+  }
+]
