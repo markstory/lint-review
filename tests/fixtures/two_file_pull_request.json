@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "Console/Command/Task/AssetBuildTask.php",
+    "contents_url": "https://api.github.com/repos/markstory/asset_compress/contents/Console/Command/Task/AssetBuildTask.php?ref=22f9eeb51f7757055ac20b326bd3eddad6f98a3b",
+    "raw_url": "https://github.com/markstory/asset_compress/raw/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Console/Command/Task/AssetBuildTask.php",
+    "sha": "d7401abdba6cd2226dcd8f120f4081884fc9ae15",
+    "changes": 8,
+    "deletions": 6,
+    "status": "modified",
+    "blob_url": "https://github.com/markstory/asset_compress/blob/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Console/Command/Task/AssetBuildTask.php",
+    "additions": 2,
+    "patch": "@@ -114,9 +114,9 @@ public function scanFiles() {\n \n \t\t\t$content = file_get_contents($file);\n \t\t\t$tokens = token_get_all($content);\n-\t\t\tforeach ($tokens as $token) {\n+\t\t\tforeach ($tokens as $i => $token) {\n \t\t\t\t// found a helper method start grabbing tokens.\n-\t\t\t\tif (is_array($token) && in_array($token[1], $this->helperTokens)) {\n+\t\t\t\tif (is_array($token) && in_array($token[1], $this->helperTokens) && is_array($tokens[$i+2]) && in_array($tokens[$i+2][1], $this->_methods)) {\n \t\t\t\t\t$capturing = true;\n \t\t\t\t\t$call = array();\n \t\t\t\t}\n@@ -145,10 +145,6 @@ public function parse() {\n \n \t\tforeach ($this->_tokens as $call) {\n \t\t\t$method = $call[2][1];\n-\t\t\tif (!in_array($method, $this->_methods)) {\n-\t\t\t\tcontinue;\n-\t\t\t}\n-\n \t\t\t$args = array_slice($call, 3);\n \n \t\t\tlist($files, $build) = $this->_parseArgs($args);"
+  },
+  {
+    "filename": "Test/test_files/View/Parse/single.ctp",
+    "contents_url": "https://api.github.com/repos/markstory/asset_compress/contents/Test/test_files/View/Parse/single.ctp?ref=22f9eeb51f7757055ac20b326bd3eddad6f98a3b",
+    "raw_url": "https://github.com/markstory/asset_compress/raw/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Test/test_files/View/Parse/single.ctp",
+    "sha": "fd131c525929d2515b9b5f9e65c310e4ba183975",
+    "changes": 4,
+    "deletions": 0,
+    "status": "modified",
+    "blob_url": "https://github.com/markstory/asset_compress/blob/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Test/test_files/View/Parse/single.ctp",
+    "additions": 4,
+    "patch": "@@ -1,5 +1,9 @@\n <?php\n \n+if (isset($this->AssetCompress)) {\n+\t$available = true;\n+}\n+\n $this->AssetCompress->addScript('one_file', 'single');\n $this->AssetCompress->addScript('no_build');\n "
+  }
+]

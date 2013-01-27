@@ -21,10 +21,10 @@ class CodeReview(object):
         """
 
 
-class ChangeCollection(object):
+class DiffCollection(object):
     """
-    Collection of changed files converts json
-    data into more usuable data
+    Collection of changes made in a pull request.
+    Converts json data into more usuable objects.
     """
 
     def __init__(self, contents):
@@ -34,57 +34,54 @@ class ChangeCollection(object):
             self._add(change)
 
     def _add(self, content):
-        change = ChangedFile(content)
+        change = Diff(content)
         self._changes.append(change)
 
     def __len__(self):
         return len(self._changes)
 
     def __iter__(self):
+        return self
+
+    def next(self):
         try:
-            result = self._changes[self.index]
+            result = self._changes[self._index]
         except IndexError:
             raise StopIteration
         self._index += 1
         return result
 
-    def next(self):
-        return
-
     def get_files(self):
         """
         Get the names of all files that have changed
         """
-        pass
+        return [change.filename for change in self._changes]
 
-    def get(self, filename):
-        """
-        Get all the changes that match a filename.
-        """
-        pass
-
-
-class ChangedFile(object):
-    """
-    Contains all the changes for a single file.
-    Changes are stored by the commit that introduced them.
-    """
-    def __init__(self, changes):
-        pass
-
-    def all_changes(self):
+    def all_changes(self, filename):
         """
         Get all the changes for a given file independant
         of which commit changed them.
         """
 
-    def line_changed(self, line):
-        """
-        Find out if a particular line changed in the commits
-        affecting this file.
-        """
 
-    def line_changed_on(self, line):
+class Diff(object):
+    """
+    Contains the changes for a single file,
+    from a single commit.
+    """
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def filename(self):
+        return self._data['filename']
+
+    @property
+    def commit(self):
+        return self._data['sha']
+
+    def has_line_changed(self, line):
         """
-        Get the commit(s) a line changed on
+        Find out if a particular line changed in this commit's
+        diffs
         """
