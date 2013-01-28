@@ -1,4 +1,5 @@
 import logging
+import re
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +63,21 @@ class DiffCollection(object):
         Get all the changes for a given file independant
         of which commit changed them.
         """
+        return [change for change in self._changes
+                if change.filename == filename]
+
+    def has_line_changed(self, filename, line):
+        """
+        Check whether or not a line has changed in
+        a file.
+
+        Useful for verifying that errors from tools
+        are new and likely to be related to the lines
+        changed in the pull request.
+        """
+        changed = [change for change in self.all_changes(filename)
+                   if change.has_line_changed(line)]
+        return len(changed) > 0
 
 
 class Diff(object):
@@ -71,6 +87,34 @@ class Diff(object):
     """
     def __init__(self, data):
         self._data = data
+        self._parse_diff(data['patch'])
+
+    def _parse_diff(self, patch):
+        """
+        Parses the diff data and stores the list of
+        line numbers that were added in this diff.
+
+        We don't care about deletions as they won't
+        have lint errors in them.
+        """
+        hunk_pattern = re.compile('\@\@ \-\d+,\d+ \+(\d+),\d+ \@\@')
+
+        line_num = 1
+        additions = []
+        lines = patch.split("\n")
+        for line in lines:
+            # Set the line_num at the start of the hunk
+            match = hunk_pattern.match(line)
+            if match:
+                line_num = int(match.group(1)) - 1
+                continue
+            # Increment lines through additions and
+            # unchanged lines.
+            if not line.startswith('-'):
+                line_num += 1
+            if line.startswith('+'):
+                additions.append(line_num)
+        self._additions = set(additions)
 
     @property
     def filename(self):
@@ -85,3 +129,4 @@ class Diff(object):
         Find out if a particular line changed in this commit's
         diffs
         """
+        return line in self._additions
