@@ -82,8 +82,9 @@ class DiffCollection(object):
 
 class Diff(object):
     """
-    Contains the changes for a single file,
-    from a single commit.
+    Contains the changes for a single file.
+    Github's API returns one Diff per file
+    in a pull request.
     """
     def __init__(self, data):
         self._data = data
