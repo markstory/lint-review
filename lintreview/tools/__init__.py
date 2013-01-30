@@ -1,7 +1,15 @@
+import logging
+import os
+import subprocess
+
+log = logging.getLogger(__name__)
+
+
 class Tool(object):
     """
     Base class for tools
     """
+    name = ''
     options = []
 
     def __init__(self, review, options=None):
@@ -21,6 +29,7 @@ class Tool(object):
         pull request. Files will be filtered by
         match_file()
         """
+        log.info('Running %s', self.name)
         matching_files = []
         for f in files:
             if self.match_file(f):
@@ -40,6 +49,7 @@ class Tool(object):
         Used to process all files. Can be overridden by tools
         that support linting more than one file at a time.
         """
+        log.debug('Processing %s files with %s', files, self.name)
         for f in files:
             problems = self.process(f)
             if problems:
@@ -58,3 +68,35 @@ class Tool(object):
         a tool.
         """
         return False
+
+
+def run_command(
+        command,
+        split=False,
+        ignore_error=False,
+        include_errors=True):
+    """
+    Execute subprocesses.
+    """
+    log.debug('Running %s', command)
+    env = os.environ.copy()
+    if include_errors:
+        error_pipe = subprocess.STDOUT
+    else:
+        error_pipe = subprocess.PIPE
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=error_pipe,
+        shell=False,
+        universal_newlines=True,
+        env=env)
+    if split:
+        data = process.stdout.readlines()
+    else:
+        data = process.stdout.read()
+    return_code = process.wait()
+    if return_code and not ignore_error:
+        raise Exception('Failed to execute %s', command)
+    return data
