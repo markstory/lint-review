@@ -50,27 +50,27 @@ class DiffCollectionCollection(TestCase):
 
     def test_has_line_changed__no_file(self):
         changes = DiffCollection(self.two_files)
-        assert False == changes.has_line_changed('derp', 99)
+        self.assertFalse(changes.has_line_changed('derp', 99))
 
     def test_has_line_changed__no_line(self):
         changes = DiffCollection(self.two_files)
-        assert False == changes.has_line_changed(
+        self.assertFalse(changes.has_line_changed(
             'Console/Command/Task/AssetBuildTask.php',
-            99999)
+            99999))
 
     def test_has_line_changed__two_files(self):
         changes = DiffCollection(self.two_files)
         filename = 'Console/Command/Task/AssetBuildTask.php'
 
         # True for additions
-        assert True == changes.has_line_changed(filename, 117)
-        assert True == changes.has_line_changed(filename, 119)
+        self.assertTrue(changes.has_line_changed(filename, 117))
+        self.assertTrue(changes.has_line_changed(filename, 119))
 
         # Should return false if the line was a deletion
-        assert False == changes.has_line_changed(filename, 148)
+        self.assertFalse(changes.has_line_changed(filename, 148))
 
         # Should return false for unchanged
-        assert False == changes.has_line_changed(filename, 145)
+        self.assertFalse(changes.has_line_changed(filename, 145))
 
     def assert_instances(self, collection, count, clazz):
         """
@@ -100,21 +100,21 @@ class TestDiff(TestCase):
         eq_(expected, self.diff.commit)
 
     def test_has_line_changed__no_line(self):
-        assert False == self.diff.has_line_changed(None)
+        self.assertFalse(self.diff.has_line_changed(None))
 
     def test_has_line_changed__added_only(self):
         # Check start and end of range
-        assert True == self.diff.has_line_changed(454)
-        assert True == self.diff.has_line_changed(464)
+        self.assertTrue(self.diff.has_line_changed(454))
+        self.assertTrue(self.diff.has_line_changed(464))
 
     def test_has_line_changed__not_find_deletes(self):
         diff = Diff(self.two_files[0])
-        assert True == diff.has_line_changed(117)
+        self.assertTrue(diff.has_line_changed(117))
         # No unchanged lines.
-        assert False == diff.has_line_changed(118)
-        assert True == diff.has_line_changed(119)
+        self.assertFalse(diff.has_line_changed(118))
+        self.assertTrue(diff.has_line_changed(119))
         # No deleted lines.
-        assert False == diff.has_line_changed(148)
+        self.assertFalse(diff.has_line_changed(148))
 
 
 class TestCodeReview(TestCase):
