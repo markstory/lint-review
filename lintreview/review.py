@@ -4,6 +4,36 @@ import re
 log = logging.getLogger(__name__)
 
 
+class Review(object):
+    """
+    Holds the comments from a review can
+    add track problems logged and post new problems
+    to github.
+    """
+
+    def __init__(self, gh):
+        self._gh = gh
+        self._problems = {}
+
+    def add_problems(self, filename, problems):
+        """
+        Add multiple problems to the review.
+        """
+        for p in problems:
+            self.add_problem(filename, p)
+
+    def add_problem(self, filename, problem):
+        """
+        Add a problem to the review.
+        """
+        if not self._problems.get(filename):
+            self._problems[filename] = []
+        self._problems[filename].append(problem)
+
+    def problems(self, filename):
+        return self._problems.get(filename)
+
+
 class CodeReview(object):
     """
     Knows how to run a code review.
