@@ -33,23 +33,8 @@ class Review(object):
     def problems(self, filename):
         return self._problems.get(filename)
 
-
-class CodeReview(object):
-    """
-    Knows how to run a code review.
-    Uses the config, github and pull request information
-    to run the required tools and post comments on problems.
-    """
-
-    def __init__(self, config, gh, pull_request):
-        self._config = config
-        self._gh = gh
-        self._pull_request = pull_request
-
-    def run():
-        """
-        Run the review for a pull request.
-        """
+    def publish():
+        pass
 
 
 class DiffCollection(object):
