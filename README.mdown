@@ -80,25 +80,29 @@ tools. A sample `.lintrc` file would look like.
     linters = pep8, jshint
 
     [pep8_tool]
-    args = ()
+    ignore = 'W2,E401'
 
     [jshint_tool]
     config = path/to/jshint.json
 
 ## Lint tools
 
-Python:
+### Python:
 * Flake8 (incomplete)
-* pep8 (incomplete)
 
-PHP:
+#### pep8
+
+Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code. You can use the
+`ignore` config option to set which pep8 error codes you wish to ignore.
+
+### PHP
 * PHPCS (incomplete)
 
-Javascript:
+### Javascript:
 * JSHint (incomplete)
 
-CSS:
+### CSS:
 * CSSHint (incomplete)
 
-### Contributing
+## Contributing
 
