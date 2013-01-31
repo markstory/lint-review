@@ -47,6 +47,9 @@ class TestJshint(TestCase):
         expected = (6, "Use '===' to compare with 'null'.")
         eq_(expected, problems[2])
 
+        expected = (7, "Implied global 'alert'")
+        eq_(expected, problems[11])
+
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
@@ -55,3 +58,15 @@ class TestJshint(TestCase):
 
         problems = self.review.problems(self.fixtures[1])
         eq_(13, len(problems))
+
+    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    def test_process_files_with_config(self):
+        config = {
+            'config': 'tests/fixtures/jshint/config.json'
+        }
+        tool = Jshint(self.review, config)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.review.problems(self.fixtures[1])
+
+        eq_(10, len(problems), 'Config file should lower error count.')

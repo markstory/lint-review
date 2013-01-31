@@ -30,7 +30,9 @@ class Jshint(Tool):
         to save resources.
         """
         command = ['jshint', '--checkstyle-reporter']
-        #TODO add config
+        # Add config file if its present
+        if self.options.get('config'):
+            command += ['--config', self.options['config']]
         command += files
         output = run_command(
             command,
