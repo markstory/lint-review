@@ -28,7 +28,6 @@ class Pep8(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        #TODO add support for ini options
         command = ['pep8', '-r']
         if self.options.get('ignore'):
             command += ['--ignore', self.options.get('ignore')]
