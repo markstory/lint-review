@@ -30,6 +30,8 @@ class Pep8(Tool):
         """
         #TODO add support for ini options
         command = ['pep8', '-r']
+        if self.options.get('ignore'):
+            command += ['--ignore', self.options.get('ignore')]
         command += files
         output = run_command(command, split=True, ignore_error=True)
         if not output:

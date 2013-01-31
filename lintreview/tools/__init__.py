@@ -10,11 +10,12 @@ class Tool(object):
     Base class for tools
     """
     name = ''
-    options = []
+    options = {}
 
     def __init__(self, review, options=None):
         self.review = review
-        self.options = options
+        if options:
+            self.options = options
 
     def check_dependencies(self):
         """

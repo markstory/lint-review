@@ -48,3 +48,15 @@ class TestPep8(TestCase):
 
         expected = (11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[5])
+
+    def test_config_options_and_process_file(self):
+        options = {
+            'ignore': 'E2,W603'
+        }
+        self.tool = Pep8(self.review, options)
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.review.problems(self.fixtures[1])
+        eq_(4, len(problems))
+        for p in problems:
+            self.assertFalse('E2' in p)
+            self.assertFalse('W603' in p)
