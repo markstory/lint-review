@@ -1,7 +1,11 @@
+import logging
 import os
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from xml.etree import ElementTree
+
+log = logging.getLogger(__name__)
 
 
 class Jshint(Tool):
@@ -25,6 +29,23 @@ class Jshint(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        command = ['jshint']
+        command = ['jshint', '--checkstyle-reporter']
+        #TODO add config
         command += files
-        output = run_command(command, split=True, ignore_error=True)
+        output = run_command(
+            command,
+            ignore_error=True)
+        try:
+            tree = ElementTree.fromstring(output)
+        except:
+            log.error("Unable to parse XML from jshint "
+                      "Make sure you have a version of jshint installed "
+                      "that supports --checkstyle-reporter")
+
+        # Parse checkstyle.xml
+        # This might be good for refactoring later.
+        for f in tree.iter('file'):
+            filename = f.get('name')
+            for err in f.iter('error'):
+                problem = (int(err.get('line')), err.get('message'))
+                self.review.add_problem(filename, problem)

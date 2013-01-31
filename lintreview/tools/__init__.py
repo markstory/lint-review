@@ -80,11 +80,14 @@ def run_command(
     Execute subprocesses.
     """
     log.debug('Running %s', command)
+
     env = os.environ.copy()
+
     if include_errors:
         error_pipe = subprocess.STDOUT
     else:
         error_pipe = subprocess.PIPE
+
     process = subprocess.Popen(
         command,
         stdin=subprocess.PIPE,
