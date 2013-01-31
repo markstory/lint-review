@@ -104,3 +104,24 @@ def run_command(
     if return_code and not ignore_error:
         raise Exception('Failed to execute %s', command)
     return data
+
+
+def factory(review, config):
+    """
+    Consumes a lintreview.config.ReviewConfig object
+    and creates a list of linting tools based on it.
+    """
+    tools = []
+    for linter in config.linters():
+        linter_config = config.linter_config(linter)
+        try:
+            classname = linter.capitalize()
+            log.debug("Attempting to import 'lintreview.tools.%s'", linter)
+            mod = __import__('lintreview.tools.' + linter, fromlist='*')
+            clazz = getattr(mod, classname)
+            tool = clazz(review, linter_config)
+            tools.append(tool)
+        except:
+            log.error("Unable to import tool '%s'", linter)
+            raise
+    return tools
