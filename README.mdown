@@ -92,14 +92,23 @@ tools. A sample `.lintrc` file would look like.
 
 #### pep8
 
-Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code. You can use the
-`ignore` config option to set which pep8 error codes you wish to ignore.
+Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code. You
+can use the `ignore` config option to set which pep8 error codes you wish to ignore.
 
 ### PHP
 * PHPCS (incomplete)
 
 ### Javascript:
-* JSHint (incomplete)
+
+#### JSHint
+
+Uses the [jshint](http://jshint.org/) npm module to check javascript files. Before
+you can use this linter you'll need to install nodejs and the jshint npm package:
+
+    npm install -g jshint
+
+The `config` option can be used in your `.lintrc` file to define the configuration
+json file to use with jshint.
 
 ### CSS:
 * CSSHint (incomplete)
