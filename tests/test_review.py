@@ -122,6 +122,12 @@ class TestReview(TestCase):
     def setUp(self):
         self.review = Review({})
 
+    def test_add_problems_with_base_path(self):
+        review = Review({}, '/some/path/')
+        review.add_problem('/some/path/file.py', (10, 'Not good'))
+        eq_(None, review.problems('/some/path/file.py'))
+        eq_(1, len(review.problems('file.py')))
+
     def test_add_problem(self):
         self.review.add_problem('some/file.py', (10, 'Thing is wrong'))
         self.review.add_problem('some/file.py', (12, 'Punctuation fail'))

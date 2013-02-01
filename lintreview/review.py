@@ -11,9 +11,15 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, gh):
+    def __init__(self, gh, base_path=None):
         self._gh = gh
         self._problems = {}
+        self._base = base_path
+
+    def _trim_filename(self, filename):
+        if not self._base:
+            return filename
+        return filename[len(self._base):]
 
     def add_problems(self, filename, problems):
         """
@@ -26,6 +32,7 @@ class Review(object):
         """
         Add a problem to the review.
         """
+        filename = self._trim_filename(filename)
         if not self._problems.get(filename):
             self._problems[filename] = []
         self._problems[filename].append(problem)
