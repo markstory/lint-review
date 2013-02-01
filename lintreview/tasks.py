@@ -1,5 +1,6 @@
 from celery import Celery
 import lintreview.github as github
+import lintreview.git as git
 from lintreview.utils.config import load_settings
 from lintreview.utils.config import ReviewConfig
 from lintreview.review import DiffCollection
@@ -32,18 +33,21 @@ def process_pull_request(user, repo, number, lintrc):
         # Clone repository
         log.info("Cloning repository '%s' into '%s'",
             head_repo, settings['WORKSPACE'])
+        target_path = git.get_repo_path(user, repo, number, settings)
+        if not git.exists(target_path):
+            log.debug('Repo does not exist, cloning a new one.')
+            git.clone(head_repo, target_path)
 
         # Check out new head
         log.info("Checking out '%s'", pr_head)
+        git.checkout(target_path, pr_head)
 
         # Get changed files.
         log.debug('Loading pull request patches from github.')
         pull_request_patches = gh.pull_requests.list_files(number).all()
         changes = DiffCollection(pull_request_patches)
 
-        #TODO add workspace path here, so the review
-        # can chop it off when tracking problems?
-        review = Review(gh)
+        review = Review(gh, target_path)
 
         log.debug('Generating tool list from repository configuration')
         lint_tools = tools.factory(review, config)
@@ -56,6 +60,8 @@ def process_pull_request(user, repo, number, lintrc):
             tool.process_files(files_to_check)
 
         log.debug('Publishing review to github.')
+
+        review.filter_problems(changes)
         review.publish()
 
         log.info('Completed lint processing for %s, %s, %s' % (

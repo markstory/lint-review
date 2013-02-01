@@ -43,6 +43,9 @@ class Review(object):
     def publish():
         pass
 
+    def filter_problems(self, changes):
+        pass
+
 
 class DiffCollection(object):
     """
