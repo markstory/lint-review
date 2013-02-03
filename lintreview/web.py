@@ -2,7 +2,7 @@ import logging
 
 from celery import Celery
 from flask import Flask, request, Response
-from lintreview.utils.config import load_settings
+from lintreview.config import load_settings
 from lintreview.github import get_client, get_lintrc
 from lintreview.tasks import process_pull_request
 

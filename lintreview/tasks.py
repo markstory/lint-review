@@ -1,8 +1,8 @@
 from celery import Celery
 import lintreview.github as github
 import lintreview.git as git
-from lintreview.utils.config import load_settings
-from lintreview.utils.config import ReviewConfig
+from lintreview.config import load_settings
+from lintreview.config import ReviewConfig
 from lintreview.review import DiffCollection
 from lintreview.review import Review
 import lintreview.tools as tools
@@ -32,7 +32,7 @@ def process_pull_request(user, repo, number, lintrc):
 
         # Clone repository
         log.info("Cloning repository '%s' into '%s'",
-            head_repo, settings['WORKSPACE'])
+                 head_repo, settings['WORKSPACE'])
         target_path = git.get_repo_path(user, repo, number, settings)
         if not git.exists(target_path):
             log.debug('Repo does not exist, cloning a new one.')

@@ -1,5 +1,5 @@
 import lintreview.tools as tools
-from lintreview.utils.config import ReviewConfig
+from lintreview.config import ReviewConfig
 from lintreview.review import Review
 from nose.tools import eq_
 from nose.tools import raises
