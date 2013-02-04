@@ -43,7 +43,7 @@ class Jshint(Tool):
             log.error("Unable to parse XML from jshint "
                       "Make sure you have a version of jshint installed "
                       "that supports --checkstyle-reporter")
-            return
+            raise
 
         # Parse checkstyle.xml
         # This might be good for refactoring later.
