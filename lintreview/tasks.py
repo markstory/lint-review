@@ -53,7 +53,7 @@ def process_pull_request(user, repo, number, lintrc):
         lint_tools = tools.factory(review, config)
 
         #TODO Add workspace clone path to files.
-        files_to_check = changes.get_files()
+        files_to_check = changes.get_files(append_base=target_path)
 
         log.debug('Running lint tools on changed files.')
         for tool in lint_tools:

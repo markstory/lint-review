@@ -43,6 +43,15 @@ class TestDiffCollection(TestCase):
         ]
         eq_(expected, result)
 
+    def test_get_files__two_files__append_base(self):
+        changes = DiffCollection(self.two_files)
+        result = changes.get_files(append_base="/some/path/")
+        expected = [
+            "/some/path/Console/Command/Task/AssetBuildTask.php",
+            "/some/path/Test/test_files/View/Parse/single.ctp",
+        ]
+        eq_(expected, result)
+
     def test_has_line_changed__no_file(self):
         changes = DiffCollection(self.two_files)
         self.assertFalse(changes.has_line_changed('derp', 99))
@@ -110,5 +119,3 @@ class TestDiff(TestCase):
         self.assertTrue(diff.has_line_changed(119))
         # No deleted lines.
         self.assertFalse(diff.has_line_changed(148))
-
-

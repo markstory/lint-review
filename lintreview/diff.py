@@ -31,11 +31,12 @@ class DiffCollection(object):
         self._index += 1
         return result
 
-    def get_files(self):
+    def get_files(self, append_base=''):
         """
         Get the names of all files that have changed
         """
-        return [change.filename for change in self._changes]
+        return [append_base + change.filename
+                for change in self._changes]
 
     def all_changes(self, filename):
         """
