@@ -43,4 +43,12 @@ class Review(object):
         pass
 
     def filter_problems(self, changes):
-        pass
+        """
+        Filter the problems stored internally to
+        only those in the lines changed inside the DiffCollection
+        provided.
+        """
+        for filename, problems in self._problems.iteritems():
+            for i, error in enumerate(problems):
+                if not changes.has_line_changed(filename, error[0]):
+                    del self._problems[filename][i]
