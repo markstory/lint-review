@@ -1,7 +1,6 @@
 import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
-from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from mock import patch
 from nose.tools import eq_
