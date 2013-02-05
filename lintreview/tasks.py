@@ -7,6 +7,7 @@ from lintreview.config import load_settings
 from lintreview.config import ReviewConfig
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
+from lintreview.review import Problems
 
 celery = Celery('lintreview.tasks')
 log = logging.getLogger(__name__)
@@ -47,10 +48,11 @@ def process_pull_request(user, repo, number, lintrc):
         pull_request_patches = gh.pull_requests.list_files(number).all()
         changes = DiffCollection(pull_request_patches)
 
-        review = Review(gh, number, target_path)
+        problems = Problems(target_path)
+        review = Review(gh, number)
 
         log.debug('Generating tool list from repository configuration')
-        lint_tools = tools.factory(review, config)
+        lint_tools = tools.factory(problems, config)
 
         files_to_check = changes.get_files(append_base=target_path)
 
@@ -60,8 +62,8 @@ def process_pull_request(user, repo, number, lintrc):
 
         log.debug('Publishing review to github.')
 
-        review.filter_problems(changes)
-        review.publish()
+        problems.limit_to(changes)
+        review.publish(problems)
 
         log.info('Completed lint processing for %s, %s, %s' % (
             user, repo, number))

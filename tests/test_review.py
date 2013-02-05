@@ -2,6 +2,7 @@ import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
+from lintreview.review import Problems
 from mock import patch
 from nose.tools import eq_
 from pygithub3 import Github
@@ -11,62 +12,8 @@ from unittest import TestCase
 
 class TestReview(TestCase):
 
-    two_files = json.loads(
-        load_fixture('two_file_pull_request.json'))
-
     def setUp(self):
         self.review = Review({}, 2)
-
-    def test_add_problems_with_base_path(self):
-        review = Review({}, 2, '/some/path/')
-        review.add_problem('/some/path/file.py', (10, 'Not good'))
-        eq_(None, review.problems('/some/path/file.py'))
-        eq_(1, len(review.problems('file.py')))
-
-    def test_add_problem(self):
-        self.review.add_problem('some/file.py', (10, 'Thing is wrong'))
-        self.review.add_problem('some/file.py', (12, 'Punctuation fail'))
-        eq_(2, len(self.review.problems('some/file.py')))
-        eq_(None, self.review.problems('does not exist.py'))
-
-    def test_add_problems(self):
-        problems = [
-            (10, 'Thing is wrong'),
-            (12, 'Not good'),
-        ]
-        self.review.add_problems('some/file.py', problems)
-        result = self.review.problems('some/file.py')
-        eq_(2, len(result))
-        eq_(problems, result)
-
-    def test_filter_problems__remove_problems(self):
-        # Setup some fake problems.
-        changes = DiffCollection(self.two_files)
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        problems = (
-            (117, 'Something bad'),
-            (119, 'Something else bad'),
-            (130, 'Filtered out, as line is not changed'),
-        )
-        self.review.add_problems(filename_1, problems)
-        filename_2 = 'Test/test_files/View/Parse/single.ctp'
-        problems = (
-            (2, 'Filtered out'),
-            (3, 'Something bad'),
-            (7, 'Filtered out'),
-        )
-        self.review.add_problems(filename_2, problems)
-        self.review.filter_problems(changes)
-
-        result = self.review.problems(filename_1)
-        eq_(2, len(result))
-        expected = [(117, 'Something bad'), (119, 'Something else bad')]
-        eq_(result, expected)
-
-        result = self.review.problems(filename_2)
-        eq_(1, len(result))
-        expected = [(3, 'Something bad')]
-        eq_(result, expected)
 
     @patch('pygithub3.core.client.Client.get')
     def test_load_comments__none_active(self, http):
@@ -113,24 +60,100 @@ class TestReview(TestCase):
         http.return_value = response
 
         gh = Github()
+        problems = Problems()
         review = Review(gh, 2)
         filename_1 = "Routing/Filter/AssetCompressor.php"
         filename_2 = "View/Helper/AssetCompressHelper.php"
 
-        review.add_problem(filename_1, (87, 'A pithy remark'))
-        review.add_problem(filename_1, (87, 'Something different'))
-        review.add_problem(filename_2, (88, 'I <3 it'))
-        review.add_problem(filename_2, (89, 'Not such a good comment'))
+        problems.add(filename_1, 87, 'A pithy remark')
+        problems.add(filename_1, 87, 'Something different')
+        problems.add(filename_2, 88, 'I <3 it')
+        problems.add(filename_2, 89, 'Not such a good comment')
 
         review.load_comments()
-        review.filter_existing()
+        review.remove_existing(problems)
 
-        res = review.problems(filename_1)
+        res = problems.all(filename_1)
         eq_(1, len(res))
-        expected = (87, 'Something different')
+        expected = (filename_1, 87, 'Something different')
         eq_(res[0], expected)
 
-        res = review.problems(filename_2)
+        res = problems.all(filename_2)
         eq_(1, len(res))
-        expected = (88, 'I <3 it')
+        expected = (filename_2, 88, 'I <3 it')
         eq_(res[0], expected)
+
+
+class TestProblems(TestCase):
+
+    two_files = json.loads(
+        load_fixture('two_file_pull_request.json'))
+
+    def setUp(self):
+        self.problems = Problems()
+
+    def test_add(self):
+        self.problems.add('file.py', 10, 'Not good')
+        eq_(1, len(self.problems))
+
+        self.problems.add('file.py', 11, 'Not good')
+        eq_(2, len(self.problems))
+        eq_(2, len(self.problems.all()))
+        eq_(2, len(self.problems.all('file.py')))
+        eq_(0, len(self.problems.all('not there')))
+
+    def test_add__duplicate_is_ignored(self):
+        self.problems.add('file.py', 10, 'Not good')
+        eq_(1, len(self.problems))
+
+        self.problems.add('file.py', 10, 'Not good')
+        eq_(1, len(self.problems))
+
+    def test_add__with_base_path(self):
+        problems = Problems('/some/path/')
+        problems.add('/some/path/file.py', 10, 'Not good')
+        eq_([], problems.all('/some/path/file.py'))
+        eq_(1, len(problems.all('file.py')))
+        eq_(1, len(problems))
+
+    def test_add_many(self):
+        errors = [
+            ('some/file.py', 10, 'Thing is wrong'),
+            ('some/file.py', 12, 'Not good'),
+        ]
+        self.problems.add_many(errors)
+        result = self.problems.all('some/file.py')
+        eq_(2, len(result))
+        eq_(errors, result)
+
+    def test_limit_to__remove_problems(self):
+        changes = DiffCollection(self.two_files)
+
+        # Setup some fake problems.
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something else bad'),
+            (filename_1, 130, 'Filtered out, as line is not changed'),
+        )
+        self.problems.add_many(errors)
+        filename_2 = 'Test/test_files/View/Parse/single.ctp'
+        errors = (
+            (filename_2, 2, 'Filtered out'),
+            (filename_2, 3, 'Something bad'),
+            (filename_2, 7, 'Filtered out'),
+        )
+        self.problems.add_many(errors)
+        self.problems.limit_to(changes)
+
+        result = self.problems.all(filename_1)
+        eq_(2, len(result))
+        expected = [
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something else bad')]
+        eq_(result.sort(), expected.sort())
+
+        result = self.problems.all(filename_2)
+        eq_(1, len(result))
+        expected = [(filename_2, 3, 'Something bad')]
+        eq_(result, expected)
