@@ -92,3 +92,27 @@ class Review(object):
             for i, error in enumerate(problems):
                 if error in self._comments[filename]:
                     del self._problems[filename][i]
+
+
+class Problems(object):
+
+    def __init__(self):
+        self._items = []
+
+    def add(self, filename, problem):
+        pass
+
+    def add_many(self, filename, problems):
+        pass
+
+    def __len__(self):
+        return len(self._items)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        pass
+
+    def __contains__(self):
+        pass
