@@ -1,4 +1,4 @@
-from lintreview.review import Review
+from lintreview.review import Problems
 from lintreview.tools.jshint import Jshint
 from lintreview.utils import in_path
 from unittest import TestCase
@@ -16,8 +16,8 @@ class TestJshint(TestCase):
     ]
 
     def setUp(self):
-        self.review = Review(None, None)
-        self.tool = Jshint(self.review)
+        self.problems = Problems()
+        self.tool = Jshint(self.problems)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -33,30 +33,31 @@ class TestJshint(TestCase):
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_(None, self.review.problems(self.fixtures[0]))
+        eq_([], self.problems.all(self.fixtures[0]))
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
-        problems = self.review.problems(self.fixtures[1])
+        problems = self.problems.all(self.fixtures[1])
         eq_(13, len(problems))
 
-        expected = (1, 'Missing name in function declaration.')
+        fname = self.fixtures[1]
+        expected = (fname, 1, 'Missing name in function declaration.')
         eq_(expected, problems[0])
 
-        expected = (6, "Use '===' to compare with 'null'.")
+        expected = (fname, 6, "Use '===' to compare with 'null'.")
         eq_(expected, problems[2])
 
-        expected = (7, "Implied global 'alert'")
+        expected = (fname, 7, "Implied global 'alert'")
         eq_(expected, problems[11])
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_(None, self.review.problems(self.fixtures[0]))
+        eq_([], self.problems.all(self.fixtures[0]))
 
-        problems = self.review.problems(self.fixtures[1])
+        problems = self.problems.all(self.fixtures[1])
         eq_(13, len(problems))
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
@@ -64,9 +65,9 @@ class TestJshint(TestCase):
         config = {
             'config': 'tests/fixtures/jshint/config.json'
         }
-        tool = Jshint(self.review, config)
+        tool = Jshint(self.problems, config)
         tool.process_files([self.fixtures[1]])
 
-        problems = self.review.problems(self.fixtures[1])
+        problems = self.problems.all(self.fixtures[1])
 
         eq_(10, len(problems), 'Config file should lower error count.')

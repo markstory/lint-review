@@ -28,6 +28,7 @@ class Pep8(Tool):
         Only a single process is made for all files
         to save resources.
         """
+        log.debug('Processing %s files with %s', files, self.name)
         command = ['pep8', '-r']
         if self.options.get('ignore'):
             command += ['--ignore', self.options.get('ignore')]
@@ -39,7 +40,7 @@ class Pep8(Tool):
 
         for line in output:
             filename, line, error = self._parse_line(line)
-            self.review.add_problem(filename, (line, error))
+            self.problems.add(filename, line, error)
 
     def _parse_line(self, line):
         """

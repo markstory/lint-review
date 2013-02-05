@@ -12,8 +12,8 @@ class Tool(object):
     name = ''
     options = {}
 
-    def __init__(self, review, options=None):
-        self.review = review
+    def __init__(self, problems, options=None):
+        self.problems = problems
         if options:
             self.options = options
 
@@ -47,14 +47,9 @@ class Tool(object):
 
     def process_files(self, files):
         """
-        Used to process all files. Can be overridden by tools
-        that support linting more than one file at a time.
+        Used to process all files. Overridden by tools
         """
-        log.debug('Processing %s files with %s', files, self.name)
-        for f in files:
-            problems = self.process(f)
-            if problems:
-                self.review.add_problems(f, problems)
+        return False
 
     def process(self, filename):
         """

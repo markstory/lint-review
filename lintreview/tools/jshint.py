@@ -29,6 +29,7 @@ class Jshint(Tool):
         Only a single process is made for all files
         to save resources.
         """
+        log.debug('Processing %s files with %s', files, self.name)
         command = ['jshint', '--checkstyle-reporter']
         # Add config file if its present
         if self.options.get('config'):
@@ -50,5 +51,7 @@ class Jshint(Tool):
         for f in tree.iter('file'):
             filename = f.get('name')
             for err in f.iter('error'):
-                problem = (int(err.get('line')), err.get('message'))
-                self.review.add_problem(filename, problem)
+                self.problems.add(
+                    filename,
+                    int(err.get('line')),
+                    err.get('message'))
