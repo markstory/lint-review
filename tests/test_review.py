@@ -107,7 +107,7 @@ class TestReview(TestCase):
         eq_(expected, res[1])
 
     @patch('pygithub3.core.client.Client.get')
-    def test_filter_comments__removes_duplicates(self, http):
+    def test_filter_existing__removes_duplicates(self, http):
         fixture_data = load_fixture('comments_current.json')
         response = Response()
         response._content = fixture_data
@@ -124,7 +124,7 @@ class TestReview(TestCase):
         review.add_problem(filename_2, (89, 'Not such a good comment'))
 
         review.load_comments()
-        review.filter_comments()
+        review.filter_existing()
 
         res = review.problems(filename_1)
         eq_(1, len(res))

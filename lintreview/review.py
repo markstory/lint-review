@@ -44,8 +44,10 @@ class Review(object):
     def comments(self, filename):
         return self._comments.get(filename)
 
-    def publish():
-        pass
+    def publish(self):
+        self.load_comments()
+        self.filter_existing()
+        self.publish_new_problems()
 
     def filter_problems(self, changes):
         """
@@ -75,12 +77,16 @@ class Review(object):
             if not comment.position:
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
-            problem = (int(comment.position), comment.body)
-            self._comments[filename].append(problem)
+            content = (int(comment.position), comment.body)
+            self._comments[filename].append(content)
 
-    def filter_comments(self):
+    def filter_existing(self):
         """
-        Filters the problems based on existing comments
+        Filters the problems based on existing comments.
+
+        Remove problems that match the line + comment body of
+        an existing comment. We'll assume the program put
+        the comment there, and not a human.
         """
         for filename, problems in self._problems.iteritems():
             for i, error in enumerate(problems):
