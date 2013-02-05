@@ -105,3 +105,33 @@ class TestReview(TestCase):
 
         expected = (89,  "Not such a good comment")
         eq_(expected, res[1])
+
+    @patch('pygithub3.core.client.Client.get')
+    def test_filter_comments__removes_duplicates(self, http):
+        fixture_data = load_fixture('comments_current.json')
+        response = Response()
+        response._content = fixture_data
+        http.return_value = response
+
+        gh = Github()
+        review = Review(gh, 2)
+        filename_1 = "Routing/Filter/AssetCompressor.php"
+        filename_2 = "View/Helper/AssetCompressHelper.php"
+
+        review.add_problem(filename_1, (87, 'A pithy remark'))
+        review.add_problem(filename_1, (87, 'Something different'))
+        review.add_problem(filename_2, (88, 'I <3 it'))
+        review.add_problem(filename_2, (89, 'Not such a good comment'))
+
+        review.load_comments()
+        review.filter_comments()
+
+        res = review.problems(filename_1)
+        eq_(1, len(res))
+        expected = (87, 'Something different')
+        eq_(res[0], expected)
+
+        res = review.problems(filename_2)
+        eq_(1, len(res))
+        expected = (88, 'I <3 it')
+        eq_(res[0], expected)

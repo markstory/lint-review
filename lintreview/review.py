@@ -77,3 +77,12 @@ class Review(object):
                 continue
             problem = (int(comment.position), comment.body)
             self._comments[filename].append(problem)
+
+    def filter_comments(self):
+        """
+        Filters the problems based on existing comments
+        """
+        for filename, problems in self._problems.iteritems():
+            for i, error in enumerate(problems):
+                if error in self._comments[filename]:
+                    del self._problems[filename][i]
