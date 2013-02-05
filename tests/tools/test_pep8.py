@@ -12,7 +12,7 @@ class TestPep8(TestCase):
     ]
 
     def setUp(self):
-        self.review = Review(None)
+        self.review = Review(None, None)
         self.tool = Pep8(self.review)
 
     def test_match_file(self):

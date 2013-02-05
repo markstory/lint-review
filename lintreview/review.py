@@ -10,9 +10,11 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, gh, base_path=None):
+    def __init__(self, gh, number, base_path=None):
         self._gh = gh
         self._problems = {}
+        self._comments = {}
+        self._number = number
         self._base = base_path
 
     def _trim_filename(self, filename):
@@ -39,6 +41,9 @@ class Review(object):
     def problems(self, filename):
         return self._problems.get(filename)
 
+    def comments(self, filename):
+        return self._comments.get(filename)
+
     def publish():
         pass
 
@@ -52,3 +57,23 @@ class Review(object):
             for i, error in enumerate(problems):
                 if not changes.has_line_changed(filename, error[0]):
                     del self._problems[filename][i]
+
+    def load_comments(self):
+        """
+        Load the existing comments on a pull request
+
+        Results in a structure that is similar to the one used
+        for problems
+        """
+        log.debug("Loading comments for pull request '%s'", self._number)
+        comments = self._gh.pull_requests.comments.list(self._number).all()
+
+        for comment in comments:
+            filename = comment.path
+            if not self._comments.get(filename):
+                self._comments[filename] = []
+            if not comment.position:
+                log.debug("Ignoring outdated diff comment '%s'", comment.id)
+                continue
+            problem = (int(comment.position), comment.body)
+            self._comments[filename].append(problem)

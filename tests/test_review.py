@@ -1,8 +1,12 @@
 import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
+from lintreview.diff import DiffCollection
 from lintreview.review import Review
+from mock import patch
 from nose.tools import eq_
+from pygithub3 import Github
+from requests.models import Response
 from unittest import TestCase
 
 
@@ -12,10 +16,10 @@ class TestReview(TestCase):
         load_fixture('two_file_pull_request.json'))
 
     def setUp(self):
-        self.review = Review({})
+        self.review = Review({}, 2)
 
     def test_add_problems_with_base_path(self):
-        review = Review({}, '/some/path/')
+        review = Review({}, 2, '/some/path/')
         review.add_problem('/some/path/file.py', (10, 'Not good'))
         eq_(None, review.problems('/some/path/file.py'))
         eq_(1, len(review.problems('file.py')))
@@ -64,3 +68,40 @@ class TestReview(TestCase):
         eq_(1, len(result))
         expected = [(3, 'Something bad')]
         eq_(result, expected)
+
+    @patch('pygithub3.core.client.Client.get')
+    def test_load_comments__none_active(self, http):
+        fixture_data = load_fixture('comments_none_current.json')
+        response = Response()
+        response._content = fixture_data
+        http.return_value = response
+
+        gh = Github()
+        review = Review(gh, 2)
+        review.load_comments()
+
+        eq_(0, len(review.comments("View/Helper/AssetCompressHelper.php")))
+
+    @patch('pygithub3.core.client.Client.get')
+    def test_load_comments__loads_comments(self, http):
+        fixture_data = load_fixture('comments_current.json')
+        response = Response()
+        response._content = fixture_data
+        http.return_value = response
+
+        gh = Github()
+        review = Review(gh, 2)
+        review.load_comments()
+
+        res = review.comments("Routing/Filter/AssetCompressor.php")
+        eq_(1, len(res))
+        expected = (87, "A pithy remark")
+        eq_(expected, res[0])
+
+        res = review.comments("View/Helper/AssetCompressHelper.php")
+        eq_(2, len(res))
+        expected = (40, "Some witty comment.")
+        eq_(expected, res[0])
+
+        expected = (89,  "Not such a good comment")
+        eq_(expected, res[1])

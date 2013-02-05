@@ -47,7 +47,7 @@ def process_pull_request(user, repo, number, lintrc):
         pull_request_patches = gh.pull_requests.list_files(number).all()
         changes = DiffCollection(pull_request_patches)
 
-        review = Review(gh, target_path)
+        review = Review(gh, number, target_path)
 
         log.debug('Generating tool list from repository configuration')
         lint_tools = tools.factory(review, config)

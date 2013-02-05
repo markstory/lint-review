@@ -22,12 +22,12 @@ linters = not there, bogus
 @raises(ImportError)
 def test_factory_raises_error_on_bad_linter():
     config = ReviewConfig(bad_ini)
-    tools.factory(Review(None), config)
+    tools.factory(Review(None, None), config)
 
 
 def test_factory_generates_tools():
     config = ReviewConfig(sample_ini)
-    linters = tools.factory(Review(None), config)
+    linters = tools.factory(Review(None, None), config)
     eq_(2, len(linters))
     assert isinstance(linters[0], tools.pep8.Pep8)
     assert isinstance(linters[1], tools.jshint.Jshint)
