@@ -18,7 +18,7 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems):
+    def publish(self, problems, changes):
         """
         Publish the review.
 
@@ -28,7 +28,7 @@ class Review(object):
         """
         self.load_comments()
         self.remove_existing(problems)
-        self.publish_new_problems(problems)
+        self.publish_problems(problems, changes)
 
     def load_comments(self):
         """
@@ -62,6 +62,24 @@ class Review(object):
         """
         for comment in self._comments:
             problems.remove(*comment)
+
+    def publish_problems(self, problems, changes):
+        """
+        Publish the issues contains in the problems
+        parameter. changes is used to fetch the commit sha
+        for the comments on a given file.
+        """
+        log.debug("Publishing new comments for '%s'", self._number)
+        for error in problems:
+            commit = changes.all_changes(error[0])[0].commit
+            comment = {
+                'commit_id': commit,
+                'path': error[0],
+                'position': error[1],
+                'body': error[2],
+            }
+            self.debug("Publishing comment '%s'", comment)
+            self._gh.pull_requests.comments.create(comment)
 
 
 class Problems(object):
