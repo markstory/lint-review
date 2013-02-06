@@ -61,7 +61,7 @@ class Review(object):
         the comment there, and not a human.
         """
         for comment in self._comments:
-            problems.remove(comment[0], comment[1], comment[2])
+            problems.remove(*comment)
 
 
 class Problems(object):
