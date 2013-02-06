@@ -76,7 +76,6 @@ class Problems(object):
     def __init__(self, base=None):
         self._items = []
         self._base = base
-        self._index = 0
 
     def _trim_filename(self, filename):
         if not self._base:
@@ -118,19 +117,18 @@ class Problems(object):
         line and comment.
         """
         kill = (filename, line, comment)
-        self._items = [error for error in self._items
-                       if error != kill]
+        try:
+            index = self._items.index(kill)
+            del self._items[index]
+        except:
+            pass
 
     def __len__(self):
         return len(self._items)
 
     def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self._items[self._index]
-            self._index += 1
-            return result
-        except IndexError:
-            raise StopIteration
+        i = 0
+        length = len(self._items)
+        while i < length:
+            yield self._items[i]
+            i += 1

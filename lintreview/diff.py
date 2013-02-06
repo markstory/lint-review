@@ -9,7 +9,6 @@ class DiffCollection(object):
 
     def __init__(self, contents):
         self._changes = []
-        self._index = 0
         for change in contents:
             self._add(change)
 
@@ -21,15 +20,11 @@ class DiffCollection(object):
         return len(self._changes)
 
     def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self._changes[self._index]
-        except IndexError:
-            raise StopIteration
-        self._index += 1
-        return result
+        i = 0
+        length = len(self._changes)
+        while i < length:
+            yield self._changes[i]
+            i += 1
 
     def get_files(self, append_base=''):
         """
