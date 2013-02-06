@@ -39,17 +39,19 @@ class TestReview(TestCase):
         review = Review(gh, 2)
         review.load_comments()
 
-        res = review.comments("Routing/Filter/AssetCompressor.php")
+        filename = "Routing/Filter/AssetCompressor.php"
+        res = review.comments(filename)
         eq_(1, len(res))
-        expected = (87, "A pithy remark")
+        expected = (filename, 87, "A pithy remark")
         eq_(expected, res[0])
 
-        res = review.comments("View/Helper/AssetCompressHelper.php")
+        filename = "View/Helper/AssetCompressHelper.php"
+        res = review.comments(filename)
         eq_(2, len(res))
-        expected = (40, "Some witty comment.")
+        expected = (filename, 40, "Some witty comment.")
         eq_(expected, res[0])
 
-        expected = (89,  "Not such a good comment")
+        expected = (filename, 89,  "Not such a good comment")
         eq_(expected, res[1])
 
     @patch('pygithub3.core.client.Client.get')

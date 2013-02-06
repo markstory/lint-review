@@ -12,16 +12,23 @@ class Review(object):
 
     def __init__(self, gh, number):
         self._gh = gh
-        self._comments = {}
+        self._comments = Problems()
         self._number = number
 
     def comments(self, filename):
-        return self._comments.get(filename)
+        return self._comments.all(filename)
 
     def publish(self, problems):
+        """
+        Publish the review.
+
+        Existing comments are loaded, and compared
+        to new problems. Once the new unique problems
+        are distilled new comments are published.
+        """
         self.load_comments()
         self.remove_existing(problems)
-        self.publish_new_problems()
+        self.publish_new_problems(problems)
 
     def load_comments(self):
         """
@@ -35,13 +42,13 @@ class Review(object):
 
         for comment in comments:
             filename = comment.path
-            if not self._comments.get(filename):
-                self._comments[filename] = []
             if not comment.position:
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
-            content = (int(comment.position), comment.body)
-            self._comments[filename].append(content)
+            self._comments.add(
+                filename,
+                int(comment.position),
+                comment.body)
 
     def remove_existing(self, problems):
         """
@@ -53,9 +60,8 @@ class Review(object):
         an existing comment. We'll assume the program put
         the comment there, and not a human.
         """
-        for filename, comments in self._comments.iteritems():
-            for comment in comments:
-                problems.remove(filename, comment[0], comment[1])
+        for comment in self._comments:
+            problems.remove(comment[0], comment[1], comment[2])
 
 
 class Problems(object):
@@ -70,6 +76,7 @@ class Problems(object):
     def __init__(self, base=None):
         self._items = []
         self._base = base
+        self._index = 0
 
     def _trim_filename(self, filename):
         if not self._base:
@@ -116,3 +123,14 @@ class Problems(object):
 
     def __len__(self):
         return len(self._items)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            result = self._items[self._index]
+            self._index += 1
+            return result
+        except IndexError:
+            raise StopIteration
