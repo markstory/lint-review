@@ -22,18 +22,18 @@ def ping():
 
 @app.route('/review/start', methods=['POST'])
 def start_review():
-    if not request.json:
-        return Response(
-                status=403,
-                response="You must provide a JSON body\n")
-
-    action = request.json["action"]
-    pull_request = request.json["pull_request"]
-    number = pull_request["number"]
-    base_repo_url = pull_request["base"]["repo"]["git_url"]
-    head_repo_url = pull_request["head"]["repo"]["git_url"]
-    user = pull_request['base']['repo']['owner']['login']
-    repo = pull_request['base']['repo']['name']
+    try:
+        action = request.json["action"]
+        pull_request = request.json["pull_request"]
+        number = pull_request["number"]
+        base_repo_url = pull_request["base"]["repo"]["git_url"]
+        head_repo_url = pull_request["head"]["repo"]["git_url"]
+        user = pull_request["base"]['repo']['owner']['login']
+        repo = pull_request['base']['repo']['name']
+    except:
+        log.info("Got an invalid JSON body.")
+        return Response(status=403,
+                        response="You must provide a valid JSON body\n")
 
     log.debug("Received GitHub pull request notification for "
               "%s %s, (%s) from: %s",
