@@ -7,20 +7,20 @@ from lintreview.github import get_client, get_lintrc
 from lintreview.tasks import process_pull_request
 from lintreview.tasks import cleanup_pull_request
 
-app = Flask('lintreview')
+app = Flask("lintreview")
 
 app.config.from_object(load_settings())
 
 log = logging.getLogger(__name__)
-celery = Celery('lintreview.tasks')
+celery = Celery("lintreview.tasks")
 
 
-@app.route('/ping')
+@app.route("/ping")
 def ping():
-    return 'pong\n'
+    return "pong\n"
 
 
-@app.route('/review/start', methods=['POST'])
+@app.route("/review/start", methods=["POST"])
 def start_review():
     try:
         action = request.json["action"]
@@ -28,10 +28,10 @@ def start_review():
         number = pull_request["number"]
         base_repo_url = pull_request["base"]["repo"]["git_url"]
         head_repo_url = pull_request["head"]["repo"]["git_url"]
-        user = pull_request["base"]['repo']['owner']['login']
-        repo = pull_request['base']['repo']['name']
-    except:
-        log.info("Got an invalid JSON body.")
+        user = pull_request["base"]["repo"]["owner"]["login"]
+        repo = pull_request["base"]["repo"]["name"]
+    except Exception as e:
+        log.error("Got an invalid JSON body. '%s'", e)
         return Response(status=403,
                         response="You must provide a valid JSON body\n")
 
@@ -45,6 +45,7 @@ def start_review():
 
     if action == "closed":
         try:
+            print cleanup_pull_request
             log.info("Scheduling cleanup for %s/%s", user, repo)
             cleanup_pull_request.delay(user, repo, pull_request['number'])
         except:
