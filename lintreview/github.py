@@ -32,14 +32,19 @@ def get_lintrc(gh):
     return base64.b64decode(response.json['content'])
 
 
-def register_hook(app, user, repo):
+def register_hook(app, user, repo, credentials=None):
     """
     Register a new hook with a user's repository.
     """
     logging.info('Registering hooks for %s/%s' % (user, repo))
     with app.app_context():
-        gh = get_client(app.config, user, repo)
+        if credentials:
+            credentials['GITHUB_URL'] = app.config['GITHUB_URL']
+            gh = get_client(credentials, user, repo)
+        else:
+            gh = get_client(app.config, user, repo)
         endpoint = url_for('start_review', _external=True)
+
     hooks = gh.repos.hooks.list().all()
     found = False
     for hook in hooks:

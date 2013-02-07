@@ -28,8 +28,13 @@ def main():
     parser.add_argument('repo',
                         help="The repository to install a hook into.")
     args = parser.parse_args()
-
-    register_hook(app, args.user, args.repo)
+    credentials = None
+    if args.login_user and args.login_pass:
+        credentials = {
+            'GITHUB_USER': args.login_user,
+            'GITHUB_PASSWORD': args.login_pass
+        }
+    register_hook(app, args.user, args.repo, credentials)
 
 
 if __name__ == '__main__':
