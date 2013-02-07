@@ -16,4 +16,4 @@ GITHUB_PASSWORD = ''
 
 # Path where project code should be
 # checked out when reviews are done
-PROJECT_DIR = './'
+WORKSPACE = './'
