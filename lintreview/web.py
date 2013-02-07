@@ -22,6 +22,11 @@ def ping():
 
 @app.route('/review/start', methods=['POST'])
 def start_review():
+    if not request.json:
+        return Response(
+                status=403,
+                response="You must provide a JSON body\n")
+
     action = request.json["action"]
     pull_request = request.json["pull_request"]
     number = pull_request["number"]
