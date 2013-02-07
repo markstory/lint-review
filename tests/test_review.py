@@ -4,6 +4,8 @@ from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
 from mock import patch
+from mock import Mock
+from mock import call
 from nose.tools import eq_
 from pygithub3 import Github
 from requests.models import Response
@@ -159,3 +161,37 @@ class TestProblems(TestCase):
         eq_(1, len(result))
         expected = [(filename_2, 3, 'Something bad')]
         eq_(result, expected)
+
+    def test_publish_problems(self):
+        gh = Mock()
+        changes = DiffCollection(self.two_files)
+        problems = Problems()
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+
+        review = Review(gh, 3)
+        review.publish_problems(problems, changes)
+
+        assert gh.pull_requests.comments.create.called
+        eq_(2, gh.pull_requests.comments.create.call_count)
+        calls = gh.pull_requests.comments.create.call_args_list
+
+        expected = call(3, {
+            'commit_id': changes.all_changes(filename_1)[0].commit,
+            'path': errors[0][0],
+            'position': errors[0][1],
+            'body': errors[0][2]
+        })
+        eq_(calls[0], expected)
+
+        expected = call(3, {
+            'commit_id': changes.all_changes(filename_1)[0].commit,
+            'path': errors[1][0],
+            'position': errors[1][1],
+            'body': errors[1][2]
+        })
+        eq_(calls[1], expected)

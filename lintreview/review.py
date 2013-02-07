@@ -78,8 +78,8 @@ class Review(object):
                 'position': error[1],
                 'body': error[2],
             }
-            self.debug("Publishing comment '%s'", comment)
-            self._gh.pull_requests.comments.create(comment)
+            log.debug("Publishing comment '%s'", comment)
+            self._gh.pull_requests.comments.create(self._number, comment)
 
 
 class Problems(object):
