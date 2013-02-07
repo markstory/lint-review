@@ -71,6 +71,12 @@ def process_pull_request(user, repo, number, lintrc):
         log.exception(e)
 
 
-if __name__ == '__main__':
-    import sys
-    process_pull_request(*sys.argv)
+@celery.task(ignore_result=True)
+def cleanup_pull_request(user, repo, number):
+    """
+    Cleans up a pull request once its been closed.
+    """
+    log.info("Cleaning up pull request '%s' for %s/%s", number, user, repo)
+    settings = load_settings()
+    path = git.get_repo_path(user, repo, number, settings)
+    git.destroy(path)
