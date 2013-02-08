@@ -19,7 +19,6 @@ setup(
     entry_points={
         'console_scripts': [
             'register_hooks = scripts.register_hooks:main',
-            'runserver = scripts.runserver:main',
         ],
     },
     install_requires=requirements.readlines(),

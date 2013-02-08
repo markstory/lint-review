@@ -1,20 +1,26 @@
 import os
-from flask.config import Config
+import logging.config
 
+from flask.config import Config
 from ConfigParser import ConfigParser
 from StringIO import StringIO
 
 
-def load_settings():
+def load_config():
     """
-    Loads the settings files merging the defaults
+    Loads the config files merging the defaults
     with the file defined in environ.LINTREVIEW_SETTINGS if it exists.
     """
     config = Config(os.getcwd())
-    config.from_object('lintreview.default_settings')
 
-    if 'LINTREVIEW_SETTINGS' in os.environ:
-        config.from_envvar('LINTREVIEW_SETTINGS')
+    if 'LINTREVIEW_SETTINGS' not in os.environ:
+        msg = ("Unable to load configuration file. Please set "
+               "LINTREVIEW_SETTINGS in your environment before running.")
+        raise ImportError(msg)
+    config.from_envvar('LINTREVIEW_SETTINGS')
+    if config.get('LOGGING_CONFIG'):
+        logging.config.fileConfig(config.get('LOGGING_CONFIG'))
+
     return config
 
 

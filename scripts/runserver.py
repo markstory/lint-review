@@ -31,7 +31,7 @@ def main():
             help='The port to bind onto.')
     args = parser.parse_args()
 
-    app.debug = args.debug
+    app.debug = True
     app.run(host=args.host, port=args.port)
 
 

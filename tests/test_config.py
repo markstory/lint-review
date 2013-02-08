@@ -1,4 +1,5 @@
-from lintreview.config import ReviewConfig, load_settings
+from lintreview.config import load_config
+from lintreview.config import ReviewConfig
 from nose.tools import eq_
 from unittest import TestCase
 
@@ -20,8 +21,8 @@ derp=derplily
 """
 
 
-def test_load_settings():
-    res = load_settings()
+def test_load_config():
+    res = load_config()
     assert res['GITHUB_USER'].endswith, 'Exists and is stringy'
 
 

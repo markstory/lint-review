@@ -1,14 +1,15 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)
 
 from flask import Flask, request, Response
-from lintreview.config import load_settings
-from lintreview.github import get_client, get_lintrc
+from lintreview.config import load_config
+from lintreview.github import get_client
+from lintreview.github import get_lintrc
 from lintreview.tasks import process_pull_request
 from lintreview.tasks import cleanup_pull_request
 
+config = load_config()
 app = Flask("lintreview")
-app.config.update(load_settings())
+app.config.update(config)
 
 log = logging.getLogger(__name__)
 
@@ -68,4 +69,4 @@ def start_review():
 
 
 if __name__ == '__main__':
-    app.run(host='10.5.0.134', port=5000)
+    app.run()

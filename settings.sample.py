@@ -1,8 +1,23 @@
+# gunicorn config
+bind = '127.0.0.1:5000'
+error_logfile = 'lintreview.error.log'
+access_logfile = 'lintreview.access.log'
+debug = True
+log_level = 'info'
+
 # Basic flask config
 DEBUG = True
 TESTING = True
 
 SERVER_NAME = 'lint.example.com'
+# Basic flask config
+DEBUG = True
+TESTING = True
+SERVER_NAME = '127.0.0.1:5000'
+
+# Config file for logging
+LOGGING_CONFIG = './logging.ini'
+
 
 # Path where project code should be
 # checked out when reviews are done
