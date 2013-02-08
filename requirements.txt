@@ -5,3 +5,4 @@ pep8==1.4.1
 flake8==1.7.0
 celery==3.0.13
 mock==1.0.1
+gunicorn==0.17.2
