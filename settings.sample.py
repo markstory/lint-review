@@ -3,7 +3,7 @@ bind = '127.0.0.1:5000'
 error_logfile = 'lintreview.error.log'
 access_logfile = 'lintreview.access.log'
 debug = True
-log_level = 'info'
+log_level = 'debug'
 
 # Basic flask config
 DEBUG = True
