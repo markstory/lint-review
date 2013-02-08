@@ -81,6 +81,7 @@ Lint Review use hidden ini files to configure the tools used on each project. Th
 tools must be tools Lint Review knows about. See [lint tools](#lint-tools) for available
 tools. A sample `.lintrc` file would look like.
 
+    [tools]
     linters = pep8, jshint
 
     [pep8_tool]
