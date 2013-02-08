@@ -1,3 +1,6 @@
+# Webserver configuration #
+###########################
+
 # gunicorn config
 bind = '127.0.0.1:5000'
 error_logfile = 'lintreview.error.log'
@@ -8,16 +11,22 @@ log_level = 'debug'
 # Basic flask config
 DEBUG = True
 TESTING = True
-
-SERVER_NAME = 'lint.example.com'
-# Basic flask config
-DEBUG = True
-TESTING = True
 SERVER_NAME = '127.0.0.1:5000'
 
 # Config file for logging
 LOGGING_CONFIG = './logging.ini'
 
+
+# Celery worker configuration #
+###############################
+
+BROKER_URL = 'amqp://'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ENABLE_UTC = True
+
+
+# General project configuration #
+#################################
 
 # Path where project code should be
 # checked out when reviews are done

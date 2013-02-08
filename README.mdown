@@ -48,8 +48,8 @@ share the same configuration file so configuration is easier to manage and share
 After setting up configuration you'll need to start up both processes:
 
     source env/bin/activate
-    runserver &
-    runcelery &
+    gunicorn -c settings.py lintreview.web:app
+    celery -A lintreview.tasks worker
 
 Now when ever a pull request is opened or updated for a connected repository
 new jobs will be spun up and lint will be checked and commented on.
