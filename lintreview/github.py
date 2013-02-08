@@ -25,6 +25,7 @@ def get_lintrc(gh):
     Since pygithub3 doesn't support this,
     some hackery will ensue.
     """
+    log.info('Fetching lintrc file')
     repo = gh.repos
     parts = ['repos', repo.get_user(), repo.get_repo(), 'contents', '.lintrc']
     path = '/'.join(parts)
@@ -36,7 +37,7 @@ def register_hook(app, user, repo, credentials=None):
     """
     Register a new hook with a user's repository.
     """
-    logging.info('Registering hooks for %s/%s' % (user, repo))
+    log.info('Registering hooks for %s/%s' % (user, repo))
     with app.app_context():
         if credentials:
             credentials['GITHUB_URL'] = app.config['GITHUB_URL']
@@ -75,4 +76,4 @@ def register_hook(app, user, repo, credentials=None):
         message = "Unable to save webhook. You need to have administration"\
             "privileges over the repository to add webhooks."
         log.error(message)
-    logging.warn('Registered hook successfully')
+    log.warn('Registered hook successfully')

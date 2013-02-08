@@ -1,6 +1,6 @@
 import logging
+logging.basicConfig(level=logging.DEBUG)
 
-from celery import Celery
 from flask import Flask, request, Response
 from lintreview.config import load_settings
 from lintreview.github import get_client, get_lintrc
@@ -8,11 +8,9 @@ from lintreview.tasks import process_pull_request
 from lintreview.tasks import cleanup_pull_request
 
 app = Flask("lintreview")
-
 app.config.update(load_settings())
 
 log = logging.getLogger(__name__)
-celery = Celery("lintreview.tasks")
 
 
 @app.route("/ping")
@@ -45,7 +43,6 @@ def start_review():
 
     if action == "closed":
         try:
-            print cleanup_pull_request
             log.info("Scheduling cleanup for %s/%s", user, repo)
             cleanup_pull_request.delay(user, repo, pull_request['number'])
         except:
@@ -56,14 +53,19 @@ def start_review():
     gh = get_client(app.config, user, repo)
     try:
         lintrc = get_lintrc(gh)
+        log.debug("lintrc file contents '%s'", lintrc)
     except:
         log.warn("Cannot download .lintrc file for '%s', "
                  "skipping lint checks.", base_repo_url)
         return Response(status=204)
     try:
-        log.info("Scheduling pull request for %s/%s", user, repo)
-        process_pull_request.delay(user, repo, pull_request['number'], lintrc)
+        log.info("Scheduling pull request for %s/%s %s", user, repo, number)
+        process_pull_request.delay(user, repo, number, lintrc)
     except:
         log.error('Could not publish job to celery. Make sure its running')
         return Response(status=500)
     return Response(status=204)
+
+
+if __name__ == '__main__':
+    app.run(host='10.5.0.134', port=5000)

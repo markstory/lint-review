@@ -2,7 +2,7 @@
 DEBUG = True
 TESTING = True
 
-SERVER_NAME = 'lint.example.com'
+SERVER_NAME = '127.0.0.1:5000'
 
 # Use GITHUB_URL when working with github:e
 # When working with github:e don't forget to add the /api/v3/ path
