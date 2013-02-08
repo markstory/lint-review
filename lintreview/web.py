@@ -66,7 +66,3 @@ def start_review():
         log.error('Could not publish job to celery. Make sure its running')
         return Response(status=500)
     return Response(status=204)
-
-
-if __name__ == '__main__':
-    app.run()
