@@ -9,7 +9,7 @@ from lintreview.tasks import cleanup_pull_request
 
 app = Flask("lintreview")
 
-app.config.from_object(load_settings())
+app.config.update(load_settings())
 
 log = logging.getLogger(__name__)
 celery = Celery("lintreview.tasks")
