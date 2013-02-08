@@ -34,9 +34,9 @@ def start_review():
         return Response(status=403,
                         response="You must provide a valid JSON body\n")
 
-    log.debug("Received GitHub pull request notification for "
-              "%s %s, (%s) from: %s",
-              base_repo_url, number, action, head_repo_url)
+    log.info("Received GitHub pull request notification for "
+             "%s %s, (%s) from: %s",
+             base_repo_url, number, action, head_repo_url)
 
     if action not in ("opened", "synchronize", "closed"):
         log.info("Ignored '%s' action." % action)
@@ -55,9 +55,10 @@ def start_review():
     try:
         lintrc = get_lintrc(gh)
         log.debug("lintrc file contents '%s'", lintrc)
-    except:
+    except Exception as e:
         log.warn("Cannot download .lintrc file for '%s', "
                  "skipping lint checks.", base_repo_url)
+        log.warn(e)
         return Response(status=204)
     try:
         log.info("Scheduling pull request for %s/%s %s", user, repo, number)

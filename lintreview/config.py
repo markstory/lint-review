@@ -19,7 +19,9 @@ def load_config():
         raise ImportError(msg)
     config.from_envvar('LINTREVIEW_SETTINGS')
     if config.get('LOGGING_CONFIG'):
-        logging.config.fileConfig(config.get('LOGGING_CONFIG'))
+        logging.config.fileConfig(
+            config.get('LOGGING_CONFIG'),
+            disable_existing_loggers=False)
 
     return config
 

@@ -11,7 +11,6 @@ from lintreview.review import Review
 from lintreview.review import Problems
 
 config = load_config()
-
 celery = Celery('lintreview.tasks')
 log = logging.getLogger(__name__)
 
