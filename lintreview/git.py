@@ -14,7 +14,7 @@ def get_repo_path(user, repo, number, settings):
         path = settings['WORKSPACE']
     except:
         raise KeyError("You have not defined the WORKSPACE config"
-                " option. This is required for lintreview to work.")
+                       " option. This is required for lintreview to work.")
     path = path.strip('/')
     return os.path.join(path, user, repo, str(number))
 
@@ -25,11 +25,11 @@ def clone(url, path):
     """
     command = ['git', 'clone', url, path]
     process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=False)
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
     return_code = process.wait()
     if return_code:
         log.error("Cloning '%s' repository failed", url)
@@ -47,11 +47,11 @@ def checkout(path, ref):
     command = ['git', 'checkout', ref]
 
     process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=False)
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
     return_code = process.wait()
     os.chdir(cwd)
 

@@ -28,7 +28,7 @@ def test_get_repo_path_int():
     num = 4
     res = git.get_repo_path(user, repo, num, settings)
     expected = os.sep.join(
-        (settings['WORKSPACE'], user, repo, num))
+        (settings['WORKSPACE'], user, repo, str(num)))
     eq_(res, expected)
 
 
