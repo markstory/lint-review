@@ -16,7 +16,7 @@ def get_repo_path(user, repo, number, settings):
         raise KeyError("You have not defined the WORKSPACE config"
                 " option. This is required for lintreview to work.")
     path = path.strip('/')
-    return os.path.join(path, user, repo, number)
+    return os.path.join(path, user, repo, str(number))
 
 
 def clone(url, path):
