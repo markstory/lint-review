@@ -19,6 +19,7 @@ def test_get_repo_path():
     res = git.get_repo_path(user, repo, num, settings)
     expected = os.sep.join(
         (settings['WORKSPACE'], user, repo, num))
+    expected = os.path.realpath(expected)
     eq_(res, expected)
 
 
@@ -29,6 +30,7 @@ def test_get_repo_path_int():
     res = git.get_repo_path(user, repo, num, settings)
     expected = os.sep.join(
         (settings['WORKSPACE'], user, repo, str(num)))
+    expected = os.path.realpath(expected)
     eq_(res, expected)
 
 
@@ -44,8 +46,8 @@ def test_exists__no_git():
 def test_repo_clone_no_repo():
     path = settings['WORKSPACE'] + '/test_clone'
     git.clone(
-            'git://github.com/markstory/it will never work.git',
-            path)
+        'git://github.com/markstory/it will never work.git',
+        path)
 
 
 @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
@@ -54,8 +56,8 @@ def test_repo_operations():
 
     assert not(git.exists(path)), 'Directory should not exist.'
     res = git.clone(
-            'git://github.com/markstory/lint-review.git',
-            path)
+        'git://github.com/markstory/lint-review.git',
+        path)
     assert res, 'Cloned successfully.'
     assert git.exists(path), 'Cloned dir should be there.'
     git.destroy(path)
