@@ -22,11 +22,16 @@ def process_pull_request(user, repo, number, lintrc):
     lint tools against it.
     """
     log.info('Starting to process lint for %s, %s, %s', user, repo, number)
+    log.debug("lintrc contents '%s'", lintrc)
     review_config = ReviewConfig(lintrc)
+
+    if len(review_config.linters()) == 0:
+        log.info('No configured linters, skipping processing.')
+        return
 
     gh = github.get_client(config, user, repo)
     try:
-        log.debug('Loading pull request data from github.')
+        log.info('Loading pull request data from github.')
         pull_request = gh.pull_requests.get(number)
         head_repo = pull_request.head['repo']['git_url']
         pr_head = pull_request.head['sha']
@@ -44,7 +49,7 @@ def process_pull_request(user, repo, number, lintrc):
         git.checkout(target_path, pr_head)
 
         # Get changed files.
-        log.debug('Loading pull request patches from github.')
+        log.info('Loading pull request patches from github.')
         pull_request_patches = gh.pull_requests.list_files(number).all()
         changes = DiffCollection(pull_request_patches)
 
@@ -56,14 +61,12 @@ def process_pull_request(user, repo, number, lintrc):
 
         files_to_check = changes.get_files(append_base=target_path)
 
-        log.debug('Running lint tools on changed files.')
+        log.info('Running lint tools on changed files.')
         for tool in lint_tools:
             tool.process_files(files_to_check)
 
-        log.debug('Publishing review to github.')
-
         problems.limit_to(changes)
-        review.publish(problems)
+        review.publish(problems, changes)
 
         log.info('Completed lint processing for %s, %s, %s' % (
             user, repo, number))

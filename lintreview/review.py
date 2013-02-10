@@ -26,6 +26,8 @@ class Review(object):
         to new problems. Once the new unique problems
         are distilled new comments are published.
         """
+        log.info('Publishing review of %s to github.', self._number)
+
         self.load_comments()
         self.remove_existing(problems)
         self.publish_problems(problems, changes)
@@ -49,6 +51,7 @@ class Review(object):
                 filename,
                 int(comment.position),
                 comment.body)
+        log.debug("'%s' comments loaded", len(self._comments))
 
     def remove_existing(self, problems):
         """
@@ -69,7 +72,8 @@ class Review(object):
         parameter. changes is used to fetch the commit sha
         for the comments on a given file.
         """
-        log.debug("Publishing new comments for '%s'", self._number)
+        log.debug("Publishing (%s) new comments for '%s'",
+                  len(problems), self._number)
         for error in problems:
             commit = changes.all_changes(error[0])[0].commit
             comment = {
@@ -112,6 +116,7 @@ class Problems(object):
         filename = self._trim_filename(filename)
         error = (filename, line, text)
         if error not in self._items:
+            log.debug("Adding error '%s'", error)
             self._items.append(error)
 
     def add_many(self, problems):
