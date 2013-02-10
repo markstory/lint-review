@@ -31,7 +31,7 @@ class ReviewConfigTest(TestCase):
     def test_linter_listing_bad(self):
         config = ReviewConfig(bad_ini)
         res = config.linters()
-        eq_(res, None)
+        eq_(res, [])
 
     def test_linter_listing(self):
         config = ReviewConfig(sample_ini)
@@ -42,7 +42,7 @@ class ReviewConfigTest(TestCase):
     def test_linter_config_bad(self):
         config = ReviewConfig(bad_ini)
         res = config.linter_config('phpcs')
-        eq_(res, None)
+        eq_(res, [])
 
     def test_linter_config(self):
         config = ReviewConfig(sample_ini)
@@ -54,4 +54,4 @@ class ReviewConfigTest(TestCase):
         eq_(res, expected)
 
         res = config.linter_config('not there')
-        eq_(res, None)
+        eq_(res, [])
