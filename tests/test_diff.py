@@ -48,11 +48,14 @@ class TestDiffCollection(TestCase):
 
     def test_get_files__two_files__append_base(self):
         changes = DiffCollection(self.two_files)
-        result = changes.get_files(append_base="/some/path/")
         expected = [
             "/some/path/Console/Command/Task/AssetBuildTask.php",
             "/some/path/Test/test_files/View/Parse/single.ctp",
         ]
+        result = changes.get_files(append_base="/some/path/")
+        eq_(expected, result)
+
+        result = changes.get_files(append_base="/some/path")
         eq_(expected, result)
 
     def test_has_line_changed__no_file(self):
