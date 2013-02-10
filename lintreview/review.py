@@ -94,10 +94,12 @@ class Problems(object):
     Used by tool objects to collect problems, and by
     the Review objects to publish results.
     """
+    _base = None
 
     def __init__(self, base=None):
         self._items = []
-        self._base = base
+        if base:
+            self._base = base.rstrip('/') + '/'
 
     def _trim_filename(self, filename):
         if not self._base:

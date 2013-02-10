@@ -119,6 +119,13 @@ class TestProblems(TestCase):
         eq_(1, len(problems.all('file.py')))
         eq_(1, len(problems))
 
+    def test_add__with_base_path_no_trailing_slash(self):
+        problems = Problems('/some/path')
+        problems.add('/some/path/file.py', 10, 'Not good')
+        eq_([], problems.all('/some/path/file.py'))
+        eq_(1, len(problems.all('file.py')))
+        eq_(1, len(problems))
+
     def test_add_many(self):
         errors = [
             ('some/file.py', 10, 'Thing is wrong'),
