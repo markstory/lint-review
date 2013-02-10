@@ -28,8 +28,8 @@ def process_pull_request(user, repo, number, lintrc):
     try:
         log.debug('Loading pull request data from github.')
         pull_request = gh.pull_requests.get(number)
-        head_repo = pull_request['head']['repo']['git_url']
-        pr_head = pull_request['head']['sha']
+        head_repo = pull_request.head['repo']['git_url']
+        pr_head = pull_request.head['sha']
 
         # Clone repository
         log.info("Cloning repository '%s' into '%s'",

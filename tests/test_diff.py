@@ -2,6 +2,7 @@ import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
 from lintreview.diff import Diff
+from pygithub3.resources.base import Resource
 from unittest import TestCase
 from nose.tools import eq_
 
@@ -9,12 +10,14 @@ from nose.tools import eq_
 class TestDiffCollection(TestCase):
 
     # Single file, single commit
-    one_file = json.loads(
-        load_fixture('one_file_pull_request.json'))
+    one_file_json = load_fixture('one_file_pull_request.json')
 
     # Two files modified in the same commit
-    two_files = json.loads(
-        load_fixture('two_file_pull_request.json'))
+    two_files_json = load_fixture('two_file_pull_request.json')
+
+    def setUp(self):
+        self.one_file = Resource.loads(self.one_file_json)
+        self.two_files = Resource.loads(self.two_files_json)
 
     def test_create_one_element(self):
         changes = DiffCollection(self.one_file)
@@ -89,14 +92,12 @@ class TestDiffCollection(TestCase):
 
 class TestDiff(TestCase):
 
-    fixture = json.loads(
-        load_fixture('one_file_pull_request.json'))
-
-    two_files = json.loads(
-        load_fixture('two_file_pull_request.json'))
+    fixture_json = load_fixture('one_file_pull_request.json')
+    two_files_json = load_fixture('two_file_pull_request.json')
 
     def setUp(self):
-        self.diff = Diff(self.fixture[0])
+        res = Resource.loads(self.fixture_json)
+        self.diff = Diff(res[0])
 
     def test_properties(self):
         eq_("View/Helper/AssetCompressHelper.php", self.diff.filename)
@@ -112,7 +113,9 @@ class TestDiff(TestCase):
         self.assertTrue(self.diff.has_line_changed(464))
 
     def test_has_line_changed__not_find_deletes(self):
-        diff = Diff(self.two_files[0])
+        res = Resource.loads(self.two_files_json)
+        diff = Diff(res[0])
+
         self.assertTrue(diff.has_line_changed(117))
         # No unchanged lines.
         self.assertFalse(diff.has_line_changed(118))

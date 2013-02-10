@@ -1,4 +1,3 @@
-import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
@@ -8,6 +7,7 @@ from mock import Mock
 from mock import call
 from nose.tools import eq_
 from pygithub3 import Github
+from pygithub3.resources.base import Resource
 from requests.models import Response
 from unittest import TestCase
 
@@ -90,8 +90,7 @@ class TestReview(TestCase):
 
 class TestProblems(TestCase):
 
-    two_files = json.loads(
-        load_fixture('two_file_pull_request.json'))
+    two_files_json = load_fixture('two_file_pull_request.json')
 
     def setUp(self):
         self.problems = Problems()
@@ -131,7 +130,8 @@ class TestProblems(TestCase):
         eq_(errors, result)
 
     def test_limit_to__remove_problems(self):
-        changes = DiffCollection(self.two_files)
+        res = Resource.loads(self.two_files_json)
+        changes = DiffCollection(res)
 
         # Setup some fake problems.
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -164,8 +164,10 @@ class TestProblems(TestCase):
 
     def test_publish_problems(self):
         gh = Mock()
-        changes = DiffCollection(self.two_files)
+        res = Resource.loads(self.two_files_json)
+        changes = DiffCollection(res)
         problems = Problems()
+
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
             (filename_1, 117, 'Something bad'),

@@ -63,7 +63,7 @@ class Diff(object):
     """
     def __init__(self, data):
         self._data = data
-        self._parse_diff(data['patch'])
+        self._parse_diff(data.patch)
 
     def _parse_diff(self, patch):
         """
@@ -94,11 +94,11 @@ class Diff(object):
 
     @property
     def filename(self):
-        return self._data['filename']
+        return self._data.filename
 
     @property
     def commit(self):
-        return self._data['sha']
+        return self._data.sha
 
     def has_line_changed(self, line):
         """
