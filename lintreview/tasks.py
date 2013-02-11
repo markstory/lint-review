@@ -66,7 +66,7 @@ def process_pull_request(user, repo, number, lintrc):
             tool.process_files(files_to_check)
 
         problems.limit_to(changes)
-        review.publish(problems, changes)
+        review.publish(problems, pr_head)
 
         log.info('Completed lint processing for %s, %s, %s' % (
             user, repo, number))

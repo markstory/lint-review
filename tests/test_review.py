@@ -171,8 +171,6 @@ class TestProblems(TestCase):
 
     def test_publish_problems(self):
         gh = Mock()
-        res = Resource.loads(self.two_files_json)
-        changes = DiffCollection(res)
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -181,16 +179,17 @@ class TestProblems(TestCase):
             (filename_1, 119, 'Something bad'),
         )
         problems.add_many(errors)
+        sha = 'abc123'
 
         review = Review(gh, 3)
-        review.publish_problems(problems, changes)
+        review.publish_problems(problems, sha)
 
         assert gh.pull_requests.comments.create.called
         eq_(2, gh.pull_requests.comments.create.call_count)
         calls = gh.pull_requests.comments.create.call_args_list
 
         expected = call(3, {
-            'commit_id': changes.all_changes(filename_1)[0].commit,
+            'commit_id': sha,
             'path': errors[0][0],
             'position': errors[0][1],
             'body': errors[0][2]
@@ -198,7 +197,7 @@ class TestProblems(TestCase):
         eq_(calls[0], expected)
 
         expected = call(3, {
-            'commit_id': changes.all_changes(filename_1)[0].commit,
+            'commit_id': sha,
             'path': errors[1][0],
             'position': errors[1][1],
             'body': errors[1][2]
