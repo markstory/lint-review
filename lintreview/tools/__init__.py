@@ -65,6 +65,9 @@ class Tool(object):
         """
         return False
 
+    def __repr__(self):
+        return '<%sTool config: %s>' % (self.name, self.options)
+
 
 def run_command(
         command,
@@ -134,4 +137,5 @@ def run(config, problems, files):
 
     log.info('Running lint tools on changed files.')
     for tool in lint_tools:
+        log.debug('Runnning %s', tool)
         tool.process_files(files)
