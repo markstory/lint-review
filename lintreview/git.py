@@ -51,7 +51,7 @@ def clone_or_update(url, path, head):
     """
     log.info("Cloning/Updating repository '%s' into '%s'", url, path)
     if exists(path):
-        log.debug("Path '%s' does not exist, cloning new copy.", path)
+        log.debug("Path '%s' does exist, updating existing clone.", path)
         fetch(path, 'origin')
     else:
         log.debug('Repository does not exist, cloning a new one.')
@@ -86,7 +86,9 @@ def exists(path):
     returns false if either conditions is not true.
     """
     try:
-        os.stat(os.path.join(path, '.git'))
+        path = os.path.join(path, '.git')
+        log.debug("Checking for path '%s'", path)
+        os.stat(path)
         return True
     except:
         log.debug('Path does not exist, or .git dir was missing')
@@ -99,8 +101,11 @@ def _process(command, chdir=False):
     """
 
     if chdir:
+        log.debug('Changing directories to %s', chdir)
         cwd = os.getcwd()
         os.chdir(chdir)
+
+    log.debug('Running %s', command)
 
     process = subprocess.Popen(
         command,
