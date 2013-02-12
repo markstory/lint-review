@@ -4,3 +4,4 @@ dist/
 env/
 *.egg-info
 /settings.py
+tags
