@@ -101,7 +101,7 @@ def run_command(
     return data
 
 
-def factory(review, config):
+def factory(problems, config):
     """
     Consumes a lintreview.config.ReviewConfig object
     and creates a list of linting tools based on it.
@@ -114,9 +114,24 @@ def factory(review, config):
             log.debug("Attempting to import 'lintreview.tools.%s'", linter)
             mod = __import__('lintreview.tools.' + linter, fromlist='*')
             clazz = getattr(mod, classname)
-            tool = clazz(review, linter_config)
+            tool = clazz(problems, linter_config)
             tools.append(tool)
         except:
             log.error("Unable to import tool '%s'", linter)
             raise
     return tools
+
+
+def run(config, problems, files):
+    """
+    Create and run tools.
+
+    Uses the ReviewConfig, problemset, and list of files to iteratively
+    run each tool across the various files in a pull request.
+    """
+    log.debug('Generating tool list from repository configuration')
+    lint_tools = factory(problems, config)
+
+    log.info('Running lint tools on changed files.')
+    for tool in lint_tools:
+        tool.process_files(files)

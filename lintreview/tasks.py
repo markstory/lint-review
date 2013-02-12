@@ -48,14 +48,8 @@ def process_pull_request(user, repo, number, lintrc):
         problems = Problems(target_path)
         review = Review(gh, number)
 
-        log.debug('Generating tool list from repository configuration')
-        lint_tools = tools.factory(problems, review_config)
-
         files_to_check = changes.get_files(append_base=target_path)
-
-        log.info('Running lint tools on changed files.')
-        for tool in lint_tools:
-            tool.process_files(files_to_check)
+        tools.run(review_config, problems, files_to_check)
 
         problems.limit_to(changes)
         review.publish(problems, pr_head)

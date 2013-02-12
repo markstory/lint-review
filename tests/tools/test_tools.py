@@ -1,6 +1,7 @@
 import lintreview.tools as tools
 from lintreview.config import ReviewConfig
 from lintreview.review import Review
+from lintreview.review import Problems
 from nose.tools import eq_
 from nose.tools import raises
 
@@ -31,3 +32,11 @@ def test_factory_generates_tools():
     eq_(2, len(linters))
     assert isinstance(linters[0], tools.pep8.Pep8)
     assert isinstance(linters[1], tools.jshint.Jshint)
+
+
+def test_run():
+    config = ReviewConfig(sample_ini)
+    problems = Problems()
+    files = ['./tests/fixtures/pep8/has_errors.py']
+    tools.run(config, problems, files)
+    eq_(6, len(problems))
