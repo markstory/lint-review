@@ -39,6 +39,41 @@ def clone(url, path):
     return True
 
 
+def fetch(path, remote):
+    """
+    Run git fetch on a repository
+    """
+    command = ['git', 'fetch', remote]
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    return_code = process.wait()
+    if return_code:
+        log.error("Cloning '%s' repository failed", url)
+        log.error(process.stderr.read())
+        raise IOError("Unable to clone repository '%s'" % (url, ))
+    return True
+
+
+def clone_or_update(url, path, head):
+    """
+    Clone a new repository and checkout commit,
+    or update an existing clone to the new head
+    """
+    log.info("Cloning/Updating repository '%s' into '%s'", url, path)
+    if exists(path):
+        log.debug("Path '%s' does not exist, cloning new copy.", path)
+        fetch(path, 'origin')
+    else:
+        log.debug('Repository does not exist, cloning a new one.')
+        clone(url, path)
+    log.info("Checking out '%s'", head)
+    checkout(path, head)
+
+
 def checkout(path, ref):
     """
     Check out `ref` in the repo located on `path`
@@ -59,7 +94,7 @@ def checkout(path, ref):
     if return_code:
         log.error("Checking out '%s' failed", ref)
         log.error(process.stderr.read())
-        raise IOError("Unable to clone repository '%s'" % (url, ))
+        raise IOError("Unable to checkout '%s'" % (ref, ))
     return True
 
 

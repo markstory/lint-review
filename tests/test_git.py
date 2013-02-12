@@ -62,3 +62,16 @@ def test_repo_operations():
     assert git.exists(path), 'Cloned dir should be there.'
     git.destroy(path)
     assert not(git.exists(path)), 'Cloned dir should be gone.'
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+def test_clone_or_update():
+    path = settings['WORKSPACE'] + '/test_clone'
+
+    assert not(git.exists(path)), 'Directory should not exist.'
+    git.clone_or_update(
+        'git://github.com/markstory/lint-review.git',
+        path,
+        'e4f880c77e6b2c81c81cad5d45dd4e1c39b919a0')
+    assert git.exists(path)
+    git.destroy(path)
