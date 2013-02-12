@@ -95,7 +95,11 @@ tools. A sample `.lintrc` file would look like.
 ## Lint tools
 
 ### Python:
-* Flake8 (incomplete)
+
+#### Flake8
+
+Uses the [flake8](http://pypi.python.org/pypi/flake8) module to check code.
+You can use the `ignore` config option to disable error codes you wish to ignore.
 
 #### pep8
 
