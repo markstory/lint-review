@@ -35,7 +35,13 @@ class Phpcs(Tool):
         standard = 'PEAR'
         if self.options.get('standard'):
             standard = self.options['standard']
+        extension = 'php'
+        if self.options.get('extensions'):
+            extension = self.options['extensions']
         command += ['--standard=' + standard]
+        command += ['--extensions=' + extension]
+        if self.options.get('tab_width'):
+            command += ['--tab-width=' + self.options['tab_width']]
         command += files
         output = run_command(
             command,
