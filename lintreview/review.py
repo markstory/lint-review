@@ -28,9 +28,13 @@ class Review(object):
         """
         log.info('Publishing review of %s to github.', self._number)
 
-        self.load_comments()
-        self.remove_existing(problems)
-        self.publish_problems(problems, head_sha)
+        problem_count = len(problems)
+        if problem_count:
+            self.load_comments()
+            self.remove_existing(problems)
+            self.publish_problems(problems, head_sha)
+        else:
+            self.publish_ok_comment()
 
     def load_comments(self):
         """
@@ -83,6 +87,12 @@ class Review(object):
             }
             log.debug("Publishing comment '%s'", comment)
             self._gh.pull_requests.comments.create(self._number, comment)
+
+    def publish_ok_comment(self):
+        comment = {
+            'body': ':+1: No lint errors found.'
+        }
+        self._gh.issues.comments.create(self._number, comment)
 
 
 class Problems(object):

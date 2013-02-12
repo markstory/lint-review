@@ -203,3 +203,21 @@ class TestProblems(TestCase):
             'body': errors[1][2]
         })
         eq_(calls[1], expected)
+
+    def test_publish_ok_comment(self):
+        gh = Mock()
+        problems = Problems()
+        review = Review(gh, 3)
+
+        sha = 'abc123'
+        review.publish(problems, sha)
+
+        assert not(gh.pull_requests.comments.create.called)
+        assert gh.issues.comments.create.called
+
+        calls = gh.issues.comments.create.call_args_list
+
+        expected = call(3, {
+            'body': ':+1: No lint errors found.'
+        })
+        eq_(calls[0], expected)
