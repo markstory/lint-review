@@ -4,7 +4,6 @@ python:
 install: "pip install -r requirements.txt --use-mirrors"
 before_script:
   - npm install -g jshint
-  - pear install pear/PHP_CodeSniffer
   - cp settings.sample.py settings.py
   - export=LINTREVIEW_SETTINGS=./settings.py
 script: "nosetests"
