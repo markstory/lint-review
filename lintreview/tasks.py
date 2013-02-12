@@ -36,17 +36,9 @@ def process_pull_request(user, repo, number, lintrc):
         head_repo = pull_request.head['repo']['git_url']
         pr_head = pull_request.head['sha']
 
-        # Clone repository
-        log.info("Cloning repository '%s' into '%s'",
-                 head_repo, config['WORKSPACE'])
+        # Clone/Update repository
         target_path = git.get_repo_path(user, repo, number, config)
-        if not git.exists(target_path):
-            log.debug('Repo does not exist, cloning a new one.')
-            git.clone(head_repo, target_path)
-
-        # Check out new head
-        log.info("Checking out '%s'", pr_head)
-        git.checkout(target_path, pr_head)
+        git.clone_or_update(head_repo, target_path, pr_head)
 
         # Get changed files.
         log.info('Loading pull request patches from github.')
