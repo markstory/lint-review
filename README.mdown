@@ -10,7 +10,7 @@ Lint Review requires:
 * RabbitMQ (or any other Message broker that is compatible with Celery)
 * A publically addressable hostname/IP that either github or your github:enterprise
   can reach.
-* A github account with access to the repositories you want linted. This
+* A github account with read/write access to the repositories you want linted. This
   account is used to post comments on pull reviews.
 
 Lint Review runs as two processes. A web process handles accepting webhooks from github,
@@ -68,11 +68,13 @@ You can install webhooks by running the built-in command line tool:
     source env/bin/activate
     register_hooks mark awesome-stuff
 
-Will register webhooks for the given user & repository.
+Will register webhooks for the given user & repository. You can use the `--user` and `--password`
+options to provide the repository admin credentials if the user lint-review runs as does
+not have admin access to the repository.
 
 **Warning** The current web server name will be registered with github. Make sure
 it is configured properly configured before registering hooks, or you'll need to remove
-them and start over.
+any registered hooks and start over.
 
 ### .lintrc files
 
