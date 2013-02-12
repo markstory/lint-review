@@ -25,16 +25,9 @@ def clone(url, path):
     Clone a repository from `url` into `path`
     """
     command = ['git', 'clone', url, path]
-    process = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    return_code = process.wait()
+    return_code = _process(command)
     if return_code:
         log.error("Cloning '%s' repository failed", url)
-        log.error(process.stderr.read())
         raise IOError("Unable to clone repository '%s'" % (url, ))
     return True
 
@@ -44,17 +37,10 @@ def fetch(path, remote):
     Run git fetch on a repository
     """
     command = ['git', 'fetch', remote]
-    process = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    return_code = process.wait()
+    return_code = _process(command, chdir=path)
     if return_code:
-        log.error("Cloning '%s' repository failed", url)
-        log.error(process.stderr.read())
-        raise IOError("Unable to clone repository '%s'" % (url, ))
+        log.error("Updating '%s' failed.", path)
+        raise IOError("Unable to fetch new changes '%s'" % (path, ))
     return True
 
 
@@ -78,22 +64,10 @@ def checkout(path, ref):
     """
     Check out `ref` in the repo located on `path`
     """
-    cwd = os.getcwd()
-    os.chdir(path)
     command = ['git', 'checkout', ref]
-
-    process = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    return_code = process.wait()
-    os.chdir(cwd)
-
+    return_code = _process(command, chdir=path)
     if return_code:
         log.error("Checking out '%s' failed", ref)
-        log.error(process.stderr.read())
         raise IOError("Unable to checkout '%s'" % (ref, ))
     return True
 
@@ -117,3 +91,28 @@ def exists(path):
     except:
         log.debug('Path does not exist, or .git dir was missing')
         return False
+
+
+def _process(command, chdir=False):
+    """
+    Helper method for running processes related to git.
+    """
+
+    if chdir:
+        cwd = os.getcwd()
+        os.chdir(chdir)
+
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    return_code = process.wait()
+
+    if chdir:
+        os.chdir(cwd)
+    if return_code > 0:
+        log.error('STDERR output: %s', process.stderr.read())
+
+    return return_code
