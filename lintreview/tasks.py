@@ -9,6 +9,7 @@ from lintreview.config import ReviewConfig
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
+from lintreview.processor import Processor
 
 config = load_config()
 celery = Celery('lintreview.tasks')
@@ -40,30 +41,15 @@ def process_pull_request(user, repo, number, lintrc):
         target_path = git.get_repo_path(user, repo, number, config)
         git.clone_or_update(head_repo, target_path, pr_head)
 
-        changes = load_changes(gh, number)
-
-        problems = Problems(target_path)
-        review = Review(gh, number)
-
-        files_to_check = changes.get_files(append_base=target_path)
-        tools.run(review_config, problems, files_to_check)
-
-        problems.limit_to(changes)
-        review.publish(problems, pr_head)
+        processor = Processor(gh, number, pr_head, target_path)
+        processor.load_changes()
+        processor.run_tools(review_config)
+        processor.publish()
 
         log.info('Completed lint processing for %s, %s, %s' % (
             user, repo, number))
     except BaseException, e:
         log.exception(e)
-
-
-def load_changes(gh, number):
-    """
-    Creates a DiffCollection object for the changes in the pull request.
-    """
-    log.info('Loading pull request patches from github.')
-    pull_request_patches = gh.pull_requests.list_files(number).all()
-    return DiffCollection(pull_request_patches)
 
 
 @celery.task(ignore_result=True)
