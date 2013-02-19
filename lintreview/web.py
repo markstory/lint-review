@@ -43,13 +43,7 @@ def start_review():
         return Response(status=204)
 
     if action == "closed":
-        try:
-            log.info("Scheduling cleanup for %s/%s", user, repo)
-            cleanup_pull_request.delay(user, repo, pull_request['number'])
-        except:
-            log.error('Could not publish job to celery. '
-                      'Make sure its running.')
-        return Response(status=204)
+        return close_review(user, repo, pull_request)
 
     gh = get_client(app.config, user, repo)
     try:
@@ -66,4 +60,14 @@ def start_review():
     except:
         log.error('Could not publish job to celery. Make sure its running')
         return Response(status=500)
+    return Response(status=204)
+
+
+def close_review(user, repo, pull_request):
+    try:
+        log.info("Scheduling cleanup for %s/%s", user, repo)
+        cleanup_pull_request.delay(user, repo, pull_request['number'])
+    except:
+        log.error('Could not publish job to celery. '
+                  'Make sure its running.')
     return Response(status=204)

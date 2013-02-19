@@ -43,14 +43,53 @@ class WebTest(TestCase):
         data = {'herp': 'derp'}
         data = json.dumps(data)
         res = self.app.post('/review/start',
-                content_type='application/json', data=data)
+                            content_type='application/json', data=data)
         eq_(403, res.status_code)
 
-    @patch('lintreview.tasks.process_pull_request')
+    @patch('lintreview.web.process_pull_request')
     def test_start_request_unknown_action(self, task):
         data = json.dumps(test_data)
         res = self.app.post('/review/start',
-                content_type='application/json', data=data)
+                            content_type='application/json', data=data)
         eq_(204, res.status_code)
         eq_('', res.data)
         assert not(task.called)
+
+    @patch('lintreview.web.get_lintrc')
+    @patch('lintreview.web.process_pull_request')
+    def test_start_request_fail_on_lint_rc_file(self, task, lintrc):
+        lintrc.side_effect = IOError()
+
+        data = json.dumps(test_data)
+        self.app.post('/review/start',
+                      content_type='application/json', data=data)
+        assert not(task.called), 'No task should have been queued'
+
+    @patch('lintreview.web.cleanup_pull_request')
+    def test_start_review_closing_request(self, task):
+        close = test_data.copy()
+        close['action'] = 'closed'
+        data = json.dumps(close)
+
+        res = self.app.post('/review/start',
+                            content_type='application/json', data=data)
+        assert task.delay.called, 'Cleanup task should be scheduled'
+        eq_(204, res.status_code)
+        eq_('', res.data)
+
+    @patch('lintreview.web.get_lintrc')
+    @patch('lintreview.web.process_pull_request')
+    def test_start_review_schedule_job(self, task, lintrc):
+        opened = test_data.copy()
+        opened['action'] = 'opened'
+        data = json.dumps(opened)
+
+        lintrc.return_value = """
+[tools]
+linters = pep8"""
+
+        res = self.app.post('/review/start',
+                            content_type='application/json', data=data)
+        assert task.delay.called, 'Process request should be called'
+        eq_(204, res.status_code)
+        eq_('', res.data)
