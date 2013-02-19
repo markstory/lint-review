@@ -60,6 +60,7 @@ new jobs will be spun up and lint will be checked and commented on.
 Once you've configured and setup the server processes, it is time to setup some
 repositories to be checked.
 
+
 ### Installing github hooks
 
 Before Lint Review can check lint on a repository webhooks will need to be installed.
@@ -75,6 +76,7 @@ not have admin access to the repository.
 **Warning** The current web server name will be registered with github. Make sure
 it is configured properly configured before registering hooks, or you'll need to remove
 any registered hooks and start over.
+
 
 ### .lintrc files
 
