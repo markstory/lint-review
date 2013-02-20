@@ -1,4 +1,3 @@
-from flask import url_for
 from pygithub3 import Github
 import base64
 import logging
@@ -33,31 +32,24 @@ def get_lintrc(gh):
     return base64.b64decode(response.json['content'])
 
 
-def register_hook(app, user, repo, credentials=None):
+def register_hook(gh, hook_url, user, repo):
     """
     Register a new hook with a user's repository.
     """
-    log.info('Registering hooks for %s/%s' % (user, repo))
-    with app.app_context():
-        if credentials:
-            credentials['GITHUB_URL'] = app.config['GITHUB_URL']
-            gh = get_client(credentials, user, repo)
-        else:
-            gh = get_client(app.config, user, repo)
-        endpoint = url_for('start_review', _external=True)
+    log.info('Registering webhook for %s on %s/%s', hook_url, user, repo)
 
     hooks = gh.repos.hooks.list().all()
     found = False
     for hook in hooks:
         if hook.name != 'web':
             continue
-        if hook.config['url'] == endpoint:
+        if hook.config['url'] == hook_url:
             found = True
             break
 
     if found:
-        msg = "Found existing hook. "\
-            "No additional hooks registered."
+        msg = ("Found existing hook. "
+               "No additional hooks registered.")
         log.warn(msg)
         return
 
@@ -65,7 +57,7 @@ def register_hook(app, user, repo, credentials=None):
         'name': 'web',
         'active': True,
         'config': {
-            'url': endpoint,
+            'url': hook_url,
             'content_type': 'json',
         },
         'events': ['pull_request']
@@ -73,7 +65,7 @@ def register_hook(app, user, repo, credentials=None):
     try:
         gh.repos.hooks.create(hook, user=user, repo=repo)
     except:
-        message = "Unable to save webhook. You need to have administration"\
-            "privileges over the repository to add webhooks."
+        message = ("Unable to save webhook. You need to have administration"
+                   "privileges over the repository to add webhooks.")
         log.error(message)
     log.warn('Registered hook successfully')
