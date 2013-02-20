@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import argparse
 import lintreview.github as github
 
