@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = "lintreview"
@@ -18,8 +17,7 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'register_hooks = scripts.register_hooks:main',
-            'lintreview = scripts.lintreview:main',
+            'lintreview = lintreview.cli:main',
         ],
     },
     install_requires=requirements.readlines(),
