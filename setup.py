@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-PACKAGE_NAME = "Lint Review"
+PACKAGE_NAME = "lintreview"
 VERSION = "0.0.1"
 
 requirements = open('./requirements.txt', 'r')
