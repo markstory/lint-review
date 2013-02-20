@@ -1,8 +1,8 @@
 import lintreview.github as github
-import base64
 
 from pygithub3 import Github
 from nose.tools import eq_
+
 
 config = {
     'GITHUB_URL': 'https://api.github.com/',
@@ -21,3 +21,15 @@ def test_get_lintrc():
     lintrc = github.get_lintrc(gh)
     assert lintrc is not None, 'Should get something'
     assert isinstance(lintrc, str)
+
+
+def test_register_hook():
+    pass
+
+
+def test_register_hook__already_exists():
+    pass
+
+
+def test_register_hook__failed():
+    pass
