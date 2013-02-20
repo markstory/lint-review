@@ -19,6 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'register_hooks = scripts.register_hooks:main',
+            'lintreview = scripts.lintreview:main',
         ],
     },
     install_requires=requirements.readlines(),

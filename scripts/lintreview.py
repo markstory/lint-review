@@ -1,10 +1,29 @@
 #!/usr/bin/env python
 import argparse
+import lintreview.github as github
+
+from lintreview.web import app
 
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
+    args.func(args)
+
+
+def register_hook(args):
+    credentials = None
+    if args.login_user and args.login_pass:
+        credentials = {
+            'GITHUB_USER': args.login_user,
+            'GITHUB_PASSWORD': args.login_pass
+        }
+    github.register_hook(app, args.user, args.repo, credentials)
+
+
+def remove_hook(args):
+    print 'unregister'
+    print args
 
 
 def create_parser():
@@ -40,6 +59,7 @@ def create_parser():
                           help="The user or organization the repo is under.")
     register.add_argument('repo',
                           help="The repository to install a hook into.")
+    register.set_defaults(func=register_hook)
 
     desc = """
     Unregister webhooks for a given user & repo.
@@ -61,6 +81,7 @@ def create_parser():
                         help="The user or organization the repo is under.")
     remove.add_argument('repo',
                         help="The repository to remove a hook from.")
+    remove.set_defaults(func=remove_hook)
 
     return parser
 
