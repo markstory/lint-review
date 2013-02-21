@@ -67,11 +67,14 @@ Before Lint Review can check lint on a repository webhooks will need to be insta
 You can install webhooks by running the built-in command line tool:
 
     source env/bin/activate
-    register_hooks mark awesome-stuff
+    lintreview register mark awesome-stuff
 
 Will register webhooks for the given user & repository. You can use the `--user` and `--password`
 options to provide the repository admin credentials if the user lint-review runs as does
-not have admin access to the repository.
+not have admin access to the repository.  You can also use the cli tool to remove webhooks:
+
+    source env/bin/activate
+    lintreview unregister mark awesome-stuff
 
 **Warning** The current web server name will be registered with github. Make sure
 it is configured properly configured before registering hooks, or you'll need to remove
@@ -152,5 +155,4 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 ### CSS:
 * CSSHint (incomplete)
 
-## Contributing
 
