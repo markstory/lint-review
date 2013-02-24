@@ -1,8 +1,8 @@
 # Lint Review
 
 Lint Review helps automate a tedious part of code review - enforcing coding
-standards. By using the github API Lint Review runs a repositories configured linters
-and updates pull requests with inline comments where lint errors are introduced.
+standards. By using the github API Lint Review runs a repository's configured linters
+and updates pull requests with line comments where lint errors would be introduced.
 
 Lint Review requires:
 
@@ -14,7 +14,8 @@ Lint Review requires:
   account is used to post comments on pull reviews.
 
 Lint Review runs as two processes. A web process handles accepting webhooks from github,
-and a celery process handles cloning repositories and running lint tools.
+and a celery process handles cloning repositories and running lint tools. You'll also
+need to have rabbitmq-server running.
 
 
 ## Installation
@@ -33,7 +34,7 @@ Once the dependencies are installed you should configure the lint review applica
 ## Lint Review Configuration
 
 Lint review is configured through a settings file. Both the web app and celery process
-share the same configuration file so configuration is easier to manage and share.
+share the same configuration file, so configuration is easier to manage and share.
 
 * Copy the `settings.sample.py` to `settings.py`
 * Edit the required configuration options.
@@ -42,36 +43,24 @@ share the same configuration file so configuration is easier to manage and share
 
       export LINTREVIEW_SETTINGS='/path/to/settings.py'
 
-
-## Running Lint Review
-
-After setting up configuration you'll need to start up both processes:
-
-    source env/bin/activate
-    gunicorn -c settings.py lintreview.web:app
-    celery -A lintreview.tasks worker
-
-Now when ever a pull request is opened or updated for a connected repository
-new jobs will be spun up and lint will be checked and commented on.
-
-
 ## Setting up Repositories
 
-Once you've configured and setup the server processes, it is time to setup some
+Once you've configured the server processes, it is time to setup some
 repositories to be checked.
-
 
 ### Installing github hooks
 
-Before Lint Review can check lint on a repository webhooks will need to be installed.
-You can install webhooks by running the built-in command line tool:
+Before Lint Review can check pull requests on a repository webhooks will need
+to be installed.  You can install webhooks by running the built-in command line
+tool:
 
     source env/bin/activate
     lintreview register mark awesome-stuff
 
-Will register webhooks for the given user & repository. You can use the `--user` and `--password`
-options to provide the repository admin credentials if the user lint-review runs as does
-not have admin access to the repository.  You can also use the cli tool to remove webhooks:
+The above register webhooks for the given user & repository. You can use the
+`--user` and `--password` options to provide the repository admin credentials
+if the user lint-review runs as does not have admin access to the repository.
+You can also use the cli tool to remove webhooks:
 
     source env/bin/activate
     lintreview unregister mark awesome-stuff
@@ -101,6 +90,18 @@ The `[tools]` section is required, and `linters` should be a list of
 linters your project uses.  Each tool can also have a section suffixed with `_tool`
 to define additional configuration options for each tool. The documentation for
 each tool outlines which options are supported.
+
+
+## Running Lint Review
+
+After setting up configuration you'll need to start up both processes:
+
+    source env/bin/activate
+    gunicorn -c settings.py lintreview.web:app
+    celery -A lintreview.tasks worker
+
+Now when ever a pull request is opened or updated for a registered repository
+new jobs will be spun up and lint will be checked and commented on.
 
 
 ## Lint tools
