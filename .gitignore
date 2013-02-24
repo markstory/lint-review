@@ -1,7 +1,8 @@
 *.pyc
 build/
 dist/
-env/
 *.egg-info
-/settings.py
 tags
+/env
+/settings.py
+/workspace
