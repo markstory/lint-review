@@ -1,6 +1,7 @@
 import argparse
 import lintreview.github as github
 
+from flask import url_for
 from lintreview.web import app
 
 
@@ -17,7 +18,22 @@ def register_hook(args):
             'GITHUB_USER': args.login_user,
             'GITHUB_PASSWORD': args.login_pass
         }
-    github.register_hook(app, args.user, args.repo, credentials)
+
+    with app.app_context():
+        if credentials:
+            credentials['GITHUB_URL'] = app.config['GITHUB_URL']
+            gh = github.get_client(
+                credentials,
+                args.user,
+                args.repo)
+        else:
+            gh = github.get_client(
+                app.config,
+                args.user,
+                args.repo)
+        endpoint = url_for('start_review', _external=True)
+
+    github.register_hook(gh, endpoint, args.user, args.repo)
 
 
 def remove_hook(args):
