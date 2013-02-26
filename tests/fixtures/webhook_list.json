@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://api.github.com/repos/markstory/lint-test/hooks/706986",
+    "test_url": "https://api.github.com/repos/markstory/lint-test/hooks/706986/test",
+    "id": 706986,
+    "name": "web",
+    "active": true,
+    "events": [
+      "pull_request"
+    ],
+    "config": {
+      "url": "http://requestb.in/12at6v51",
+      "content_type": "json"
+    },
+    "last_response": {
+      "code": 200,
+      "status": "ok",
+      "message": "OK"
+    },
+    "updated_at": "2013-02-20T03:23:50Z",
+    "created_at": "2013-02-08T03:52:42Z"
+  }
+]
