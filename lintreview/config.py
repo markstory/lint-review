@@ -23,6 +23,9 @@ def load_config():
             config.get('LOGGING_CONFIG'),
             disable_existing_loggers=False)
 
+    if config.get('SSL_CA_BUNDLE'):
+        os.environ['REQUESTS_CA_BUNDLE'] = config.get('SSL_CA_BUNDLE')
+
     return config
 
 

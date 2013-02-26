@@ -43,3 +43,8 @@ GITHUB_URL = 'https://api.github.com/'
 # to fetch repositories and leave review comments.
 GITHUB_USER = 'octocat'
 GITHUB_PASSWORD = ''
+
+# Set to a path containing a custom CA bundle.
+# This is useful when you have github:enterprise on an internal
+# network with self-signed certificates.
+SSL_CA_BUNDLE = None
