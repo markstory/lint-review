@@ -9,7 +9,7 @@
       "pull_request"
     ],
     "config": {
-      "url": "http://requestb.in/12at6v51",
+      "url": "http://example.com/review/start",
       "content_type": "json"
     },
     "last_response": {
