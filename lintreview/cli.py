@@ -12,6 +12,13 @@ def main():
 
 
 def register_hook(args):
+    process_hook(github.register_hook, args)
+
+
+def process_hook(func, args):
+    """
+    Generic helper for processing hook commands.
+    """
     credentials = None
     if args.login_user and args.login_pass:
         credentials = {
@@ -32,13 +39,11 @@ def register_hook(args):
                 args.user,
                 args.repo)
         endpoint = url_for('start_review', _external=True)
-
-    github.register_hook(gh, endpoint, args.user, args.repo)
+    func(gh, endpoint, args.user, args.repo)
 
 
 def remove_hook(args):
-    print 'unregister'
-    print args
+    process_hook(github.unregister_hook, args)
 
 
 def create_parser():

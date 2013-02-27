@@ -37,7 +37,6 @@ def register_hook(gh, hook_url, user, repo):
     Register a new hook with a user's repository.
     """
     log.info('Registering webhook for %s on %s/%s', hook_url, user, repo)
-
     hooks = gh.repos.hooks.list().all()
     found = False
     for hook in hooks:
@@ -68,4 +67,32 @@ def register_hook(gh, hook_url, user, repo):
         message = ("Unable to save webhook. You need to have administration"
                    "privileges over the repository to add webhooks.")
         log.error(message)
-    log.warn('Registered hook successfully')
+    log.info('Registered hook successfully')
+
+
+def unregister_hook(gh, hook_url, user, repo):
+    """
+    Remove a registered webhook.
+    """
+    log.info('Removing webhook for %s on %s/%s', hook_url, user, repo)
+    hooks = gh.repos.hooks.list().all()
+    hook_id = False
+    for hook in hooks:
+        if hook.name != 'web':
+            continue
+        if hook.config['url'] == hook_url:
+            hook_id = hook.id
+            break
+
+    if not hook_id:
+        msg = ("Could not find hook for '%s'"
+               "No hooks removed.")
+        log.error(msg, hook_url)
+        return
+    try:
+        gh.repos.hooks.delete(hook_id, user=user, repo=repo)
+    except:
+        message = ("Unable to remove webhook. You will need admin "
+                   "privileges over the repository to remove webhooks.")
+        log.error(message)
+    log.info('Removed hook successfully')

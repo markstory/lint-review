@@ -69,5 +69,31 @@ def test_register_hook__already_exists(http):
     assert gh.repos.hooks.create.called is False, 'Create called'
 
 
-def test_register_hook__failed():
-    pass
+@patch('pygithub3.core.client.Client.get')
+def test_unregister_hook__success(http):
+    response = Response()
+    response._content = load_fixture('webhook_list.json')
+    http.return_value = response
+
+    gh = Github()
+    gh.repos.hooks.delete = Mock()
+    url = 'http://example.com/review/start'
+
+    github.unregister_hook(gh, url, 'mark', 'lint-test')
+
+    assert gh.repos.hooks.delete.called, 'Delete not called'
+
+
+@patch('pygithub3.core.client.Client.get')
+def test_unregister_hook__not_there(http):
+    response = Response()
+    response._content = "[]"
+    http.return_value = response
+
+    gh = Github()
+    gh.repos.hooks.delete = Mock()
+    url = 'http://example.com/review/start'
+
+    github.unregister_hook(gh, url, 'mark', 'lint-test')
+
+    assert gh.repos.hooks.delete.called is False, 'Delete called'
