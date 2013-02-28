@@ -20,8 +20,12 @@ LOGGING_CONFIG = './logging.ini'
 # Celery worker configuration #
 ###############################
 
+# AMQP or other celery broker URL.
+# amqp paths should be in the form of user:pass@host:port//virtualhost
 BROKER_URL = 'amqp://'
+
 CELERY_TASK_SERIALIZER = 'json'
+
 CELERY_ENABLE_UTC = True
 
 
