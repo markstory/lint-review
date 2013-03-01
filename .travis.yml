@@ -3,7 +3,6 @@ python:
  - "2.7"
 install: "pip install -r requirements.txt --use-mirrors"
 before_script:
-  - npm install -g jshint
   - cp settings.sample.py settings.py
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
