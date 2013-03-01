@@ -35,8 +35,9 @@ class Tool(object):
         for f in files:
             if self.match_file(f):
                 matching_files.append(f)
-        self.process_files(matching_files)
-        self.post_process(files)
+        if len(matching_files):
+            self.process_files(matching_files)
+            self.post_process(files)
 
     def match_file(self, filename):
         """

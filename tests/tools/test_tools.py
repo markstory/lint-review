@@ -14,6 +14,11 @@ config = ./jshint.json
 
 """
 
+simple_ini = """
+[tools]
+linters = pep8
+"""
+
 bad_ini = """
 [tools]
 linters = not there, bogus
@@ -35,7 +40,7 @@ def test_factory_generates_tools():
 
 
 def test_run():
-    config = ReviewConfig(sample_ini)
+    config = ReviewConfig(simple_ini)
     problems = Problems()
     files = ['./tests/fixtures/pep8/has_errors.py']
     tools.run(config, problems, files)
