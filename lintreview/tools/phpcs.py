@@ -1,5 +1,6 @@
 import logging
 import os
+import functools
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
@@ -46,23 +47,10 @@ class Phpcs(Tool):
         output = run_command(
             command,
             ignore_error=True)
-        try:
-            tree = ElementTree.fromstring(output)
-        except:
-            log.error("Unable to parse XML from phpcs")
-            raise
+        filename_converter = functools.partial(self._get_filename, files)
+        self._process_checkstyle(output, filename_converter)
 
-        # Parse checkstyle.xml
-        # This might be good for refactoring later.
-        for f in tree.iter('file'):
-            filename = self._get_filename(f.get('name'), files)
-            for err in f.iter('error'):
-                self.problems.add(
-                    filename,
-                    int(err.get('line')),
-                    err.get('message'))
-
-    def _get_filename(self, name, files):
+    def _get_filename(self, files, name):
         """
         PHPCS converts filenames to absolute paths.
         Convert each of the files in `files` to an

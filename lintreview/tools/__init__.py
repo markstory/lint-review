@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
 
@@ -52,19 +53,36 @@ class Tool(object):
         """
         return False
 
-    def process(self, filename):
-        """
-        Process a single file, and collect
-        tool output for each file
-        """
-        return False
-
     def post_process(self, files):
         """
         Do any post processing required by
         a tool.
         """
         return False
+
+    def _process_checkstyle(self, xml, filename_converter=None):
+        """
+        Process a checkstyle xml file.
+
+        Errors and warnings in the XML file will
+        be added to the problems object.
+        """
+        try:
+            tree = ElementTree.fromstring(xml)
+        except:
+            log.debug('Checkstyle XML - %s', xml)
+            log.error("Unable to parse checkstyleXML from %s.", self.name)
+            raise
+
+        for f in tree.iter('file'):
+            filename = f.get('name')
+            if filename_converter:
+                filename = filename_converter(filename)
+            for err in f.iter('error'):
+                self.problems.add(
+                    filename,
+                    int(err.get('line')),
+                    err.get('message'))
 
     def __repr__(self):
         return '<%sTool config: %s>' % (self.name, self.options)
