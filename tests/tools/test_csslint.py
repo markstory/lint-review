@@ -8,7 +8,7 @@ from nose.tools import eq_
 csslint_missing = not(in_path('csslint'))
 
 
-class Testcsslint(TestCase):
+class TestCsslint(TestCase):
 
     fixtures = [
         'tests/fixtures/csslint/no_errors.css',
