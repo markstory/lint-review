@@ -160,6 +160,15 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 
 
 ### CSS:
-* CSSHint (incomplete)
 
+#### CSSHint
+
+Uses the [csslint](http://csslint.net/) npm module to check javascript files. Before
+you can use this linter you'll need to install nodejs and the jshint npm package:
+
+    npm install -g jshint
+
+*Options*
+
+* `ignore` A comma separated list of rule ids to ignore.
 
