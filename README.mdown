@@ -168,6 +168,9 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 
     npm install -g jshint
 
+Both warnings and errors will be turned into code review comments. If you don't want 
+code review comments for specific rules, you should ignore them.
+
 *Options*
 
 * `ignore` A comma separated list of rule ids to ignore.
