@@ -1,5 +1,6 @@
 import argparse
 import lintreview.github as github
+import sys
 
 from flask import url_for
 from lintreview.web import app
@@ -12,7 +13,13 @@ def main():
 
 
 def register_hook(args):
-    process_hook(github.register_hook, args)
+    try:
+        process_hook(github.register_hook, args)
+        sys.stdout.write('Hook registered successfully')
+    except Exception as e:
+        sys.stderr.write('Hook registration failed')
+        sys.stderr.write(e.message)
+        sys.exit(2)
 
 
 def process_hook(func, args):
@@ -43,7 +50,13 @@ def process_hook(func, args):
 
 
 def remove_hook(args):
-    process_hook(github.unregister_hook, args)
+    try:
+        process_hook(github.unregister_hook, args)
+        sys.stdout.write('Hook removed successfully')
+    except Exception as e:
+        sys.stderr.write('Hook removal failed')
+        sys.stderr.write(e.message)
+        sys.exit(2)
 
 
 def create_parser():

@@ -94,6 +94,9 @@ def test_unregister_hook__not_there(http):
     gh.repos.hooks.delete = Mock()
     url = 'http://example.com/review/start'
 
-    github.unregister_hook(gh, url, 'mark', 'lint-test')
-
+    try:
+        github.unregister_hook(gh, url, 'mark', 'lint-test')
+        assert False, 'No exception'
+    except:
+        assert True, 'Exception raised'
     assert gh.repos.hooks.delete.called is False, 'Delete called'
