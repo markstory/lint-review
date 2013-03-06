@@ -86,9 +86,9 @@ def unregister_hook(gh, hook_url, user, repo):
             break
 
     if not hook_id:
-        msg = ("Could not find hook for '%s'"
-               "No hooks removed.")
-        log.error(msg, hook_url)
+        msg = ("Could not find hook for '%s' "
+               "No hooks removed.") % (hook_url)
+        log.error(msg)
         raise Exception(msg)
     try:
         gh.repos.hooks.delete(hook_id, user=user, repo=repo)
