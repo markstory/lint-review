@@ -1,4 +1,5 @@
 import logging
+import pkg_resources
 
 from flask import Flask, request, Response
 from lintreview.config import load_config
@@ -12,11 +13,12 @@ app = Flask("lintreview")
 app.config.update(config)
 
 log = logging.getLogger(__name__)
+version = pkg_resources.get_distribution('lintreview').version
 
 
 @app.route("/ping")
 def ping():
-    return "pong\n"
+    return "lint-review: %s pong\n" % (version,)
 
 
 @app.route("/review/start", methods=["POST"])
