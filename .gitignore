@@ -6,3 +6,4 @@ tags
 /env
 /settings.py
 /workspace
+/ca.crt
