@@ -19,14 +19,22 @@ LOGGING_CONFIG = './logging.ini'
 
 # Celery worker configuration #
 ###############################
+from kombu import Exchange, Queue
 
 # AMQP or other celery broker URL.
 # amqp paths should be in the form of user:pass@host:port//virtualhost
 BROKER_URL = 'amqp://'
 
+# Use json for serializing messages.
 CELERY_TASK_SERIALIZER = 'json'
 
+# Show dates and times in UTC
 CELERY_ENABLE_UTC = True
+
+# Set the queues that celery will use.
+CELERY_QUEUES = (
+    Queue('lint', Exchange('lintreview'), routing_key='linty'),
+)
 
 
 # General project configuration #
