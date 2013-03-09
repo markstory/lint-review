@@ -1,18 +1,16 @@
 import lintreview.github as github
 import lintreview.git as git
-import lintreview.tools as tools
 import logging
 
 from celery import Celery
 from lintreview.config import load_config
 from lintreview.config import ReviewConfig
-from lintreview.diff import DiffCollection
-from lintreview.review import Review
-from lintreview.review import Problems
 from lintreview.processor import Processor
 
 config = load_config()
 celery = Celery('lintreview.tasks')
+celery.config_from_object(config)
+
 log = logging.getLogger(__name__)
 
 
