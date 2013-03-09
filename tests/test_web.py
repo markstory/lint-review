@@ -33,7 +33,7 @@ class WebTest(TestCase):
 
     def test_ping(self):
         res = self.app.get('/ping')
-        eq_("pong\n", res.data)
+        eq_("lint-review: %s pong\n" % (web.version,), res.data)
 
     def test_start_request_no_get(self):
         res = self.app.get('/review/start')
