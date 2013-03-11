@@ -23,7 +23,7 @@ def test_get_repo_path():
     eq_(res, expected)
 
 
-def test_get_repo_path_int():
+def test_get_repo_path__int():
     user = 'markstory'
     repo = 'asset_compress'
     num = 4
@@ -33,6 +33,16 @@ def test_get_repo_path_int():
     expected = os.path.realpath(expected)
     eq_(res, expected)
 
+def test_get_repo_path__absoulte_dir():
+    user = 'markstory'
+    repo = 'asset_compress'
+    num = 4
+    settings['WORKSPACE'] = os.path.realpath(settings['WORKSPACE'])
+    res = git.get_repo_path(user, repo, num, settings)
+    expected = os.sep.join(
+        (settings['WORKSPACE'], user, repo, str(num)))
+    expected = os.path.realpath(expected)
+    eq_(res, expected)
 
 def test_exists__no_path():
     assert not git.exists(settings['WORKSPACE'] + '/herp/derp')
