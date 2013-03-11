@@ -93,3 +93,20 @@ linters = pep8"""
         assert task.delay.called, 'Process request should be called'
         eq_(204, res.status_code)
         eq_('', res.data)
+
+    @patch('lintreview.web.get_lintrc')
+    @patch('lintreview.web.process_pull_request')
+    def test_start_review_schedule_job__on_reopend(self, task, lintrc):
+        reopened = test_data.copy()
+        reopened['action'] = 'reopened'
+        data = json.dumps(reopened)
+
+        lintrc.return_value = """
+[tools]
+linters = pep8"""
+
+        res = self.app.post('/review/start',
+                            content_type='application/json', data=data)
+        assert task.delay.called, 'Process request should be called'
+        eq_(204, res.status_code)
+        eq_('', res.data)
