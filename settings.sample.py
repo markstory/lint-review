@@ -3,10 +3,10 @@
 
 # gunicorn config
 bind = '127.0.0.1:5000'
-error_logfile = 'lintreview.error.log'
-access_logfile = 'lintreview.access.log'
+errorlog = 'lintreview.error.log'
+accesslog = 'lintreview.access.log'
 debug = True
-log_level = 'debug'
+loglevel = 'debug'
 
 # Basic flask config
 DEBUG = True
