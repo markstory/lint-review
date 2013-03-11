@@ -2,6 +2,7 @@ import os
 import logging
 from lintreview.tools import Tool
 from lintreview.tools import run_command
+from lintreview.utils import in_path
 
 log = logging.getLogger(__name__)
 
@@ -12,10 +13,9 @@ class Flake8(Tool):
 
     def check_dependencies(self):
         """
-        The flake8 module is installed as a dependency
-        for lintreview, therefore it is always installed.
+        See if flake8 is on the PATH
         """
-        return True
+        return in_path('flake8')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
