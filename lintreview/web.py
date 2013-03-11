@@ -40,7 +40,7 @@ def start_review():
              "%s %s, (%s) from: %s",
              base_repo_url, number, action, head_repo_url)
 
-    if action not in ("opened", "synchronize", "closed"):
+    if action not in ("opened", "synchronize", "reopened", "closed"):
         log.info("Ignored '%s' action." % action)
         return Response(status=204)
 
