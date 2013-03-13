@@ -32,7 +32,6 @@ class Tool(object):
         pull request. Files will be filtered by
         match_file()
         """
-        log.info('Running %s', self.name)
         matching_files = []
         for f in files:
             if self.match_file(f):
@@ -41,6 +40,8 @@ class Tool(object):
             log.info('Running %s for %s', self.name, matching_files)
             self.process_files(matching_files)
             self.post_process(files)
+        else:
+            log.debug('No matching files for %s', self.name)
 
     def match_file(self, filename):
         """
