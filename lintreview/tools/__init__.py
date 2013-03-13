@@ -13,8 +13,9 @@ class Tool(object):
     name = ''
     options = {}
 
-    def __init__(self, problems, options=None):
+    def __init__(self, problems, options=None, base_path=None):
         self.problems = problems
+        self.base_path = base_path
         if options:
             self.options = options
 
@@ -89,6 +90,17 @@ class Tool(object):
                 add = lambda x: self.problems.add(filename, x, message)
                 map(add, lines)
 
+    def apply_base(self, value):
+        """
+        Used to convert config values into absolute paths. If `value`
+        does not have a os.sep it will be returned unaltered.
+        """
+        if os.sep not in value:
+            return value
+        if not self.base_path:
+            return value
+        return os.path.join(self.base_path, value)
+
     def __repr__(self):
         return '<%sTool config: %s>' % (self.name, self.options)
 
@@ -128,7 +140,7 @@ def run_command(
     return data
 
 
-def factory(problems, config):
+def factory(problems, config, base_path):
     """
     Consumes a lintreview.config.ReviewConfig object
     and creates a list of linting tools based on it.
@@ -141,7 +153,7 @@ def factory(problems, config):
             log.debug("Attempting to import 'lintreview.tools.%s'", linter)
             mod = __import__('lintreview.tools.' + linter, fromlist='*')
             clazz = getattr(mod, classname)
-            tool = clazz(problems, linter_config)
+            tool = clazz(problems, linter_config, base_path)
             tools.append(tool)
         except:
             log.error("Unable to import tool '%s'", linter)
@@ -149,7 +161,7 @@ def factory(problems, config):
     return tools
 
 
-def run(config, problems, files):
+def run(config, problems, files, base_path):
     """
     Create and run tools.
 
@@ -157,7 +169,7 @@ def run(config, problems, files):
     run each tool across the various files in a pull request.
     """
     log.debug('Generating tool list from repository configuration')
-    lint_tools = factory(problems, config)
+    lint_tools = factory(problems, config, base_path)
 
     log.info('Running lint tools on changed files.')
     for tool in lint_tools:

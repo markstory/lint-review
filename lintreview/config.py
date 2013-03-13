@@ -53,21 +53,3 @@ class ReviewConfig(object):
             return dict(config)
         except:
             return []
-
-    def base_path(self, path):
-        """
-        Set the base path for the review. This is used to scope
-        configuration that uses paths
-        """
-        self._base = path
-
-    def apply_base(self, value):
-        """
-        Used to convert config values into absolute paths. If `value`
-        does not have a os.sep it will be returned unaltered.
-        """
-        if os.sep not in value:
-            return value
-        if not self._base:
-            return value
-        return os.path.join(self._base, value)

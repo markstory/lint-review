@@ -71,3 +71,18 @@ class Testphpcs(TestCase):
         problems = self.problems.all(self.fixtures[1])
 
         eq_(8, len(problems), 'Changing standards changes error counts')
+
+    def test_create_command__with_path_based_standard(self):
+        config = {
+            'standard': 'test/CodeStandards'
+        }
+        tool = Phpcs(self.problems, config, '/some/path')
+        result = tool.create_command(['some/file.php'])
+        expected = [
+            'phpcs',
+            '--report=checkstyle',
+            '--standard=/some/path/test/CodeStandards',
+            '--extensions=php',
+            'some/file.php'
+        ]
+        eq_(result, expected)

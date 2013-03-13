@@ -85,3 +85,17 @@ class TestJshint(TestCase):
         problems = self.problems.all(self.fixtures[1])
 
         eq_(6, len(problems), 'Config file should lower error count.')
+
+    def test_create_command__with_path_based_standard(self):
+        config = {
+            'config': 'test/jshint.json'
+        }
+        tool = Jshint(self.problems, config, '/some/path')
+        result = tool.create_command(['some/file.js'])
+        expected = [
+            'jshint',
+            '--checkstyle-reporter',
+            '--config', '/some/path/test/jshint.json',
+            'some/file.js'
+        ]
+        eq_(result, expected)

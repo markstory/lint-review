@@ -29,12 +29,16 @@ class Jshint(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['jshint', '--checkstyle-reporter']
-        # Add config file if its present
-        if self.options.get('config'):
-            command += ['--config', self.options['config']]
-        command += files
+        command = self.create_command(files)
         output = run_command(
             command,
             ignore_error=True)
         self._process_checkstyle(output)
+
+    def create_command(self, files):
+        command = ['jshint', '--checkstyle-reporter']
+        # Add config file if its present
+        if self.options.get('config'):
+            command += ['--config', self.apply_base(self.options['config'])]
+        command += files
+        return command

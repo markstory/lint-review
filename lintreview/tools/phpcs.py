@@ -4,7 +4,6 @@ import functools
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
-from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
 
@@ -31,19 +30,7 @@ class Phpcs(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['phpcs', '--report=checkstyle']
-
-        standard = 'PEAR'
-        if self.options.get('standard'):
-            standard = self.options['standard']
-        extension = 'php'
-        if self.options.get('extensions'):
-            extension = self.options['extensions']
-        command += ['--standard=' + standard]
-        command += ['--extensions=' + extension]
-        if self.options.get('tab_width'):
-            command += ['--tab-width=' + self.options['tab_width']]
-        command += files
+        command = self.create_command(files)
         output = run_command(
             command,
             ignore_error=True)
@@ -62,3 +49,18 @@ class Phpcs(Tool):
                 return f
         msg = "Could not locate '%s' in changed files." % (name, )
         raise ValueError(msg)
+
+    def create_command(self, files):
+        command = ['phpcs', '--report=checkstyle']
+        standard = 'PEAR'
+        if self.options.get('standard'):
+            standard = self.apply_base(self.options['standard'])
+        extension = 'php'
+        if self.options.get('extensions'):
+            extension = self.options['extensions']
+        command += ['--standard=' + standard]
+        command += ['--extensions=' + extension]
+        if self.options.get('tab_width'):
+            command += ['--tab-width=' + self.options['tab_width']]
+        command += files
+        return command

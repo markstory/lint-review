@@ -30,7 +30,11 @@ class Processor(object):
             raise RuntimeError('No loaded changes, cannot run tools. '
                                'Try calling load_changes first.')
         files_to_check = self._changes.get_files(append_base=self._target_path)
-        tools.run(repo_config, self._problems, files_to_check)
+        tools.run(
+            repo_config,
+            self._problems,
+            files_to_check,
+            self._target_path)
 
     def publish(self):
         self._problems.limit_to(self._changes)
