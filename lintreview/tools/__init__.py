@@ -172,7 +172,7 @@ def run(config, problems, files, base_path):
     log.debug('Generating tool list from repository configuration')
     lint_tools = factory(problems, config, base_path)
 
-    log.info('Running lint tools on changed files.')
+    log.info('Running lint tools on %s', files)
     for tool in lint_tools:
         log.debug('Runnning %s', tool)
         tool.execute(files)
