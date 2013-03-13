@@ -57,4 +57,7 @@ def cleanup_pull_request(user, repo, number):
     """
     log.info("Cleaning up pull request '%s' for %s/%s", number, user, repo)
     path = git.get_repo_path(user, repo, number, config)
-    git.destroy(path)
+    try:
+        git.destroy(path)
+    except:
+        log.warning("Cannot cleanup '%s' path does not exist.", path)
