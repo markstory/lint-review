@@ -86,14 +86,14 @@ tools. A sample `.lintrc` file would look like.
     [tools]
     linters = pep8, jshint
 
-    [pep8_tool]
+    [tool_pep8]
     ignore = 'W2,E401'
 
-    [jshint_tool]
+    [tool_jshint]
     config = path/to/jshint.json
 
 The `[tools]` section is required, and `linters` should be a list of
-linters your project uses.  Each tool can also have a section suffixed with `_tool`
+linters your project uses.  Each tool can also have a section prefixed with `tool_`
 to define additional configuration options for each tool. The documentation for
 each tool outlines which options are supported.
 
