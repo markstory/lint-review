@@ -13,6 +13,7 @@ class TestJshint(TestCase):
     fixtures = [
         'tests/fixtures/jshint/no_errors.js',
         'tests/fixtures/jshint/has_errors.js',
+        'tests/fixtures/jshint/error_on_multiple_lines.js',
     ]
 
     def setUp(self):
@@ -50,6 +51,19 @@ class TestJshint(TestCase):
 
         expected = (fname, 7, "Implied global 'alert'")
         eq_(expected, problems[6])
+
+    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    def test_process_files__multiple_error(self):
+        self.tool.process_files([self.fixtures[2]])
+        problems = self.problems.all(self.fixtures[2])
+        eq_(6, len(problems))
+
+        fname = self.fixtures[2]
+        expected = (fname, 4, "Implied global 'go'")
+        eq_(expected, problems[3])
+
+        expected = (fname, 6, "Implied global 'go'")
+        eq_(expected, problems[4])
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files_two_files(self):

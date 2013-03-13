@@ -79,10 +79,14 @@ class Tool(object):
             if filename_converter:
                 filename = filename_converter(filename)
             for err in f.iter('error'):
-                self.problems.add(
-                    filename,
-                    int(err.get('line')),
-                    err.get('message'))
+                line = err.get('line')
+                message = err.get('message')
+                if ',' in line:
+                    lines = [int(x) for x in line.split(',')]
+                else:
+                    lines = [int(line)]
+                add = lambda x: self.problems.add(filename, x, message)
+                map(add, lines)
 
     def __repr__(self):
         return '<%sTool config: %s>' % (self.name, self.options)
