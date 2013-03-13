@@ -37,6 +37,7 @@ class Tool(object):
             if self.match_file(f):
                 matching_files.append(f)
         if len(matching_files):
+            log.info('Running %s for %s', self.name, matching_files)
             self.process_files(matching_files)
             self.post_process(files)
 
@@ -161,4 +162,4 @@ def run(config, problems, files):
     log.info('Running lint tools on changed files.')
     for tool in lint_tools:
         log.debug('Runnning %s', tool)
-        tool.process_files(files)
+        tool.execute(files)
