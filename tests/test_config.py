@@ -55,3 +55,11 @@ class ReviewConfigTest(TestCase):
 
         res = config.linter_config('not there')
         eq_(res, [])
+
+    def test_apply_base(self):
+        config = ReviewConfig(sample_ini)
+        config.base_path('/some/path')
+
+        result = config.apply_base('test/CodeStandards')
+        expected = '/some/path/test/CodeStandards'
+        eq_(result, expected)
