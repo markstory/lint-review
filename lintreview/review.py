@@ -86,7 +86,10 @@ class Review(object):
                 'body': error[2],
             }
             log.debug("Publishing comment '%s'", comment)
-            self._gh.pull_requests.comments.create(self._number, comment)
+            try:
+                self._gh.pull_requests.comments.create(self._number, comment)
+            except:
+                log.warn("Failed to save comment '%s'", comment)
 
     def publish_ok_comment(self):
         comment = {
