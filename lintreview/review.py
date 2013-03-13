@@ -92,9 +92,7 @@ class Review(object):
                 log.warn("Failed to save comment '%s'", comment)
 
     def publish_ok_comment(self):
-        comment = {
-            'body': ':+1: No lint errors found.'
-        }
+        comment = ':+1: No lint errors found.'
         self._gh.issues.comments.create(self._number, comment)
 
 

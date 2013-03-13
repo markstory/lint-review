@@ -217,7 +217,5 @@ class TestProblems(TestCase):
 
         calls = gh.issues.comments.create.call_args_list
 
-        expected = call(3, {
-            'body': ':+1: No lint errors found.'
-        })
+        expected = call(3, ':+1: No lint errors found.')
         eq_(calls[0], expected)
