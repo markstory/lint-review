@@ -49,6 +49,9 @@ share the same configuration file, so configuration is easier to manage and shar
 
       export LINTREVIEW_SETTINGS='/path/to/settings.py'
 
+* You can skip setting `LINTREVIEW_SETTINGS` if you're running lintreview from
+  a directory containing your `settings.py` file.
+
 ## Setting up Repositories
 
 Once you've configured the server processes, it is time to setup some
