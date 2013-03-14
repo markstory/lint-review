@@ -13,11 +13,15 @@ def load_config():
     """
     config = Config(os.getcwd())
 
-    if 'LINTREVIEW_SETTINGS' not in os.environ:
-        msg = ("Unable to load configuration file. Please set "
-               "LINTREVIEW_SETTINGS in your environment before running.")
+    if 'LINTREVIEW_SETTINGS' in os.environ:
+        config.from_envvar('LINTREVIEW_SETTINGS')
+    elif os.path.exists(os.path.join(os.getcwd(), 'settings.py')):
+        config.from_pyfile('settings.py')
+    else:
+        msg = ("Unable to load configuration file. Please "
+               "either create ./settings.py or set LINTREVIEW_SETTINGS "
+               "in your environment before running.")
         raise ImportError(msg)
-    config.from_envvar('LINTREVIEW_SETTINGS')
     if config.get('LOGGING_CONFIG'):
         logging.config.fileConfig(
             config.get('LOGGING_CONFIG'),
