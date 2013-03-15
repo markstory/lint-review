@@ -36,6 +36,6 @@ class Processor(object):
             files_to_check,
             self._target_path)
 
-    def publish(self):
+    def publish(self, wait_time=0):
         self._problems.limit_to(self._changes)
-        self._review.publish(self._problems, self._head)
+        self._review.publish(self._problems, self._head, wait_time)

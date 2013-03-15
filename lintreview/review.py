@@ -1,4 +1,5 @@
 import logging
+import time
 
 log = logging.getLogger(__name__)
 
@@ -18,13 +19,17 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems, head_sha):
+    def publish(self, problems, head_sha, wait_time=0):
         """
         Publish the review.
 
         Existing comments are loaded, and compared
         to new problems. Once the new unique problems
         are distilled new comments are published.
+
+        If a wait_time is provided the process will sleep before
+        sending additional requests. Sometimes github blocks many fast
+        requests.
         """
         log.info('Publishing review of %s to github.', self._number)
 
@@ -32,7 +37,7 @@ class Review(object):
         if problem_count:
             self.load_comments()
             self.remove_existing(problems)
-            self.publish_problems(problems, head_sha)
+            self.publish_problems(problems, head_sha, wait_time)
         else:
             self.publish_ok_comment()
 
@@ -70,7 +75,7 @@ class Review(object):
         for comment in self._comments:
             problems.remove(*comment)
 
-    def publish_problems(self, problems, head_commit):
+    def publish_problems(self, problems, head_commit, wait_time=0):
         """
         Publish the issues contains in the problems
         parameter. changes is used to fetch the commit sha
@@ -90,6 +95,9 @@ class Review(object):
                 self._gh.pull_requests.comments.create(self._number, comment)
             except:
                 log.warn("Failed to save comment '%s'", comment)
+            if wait_time > 0:
+                log.info("Sleeping %s before posting next comment", wait_time)
+                time.sleep(wait_time)
 
     def publish_ok_comment(self):
         comment = ':+1: No lint errors found.'

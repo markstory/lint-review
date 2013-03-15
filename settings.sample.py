@@ -60,3 +60,7 @@ GITHUB_PASSWORD = ''
 # This is useful when you have github:enterprise on an internal
 # network with self-signed certificates.
 SSL_CA_BUNDLE = None
+
+# Delay publishing multiple comments by this value.
+# Github:e will block lots of fast requests and return 500 errors.
+PUBLISH_THROTTLE = 0
