@@ -3,6 +3,7 @@ import os
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from lintreview.utils import npm_exists
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Jshint(Tool):
         """
         See if jshint is on the system path.
         """
-        return in_path('jshint')
+        return in_path('jshint') or npm_exists('jshint')
 
     def match_file(self, filename):
         base = os.path.basename(filename)

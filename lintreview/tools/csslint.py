@@ -3,6 +3,7 @@ import os
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from lintreview.utils import npm_exists
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Csslint(Tool):
         """
         See if csslint is on the system path.
         """
-        return in_path('csslint')
+        return in_path('csslint') or npm_exists('csslint')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
