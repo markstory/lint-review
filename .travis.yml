@@ -3,6 +3,8 @@ python:
  - "2.7"
 install: "pip install . --use-mirrors"
 before_script:
+  - npm install jshint
+  - npm install csslint
   - cp settings.sample.py settings.py
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
