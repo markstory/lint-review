@@ -155,7 +155,8 @@ to do style checks on PHP, Javascript and or CSS files.
 Uses the [jshint](http://jshint.org/) npm module to check javascript files. Before
 you can use this linter you'll need to install nodejs and the jshint npm package:
 
-    npm install -g jshint
+    cd path/tp/lintreview
+    npm install jshint
 
 *Options*
 
@@ -169,7 +170,8 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 Uses the [csslint](http://csslint.net/) npm module to check javascript files. Before
 you can use this linter you'll need to install nodejs and the jshint npm package:
 
-    npm install -g jshint
+    cd path/tp/lintreview
+    npm install csslint
 
 Both warnings and errors will be turned into code review comments. If you don't want 
 code review comments for specific rules, you should ignore them.
