@@ -30,9 +30,11 @@ class Csslint(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['csslint', '--format=checkstyle-xml']
+        cmd = 'csslint'
+        if npm_exists('csslint'):
+            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'csslint')
+        command = [cmd, '--format=checkstyle-xml']
 
-        # TODO add config options
         if self.options.get('ignore'):
             command += ['--ignore=' + self.options.get('ignore')]
         command += files

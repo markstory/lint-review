@@ -37,7 +37,10 @@ class Jshint(Tool):
         self._process_checkstyle(output)
 
     def create_command(self, files):
-        command = ['jshint', '--checkstyle-reporter']
+        cmd = 'jshint'
+        if npm_exists('jshint'):
+            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'jshint')
+        command = [cmd, '--checkstyle-reporter']
         # Add config file if its present
         if self.options.get('config'):
             command += ['--config', self.apply_base(self.options['config'])]

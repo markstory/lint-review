@@ -93,9 +93,9 @@ class TestJshint(TestCase):
         tool = Jshint(self.problems, config, '/some/path')
         result = tool.create_command(['some/file.js'])
         expected = [
-            'jshint',
             '--checkstyle-reporter',
             '--config', '/some/path/test/jshint.json',
             'some/file.js'
         ]
-        eq_(result, expected)
+        assert 'jshint' in result[0], 'jshint is in command name'
+        eq_(result[1:], expected)
