@@ -1,7 +1,10 @@
 import logging
 import time
+from collections import namedtuple
 
 log = logging.getLogger(__name__)
+
+Comment = namedtuple('Comment', ['filename', 'line', 'position', 'body'])
 
 
 class Review(object):
@@ -57,9 +60,9 @@ class Review(object):
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
             self._comments.add(
-                filename,
-                int(comment.position),
-                comment.body)
+                filename=filename,
+                position=int(comment.position),
+                body=comment.body)
         log.debug("'%s' comments loaded", len(self._comments))
 
     def remove_existing(self, problems):
@@ -86,9 +89,9 @@ class Review(object):
         for error in problems:
             comment = {
                 'commit_id': head_commit,
-                'path': error[0],
-                'position': error[1],
-                'body': error[2],
+                'path': error.filename,
+                'position': error.position,
+                'body': error.body,
             }
             log.debug("Publishing comment '%s'", comment)
             try:
@@ -128,7 +131,13 @@ class Problems(object):
             return filename
         return filename[len(self._base):]
 
-    def _map_line(self, filename, line):
+    def line_to_position(self, filename, line):
+        """
+        Convert the line number in the final file to a diff offset
+
+        Saving comments in github requires line offsets no line numbers.
+        Mapping line numbers makes saving possible.
+        """
         if not self._changes:
             return line
         diff_position = self._changes.line_position(filename, line)
@@ -146,8 +155,12 @@ class Problems(object):
         Add a problem to the review.
         """
         filename = self._trim_filename(filename)
-        line = self._map_line(filename, line)
-        error = (filename, line, text)
+        position = self.line_to_position(filename, line)
+        error = Comment(
+            filename=filename,
+            line=line,
+            position=position,
+            body=text)
         if error not in self._items:
             log.debug("Adding error '%s'", error)
             self._items.append(error)
@@ -165,19 +178,18 @@ class Problems(object):
         in the DiffCollection
         """
         self._items = [error for error in self._items
-                       if changes.has_line_changed(error[0], error[1])]
+                       if changes.has_line_changed(error.filename, error.line)]
 
-    def remove(self, filename, line, comment):
+    def remove(self, filename, position, body):
         """
         Remove a problem from the list based on the filename
-        line and comment.
+        position and comment.
         """
-        kill = (filename, line, comment)
-        try:
-            index = self._items.index(kill)
-            del self._items[index]
-        except:
-            pass
+        for i, item in enumerate(self._items):
+            if item.filename == filename and item.position == position and item.body == body:
+                found = i
+                break
+        del self._items[found]
 
     def __len__(self):
         return len(self._items)
