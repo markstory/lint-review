@@ -1,4 +1,5 @@
 from lintreview.review import Problems
+from lintreview.review import Comment
 from lintreview.tools.jshint import Jshint
 from lintreview.utils import in_path
 from unittest import TestCase
@@ -43,13 +44,13 @@ class TestJshint(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = (fname, 1, 'Missing name in function declaration.')
+        expected = Comment(fname, 1, 1,'Missing name in function declaration.')
         eq_(expected, problems[0])
 
-        expected = (fname, 6, "Use '===' to compare with 'null'.")
+        expected = Comment(fname, 6, 6, "Use '===' to compare with 'null'.")
         eq_(expected, problems[2])
 
-        expected = (fname, 7, "Implied global 'alert'")
+        expected = Comment(fname, 7, 7, "Implied global 'alert'")
         eq_(expected, problems[6])
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
@@ -59,10 +60,10 @@ class TestJshint(TestCase):
         eq_(6, len(problems))
 
         fname = self.fixtures[2]
-        expected = (fname, 4, "Implied global 'go'")
+        expected = Comment(fname, 4, 4, "Implied global 'go'")
         eq_(expected, problems[3])
 
-        expected = (fname, 6, "Implied global 'go'")
+        expected = Comment(fname, 6, 6, "Implied global 'go'")
         eq_(expected, problems[4])
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')

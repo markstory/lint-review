@@ -1,4 +1,5 @@
 from lintreview.review import Problems
+from lintreview.review import Comment
 from lintreview.tools.phpcs import Phpcs
 from lintreview.utils import in_path
 from unittest import TestCase
@@ -42,11 +43,12 @@ class Testphpcs(TestCase):
         eq_(12, len(problems))
 
         fname = self.fixtures[1]
-        expected = (fname, 7, 'PHP version not specified')
+        expected = Comment(fname, 7, 7, 'PHP version not specified')
         eq_(expected, problems[0])
 
-        expected = (
+        expected = Comment(
             fname,
+            16,
             16,
             "Line indented incorrectly; expected at least 4 spaces, found 1")
         eq_(expected, problems[11])

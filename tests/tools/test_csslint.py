@@ -1,4 +1,5 @@
 from lintreview.review import Problems
+from lintreview.review import Comment
 from lintreview.utils import in_path
 from lintreview.tools.csslint import Csslint
 from unittest import TestCase
@@ -42,11 +43,12 @@ class TestCsslint(TestCase):
         eq_(2, len(problems))
 
         fname = self.fixtures[1]
-        expected = (fname, 1, "Don't use IDs in selectors.")
+        expected = Comment(fname, 1, 1, "Don't use IDs in selectors.")
         eq_(expected, problems[0])
 
-        expected = (
+        expected = Comment(
             fname,
+            2,
             2,
             "Using width with padding can sometimes make elements larger than you expect.")
         eq_(expected, problems[1])

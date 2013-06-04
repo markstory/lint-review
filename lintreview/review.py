@@ -60,9 +60,10 @@ class Review(object):
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
             self._comments.add(
-                filename=filename,
-                position=int(comment.position),
-                body=comment.body)
+                filename,
+                None,
+                comment.body,
+                int(comment.position))
         log.debug("'%s' comments loaded", len(self._comments))
 
     def remove_existing(self, problems):
@@ -76,7 +77,7 @@ class Review(object):
         the comment there, and not a human.
         """
         for comment in self._comments:
-            problems.remove(*comment)
+            problems.remove(comment.filename, comment.position, comment.body)
 
     def publish_problems(self, problems, head_commit, wait_time=0):
         """
@@ -150,12 +151,13 @@ class Problems(object):
             return [error for error in self._items if error[0] == filename]
         return self._items
 
-    def add(self, filename, line, text):
+    def add(self, filename, line, text, position=None):
         """
         Add a problem to the review.
         """
         filename = self._trim_filename(filename)
-        position = self.line_to_position(filename, line)
+        if not position:
+            position = self.line_to_position(filename, line)
         error = Comment(
             filename=filename,
             line=line,
@@ -185,11 +187,13 @@ class Problems(object):
         Remove a problem from the list based on the filename
         position and comment.
         """
+        found = False
         for i, item in enumerate(self._items):
             if item.filename == filename and item.position == position and item.body == body:
                 found = i
                 break
-        del self._items[found]
+        if found is not False:
+            del self._items[found]
 
     def __len__(self):
         return len(self._items)

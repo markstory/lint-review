@@ -2,6 +2,7 @@ from . import load_fixture
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
+from lintreview.review import Comment
 from mock import patch
 from mock import Mock
 from mock import call
@@ -44,16 +45,16 @@ class TestReview(TestCase):
         filename = "Routing/Filter/AssetCompressor.php"
         res = review.comments(filename)
         eq_(1, len(res))
-        expected = (filename, 87, "A pithy remark")
+        expected = Comment(filename, None, 87, "A pithy remark")
         eq_(expected, res[0])
 
         filename = "View/Helper/AssetCompressHelper.php"
         res = review.comments(filename)
         eq_(2, len(res))
-        expected = (filename, 40, "Some witty comment.")
+        expected = Comment(filename, None, 40, "Some witty comment.")
         eq_(expected, res[0])
 
-        expected = (filename, 89,  "Not such a good comment")
+        expected = Comment(filename, None, 89, "Not such a good comment")
         eq_(expected, res[1])
 
     @patch('pygithub3.core.client.Client.get')
@@ -79,12 +80,12 @@ class TestReview(TestCase):
 
         res = problems.all(filename_1)
         eq_(1, len(res))
-        expected = (filename_1, 87, 'Something different')
+        expected = Comment(filename_1, 87, 87, 'Something different')
         eq_(res[0], expected)
 
         res = problems.all(filename_2)
         eq_(1, len(res))
-        expected = (filename_2, 88, 'I <3 it')
+        expected = Comment(filename_2, 88, 88, 'I <3 it')
         eq_(res[0], expected)
 
 
@@ -139,7 +140,7 @@ class TestProblems(TestCase):
         eq_(1, len(problems))
 
         result = problems.all('somefile.py')
-        eq_(changes.line_position('somefile.py', line_num), result[0][1],
+        eq_(changes.line_position('somefile.py', line_num), result[0].position,
             'Offset should be transformed to match value in changes')
 
     def test_add_many(self):
@@ -150,7 +151,11 @@ class TestProblems(TestCase):
         self.problems.add_many(errors)
         result = self.problems.all('some/file.py')
         eq_(2, len(result))
-        eq_(errors, result)
+        expected = [
+            Comment(errors[0][0], errors[0][1], errors[0][1], errors[0][2]),
+            Comment(errors[1][0], errors[1][1], errors[1][1], errors[1][2]),
+        ]
+        eq_(expected, result)
 
     def test_limit_to__remove_problems(self):
         res = Resource.loads(self.two_files_json)
@@ -182,7 +187,7 @@ class TestProblems(TestCase):
 
         result = self.problems.all(filename_2)
         eq_(1, len(result))
-        expected = [(filename_2, 3, 'Something bad')]
+        expected = [Comment(filename_2, 3, 3, 'Something bad')]
         eq_(result, expected)
 
     def test_publish_problems(self):

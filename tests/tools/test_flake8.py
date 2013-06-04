@@ -1,4 +1,5 @@
 from lintreview.review import Problems
+from lintreview.review import Comment
 from lintreview.tools.flake8 import Flake8
 from unittest import TestCase
 from nose.tools import eq_
@@ -32,10 +33,10 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = (fname, 2, "W402 're' imported but unused")
+        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
         eq_(expected, problems[0])
 
-        expected = (fname, 11, "W603 '<>' is deprecated, use '!='")
+        expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[7])
 
     def test_process_files_two_files(self):
@@ -47,10 +48,10 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = (fname, 2, "W402 're' imported but unused")
+        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
         eq_(expected, problems[0])
 
-        expected = (fname, 11, "W603 '<>' is deprecated, use '!='")
+        expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[7])
 
     def test_config_options_and_process_file(self):
