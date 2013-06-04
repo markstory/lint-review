@@ -24,6 +24,7 @@ class Processor(object):
         files = self._client.pull_requests.list_files(self._number)
         pull_request_patches = files.all()
         self._changes = DiffCollection(pull_request_patches)
+        self._problems.set_changes(self._changes)
 
     def run_tools(self, repo_config):
         if not self._changes:

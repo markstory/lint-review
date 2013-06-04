@@ -120,6 +120,9 @@ class Problems(object):
         if base:
             self._base = base.rstrip('/') + '/'
 
+    def set_changes(self, changes):
+        self._changes = changes
+
     def _trim_filename(self, filename):
         if not self._base:
             return filename
