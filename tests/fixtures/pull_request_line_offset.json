@@ -1,0 +1,14 @@
+[
+  {
+    "sha": "0e0bda94b88fd38b0b8d6d32015da556b64a1a69",
+    "filename": "somefile.py",
+    "status": "modified",
+    "additions": 22,
+    "deletions": 13,
+    "changes": 35,
+    "blob_url": "https://github.com/markstory/lint-test/blob/3a023def932f8a437ea593787d420139238e1de5/somefile.py",
+    "raw_url": "https://github.com/markstory/lint-test/raw/3a023def932f8a437ea593787d420139238e1de5/somefile.py",
+    "contents_url": "https://api.github.com/repos/markstory/lint-test/contents/somefile.py?ref=3a023def932f8a437ea593787d420139238e1de5",
+    "patch": "@@ -5,28 +5,37 @@\n log = logging.getLogger(__name__)\n \n \n-def run_command(\n-        command,\n-        split=False,\n-        ignore_error=False,\n-        include_errors=True):\n+def fixed_xor(left, right):\n     \"\"\"\n-    Execute subprocesses.\n+    Returns the hex encoded XOR sum of two\n+    equal length blocks of data.\n+\n+    >>> one = '1c0111001f010100061a024b53535009181c'.decode('hex')\n+    >>> two = '686974207468652062756c6c277320657965'.decode('hex')\n+    >>> fixed_xor(one, two)\n+    '746865206b696420646f6e277420706c6179'\n     \"\"\"\n-    log.debug('Running %s', ' '.join(command))\n+    out = ''\n+    for i in range(0, len(left)):\n+        lft = ord(left[i])\n+        rght = ord(right[i])\n+        out += chr(lft ^ rght)\n+    return out.encode('hex')\n \n-    env = os.environ.copy()\n \n-    if include_errors:\n-        error_pipe = subprocess.STDOUT\n-    else:\n-        error_pipe = subprocess.PIPE\n+def run_command(command, split=False, ignore_error=False, include_errors=True):\n+    \"\"\"\n+    Execute subprocesses.\n+    \"\"\"\n+    env = {}\n+    for key, value in os.environ.iteritems():\n+        env[key] = value;\n \n     process = subprocess.Popen(\n         command,\n         stdin=subprocess.PIPE,\n         stdout=subprocess.PIPE,\n-        stderr=error_pipe,\n+        stderr=subprocess.PIPE,\n         shell=False,\n         universal_newlines=True,\n         env=env)"
+  }
+]

@@ -80,8 +80,9 @@ class Diff(object):
 
         line_num = 1
         additions = []
+        line_map = {}
         lines = patch.split("\n")
-        for line in lines:
+        for i, line in enumerate(lines):
             # Set the line_num at the start of the hunk
             match = hunk_pattern.match(line)
             if match:
@@ -93,7 +94,9 @@ class Diff(object):
                 line_num += 1
             if line.startswith('+'):
                 additions.append(line_num)
+                line_map[line_num] = i
         self._additions = set(additions)
+        self._indexes = line_map
 
     @property
     def filename(self):
@@ -109,3 +112,10 @@ class Diff(object):
         diffs
         """
         return line in self._additions
+
+    def line_position(self, line_number):
+        """
+        Find the line number position given a line number in the new
+        file content.
+        """
+        return self._indexes[line_number]

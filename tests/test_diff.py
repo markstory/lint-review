@@ -1,4 +1,3 @@
-import json
 from . import load_fixture
 from lintreview.diff import DiffCollection
 from lintreview.diff import Diff
@@ -98,6 +97,9 @@ class TestDiff(TestCase):
     fixture_json = load_fixture('one_file_pull_request.json')
     two_files_json = load_fixture('two_file_pull_request.json')
 
+    # Block offset so lines don't match offsets
+    block_offset = load_fixture('pull_request_line_offset.json')
+
     def setUp(self):
         res = Resource.loads(self.fixture_json)
         self.diff = Diff(res[0])
@@ -125,3 +127,11 @@ class TestDiff(TestCase):
         self.assertTrue(diff.has_line_changed(119))
         # No deleted lines.
         self.assertFalse(diff.has_line_changed(148))
+
+    def test_has_line_changed__blocks_offset(self):
+        res = Resource.loads(self.block_offset)
+        diff = Diff(res[0])
+
+        self.assertTrue(diff.has_line_changed(32))
+        eq_(26, diff.line_position(23))
+        eq_(40, diff.line_position(32))
