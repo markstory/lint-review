@@ -114,8 +114,9 @@ class Problems(object):
     """
     _base = None
 
-    def __init__(self, base=None):
+    def __init__(self, base=None, changes=None):
         self._items = []
+        self._changes = changes
         if base:
             self._base = base.rstrip('/') + '/'
 
@@ -123,6 +124,14 @@ class Problems(object):
         if not self._base:
             return filename
         return filename[len(self._base):]
+
+    def _map_line(self, filename, line):
+        if not self._changes:
+            return line
+        diff_position = self._changes.line_position(filename, line)
+        if diff_position:
+            return diff_position
+        return line
 
     def all(self, filename=None):
         if filename:
@@ -134,6 +143,7 @@ class Problems(object):
         Add a problem to the review.
         """
         filename = self._trim_filename(filename)
+        line = self._map_line(filename, line)
         error = (filename, line, text)
         if error not in self._items:
             log.debug("Adding error '%s'", error)

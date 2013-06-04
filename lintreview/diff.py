@@ -57,6 +57,15 @@ class DiffCollection(object):
                    if change.has_line_changed(line)]
         return len(changed) > 0
 
+    def line_position(self, filename, line):
+        """
+        Find the line position for a given file + line
+        """
+        changes = self.all_changes(filename)
+        if len(changes):
+            return changes[0].line_position(line)
+        return None
+
 
 class Diff(object):
     """
@@ -118,4 +127,6 @@ class Diff(object):
         Find the line number position given a line number in the new
         file content.
         """
-        return self._indexes[line_number]
+        if line_number in self._indexes:
+            return self._indexes[line_number]
+        return None

@@ -92,6 +92,9 @@ class TestProblems(TestCase):
 
     two_files_json = load_fixture('two_file_pull_request.json')
 
+    # Block offset so lines don't match offsets
+    block_offset = load_fixture('pull_request_line_offset.json')
+
     def setUp(self):
         self.problems = Problems()
 
@@ -125,6 +128,19 @@ class TestProblems(TestCase):
         eq_([], problems.all('/some/path/file.py'))
         eq_(1, len(problems.all('file.py')))
         eq_(1, len(problems))
+
+    def test_add__with_diff_containing_block_offset(self):
+        res = Resource.loads(self.block_offset)
+        changes = DiffCollection(res)
+
+        problems = Problems(changes=changes)
+        line_num = 32
+        problems.add('somefile.py', line_num, 'Not good')
+        eq_(1, len(problems))
+
+        result = problems.all('somefile.py')
+        eq_(changes.line_position('somefile.py', line_num), result[0][1],
+            'Offset should be transformed to match value in changes')
 
     def test_add_many(self):
         errors = [
