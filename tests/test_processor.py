@@ -47,7 +47,7 @@ class ProcessorTest(TestCase):
 
         subject.publish()
         self.assertTrue(
-            subject._problems.limit_to.called,
+            subject._problems.limit_to_changes.called,
             'Problems should be filtered.')
         self.assertTrue(
             subject._review.publish.called,

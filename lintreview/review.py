@@ -141,10 +141,7 @@ class Problems(object):
         """
         if not self._changes:
             return line
-        diff_position = self._changes.line_position(filename, line)
-        if diff_position:
-            return diff_position
-        return line
+        return self._changes.line_position(filename, line)
 
     def all(self, filename=None):
         if filename:
@@ -154,6 +151,9 @@ class Problems(object):
     def add(self, filename, line, text, position=None):
         """
         Add a problem to the review.
+        
+        If position is not supplied the diff collection will be scanned
+        and the line numbers diff offset will be fetched from there.
         """
         filename = self._trim_filename(filename)
         if not position:
@@ -174,13 +174,13 @@ class Problems(object):
         for p in problems:
             self.add(*p)
 
-    def limit_to(self, changes):
+    def limit_to_changes(self):
         """
         Limit the contained problems to only those changed
         in the DiffCollection
         """
         self._items = [error for error in self._items
-                       if changes.has_line_changed(error.filename, error.line)]
+                       if self._changes.has_line_changed(error.filename, error.line)]
 
     def remove(self, filename, position, body):
         """

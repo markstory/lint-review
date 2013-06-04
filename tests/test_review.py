@@ -157,7 +157,7 @@ class TestProblems(TestCase):
         ]
         eq_(expected, result)
 
-    def test_limit_to__remove_problems(self):
+    def test_limit_to_changes__remove_problems(self):
         res = Resource.loads(self.two_files_json)
         changes = DiffCollection(res)
 
@@ -176,7 +176,8 @@ class TestProblems(TestCase):
             (filename_2, 7, 'Filtered out'),
         )
         self.problems.add_many(errors)
-        self.problems.limit_to(changes)
+        self.problems.set_changes(changes)
+        self.problems.limit_to_changes()
 
         result = self.problems.all(filename_1)
         eq_(2, len(result))
