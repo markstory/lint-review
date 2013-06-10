@@ -1,6 +1,8 @@
 import re
 import os
+import logging
 
+log = logging.getLogger(__name__)
 
 class DiffCollection(object):
     """
@@ -14,8 +16,11 @@ class DiffCollection(object):
             self._add(change)
 
     def _add(self, content):
-        change = Diff(content)
-        self._changes.append(change)
+        try:
+            change = Diff(content)
+            self._changes.append(change)
+        except:
+            log.warn('Could not process diff %s', content)
 
     def __len__(self):
         return len(self._changes)
