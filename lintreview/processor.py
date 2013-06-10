@@ -26,6 +26,9 @@ class Processor(object):
         self._changes = DiffCollection(pull_request_patches)
         self._problems.set_changes(self._changes)
 
+    def fail_review(self, text):
+        self._review.failed(text)
+
     def run_tools(self, repo_config):
         if not self._changes:
             raise RuntimeError('No loaded changes, cannot run tools. '

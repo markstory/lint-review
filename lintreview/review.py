@@ -18,6 +18,15 @@ class Review(object):
         self._gh = gh
         self._comments = Problems()
         self._number = number
+        self._failed = False
+
+    def failed(self, text):
+        """
+        Mark a review as totally failed.
+
+        The provided text will be the only comment published.
+        """
+        self._failed = text
 
     def comments(self, filename):
         return self._comments.all(filename)
@@ -41,6 +50,8 @@ class Review(object):
             self.load_comments()
             self.remove_existing(problems)
             self.publish_problems(problems, head_sha, wait_time)
+        elif self._failed:
+            self.publish_failed()
         else:
             self.publish_ok_comment()
 
@@ -106,6 +117,9 @@ class Review(object):
     def publish_ok_comment(self):
         comment = ':+1: No lint errors found.'
         self._gh.issues.comments.create(self._number, comment)
+
+    def publish_failed(self):
+        self._gh.issues.comments.create(self._number, self._failed)
 
 
 class Problems(object):

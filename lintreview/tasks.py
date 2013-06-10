@@ -40,8 +40,13 @@ def process_pull_request(user, repo, number, lintrc):
         git.clone_or_update(head_repo, target_path, pr_head)
 
         processor = Processor(gh, number, pr_head, target_path)
-        processor.load_changes()
-        processor.run_tools(review_config)
+        try:
+            processor.load_changes()
+            processor.run_tools(review_config)
+        except Exception as e:
+            processor.fail_review('Unable to review pull request.')
+            log.warn('Unable to review pull request: %s.', e)
+
         processor.publish(config.get('PUBLISH_THROTTLE', 0))
 
         log.info('Completed lint processing for %s, %s, %s' % (
