@@ -19,12 +19,14 @@ class DiffCollection(object):
         try:
             self._add_diff(content)
         except:
-            log.warn('Could not process diff %s', content)
+            log.warn('Could not process diff %s', str(content))
 
     def _add_diff(self, content):
-        if self._has_additions(content):
-            change = Diff(content)
-            self._changes.append(change)
+        if not self._has_additions(content):
+            log.debug('Skipping %s as it has no additions', content.filename)
+            return
+        change = Diff(content)
+        self._changes.append(change)
 
     def _has_additions(self, content):
         """

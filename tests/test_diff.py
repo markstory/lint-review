@@ -23,6 +23,8 @@ class TestDiffCollection(TestCase):
     def setUp(self):
         self.one_file = Resource.loads(self.one_file_json)
         self.two_files = Resource.loads(self.two_files_json)
+        self.renamed_files = Resource.loads(self.renamed_files_json)
+        self.removed_files = Resource.loads(self.renamed_files_json)
 
     def test_create_one_element(self):
         changes = DiffCollection(self.one_file)
@@ -88,12 +90,12 @@ class TestDiffCollection(TestCase):
         self.assertFalse(changes.has_line_changed(filename, 145))
 
     def test_parsing_diffs_removed__file(self):
-        changes = DiffCollection(self.removed_files_json)
+        changes = DiffCollection(self.removed_files)
         eq_(0, len(changes), 'Should be no files as the file was removed')
         eq_([], changes.get_files())
 
     def test_parsing_diffs__renamed_file_and_blob(self):
-        changes = DiffCollection(self.renamed_files_json)
+        changes = DiffCollection(self.renamed_files)
         eq_(0, len(changes), 'Should be no files as a blob and a rename happened')
         eq_([], changes.get_files())
 
