@@ -1,0 +1,13 @@
+[
+  {
+    "status": "removed",
+    "changes": 0,
+    "deletions": 0,
+    "additions": 0,
+    "filename": "Test/test_files/View/Parse/single.ctp",
+    "contents_url": "https://api.github.com/repos/markstory/asset_compress/contents/Test/test_files/View/Parse/single.ctp?ref=22f9eeb51f7757055ac20b326bd3eddad6f98a3b",
+    "raw_url": "https://github.com/markstory/asset_compress/raw/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Test/test_files/View/Parse/single.ctp",
+    "sha": "fd131c525929d2515b9b5f9e65c310e4ba183975",
+    "blob_url": "https://github.com/markstory/asset_compress/blob/22f9eeb51f7757055ac20b326bd3eddad6f98a3b/Test/test_files/View/Parse/single.ctp"
+  }
+]
