@@ -90,10 +90,12 @@ class TestDiffCollection(TestCase):
     def test_parsing_diffs_removed__file(self):
         changes = DiffCollection(self.removed_files_json)
         eq_(0, len(changes), 'Should be no files as the file was removed')
+        eq_([], changes.get_files())
 
     def test_parsing_diffs__renamed_file_and_blob(self):
         changes = DiffCollection(self.renamed_files_json)
         eq_(0, len(changes), 'Should be no files as a blob and a rename happened')
+        eq_([], changes.get_files())
 
     def assert_instances(self, collection, count, clazz):
         """
