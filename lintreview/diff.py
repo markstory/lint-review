@@ -17,10 +17,28 @@ class DiffCollection(object):
 
     def _add(self, content):
         try:
-            change = Diff(content)
-            self._changes.append(change)
+            self._add_diff(content)
         except:
             log.warn('Could not process diff %s', content)
+
+    def _add_diff(self, content):
+        if self._has_additions(content):
+            change = Diff(content)
+            self._changes.append(change)
+
+    def _has_additions(self, content):
+        """
+        Rough check at whether or not a file diff is going
+        to have additions at all.
+
+        - Removed files never need to be linted as they are dead.
+        - Any other file with a `+` in it should be checked.
+        """
+        if content.status is 'removed':
+            return False
+        if not hasattr(content, 'patch'):
+            return False
+        return '+' in content.patch
 
     def __len__(self):
         return len(self._changes)

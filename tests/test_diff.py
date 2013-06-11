@@ -14,6 +14,12 @@ class TestDiffCollection(TestCase):
     # Two files modified in the same commit
     two_files_json = load_fixture('two_file_pull_request.json')
 
+    # Diff with renamed files
+    renamed_files_json = load_fixture('diff_with_rename_and_blob.json')
+
+    # Diff with removed files
+    removed_files_json = load_fixture('diff_with_removed_files.json')
+
     def setUp(self):
         self.one_file = Resource.loads(self.one_file_json)
         self.two_files = Resource.loads(self.two_files_json)
@@ -80,6 +86,14 @@ class TestDiffCollection(TestCase):
 
         # Should return false for unchanged
         self.assertFalse(changes.has_line_changed(filename, 145))
+
+    def test_parsing_diffs_removed__file(self):
+        changes = DiffCollection(self.removed_files_json)
+        eq_(0, len(changes), 'Should be no files as the file was removed')
+
+    def test_parsing_diffs__renamed_file_and_blob(self):
+        changes = DiffCollection(self.renamed_files_json)
+        eq_(0, len(changes), 'Should be no files as a blob and a rename happened')
 
     def assert_instances(self, collection, count, clazz):
         """
