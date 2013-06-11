@@ -88,6 +88,98 @@ class TestReview(TestCase):
         expected = Comment(filename_2, 88, 88, 'I <3 it')
         eq_(res[0], expected)
 
+    def test_publish_problems(self):
+        gh = Mock()
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review = Review(gh, 3)
+        review.publish_problems(problems, sha)
+
+        assert gh.pull_requests.comments.create.called
+        eq_(2, gh.pull_requests.comments.create.call_count)
+        calls = gh.pull_requests.comments.create.call_args_list
+
+        expected = call(3, {
+            'commit_id': sha,
+            'path': errors[0][0],
+            'position': errors[0][1],
+            'body': errors[0][2]
+        })
+        eq_(calls[0], expected)
+
+        expected = call(3, {
+            'commit_id': sha,
+            'path': errors[1][0],
+            'position': errors[1][1],
+            'body': errors[1][2]
+        })
+        eq_(calls[1], expected)
+
+    @patch('lintreview.review.time')
+    def test_publish_with__wait_time(self, time):
+        gh = Mock()
+        problems = Problems()
+        review = Review(gh, 3)
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review.publish_problems(problems, sha, 1)
+        assert time.sleep.called
+        eq_(2, time.sleep.call_count)
+        calls = time.sleep.call_args_list
+
+        expected = call(1)
+        eq_(calls[0], expected)
+        eq_(calls[1], expected)
+
+    def test_publish_ok_comment(self):
+        gh = Mock()
+        problems = Problems(changes=[1])
+        review = Review(gh, 3)
+
+        sha = 'abc123'
+        review.publish(problems, sha)
+
+        assert not(gh.pull_requests.comments.create.called)
+        assert gh.issues.comments.create.called
+
+        calls = gh.issues.comments.create.call_args_list
+
+        expected = call(3, ':+1: No lint errors found.')
+        eq_(calls[0], expected)
+
+    def test_publish_empty_comment(self):
+        gh = Mock()
+        problems = Problems(changes=[])
+        review = Review(gh, 3)
+
+        sha = 'abc123'
+        review.publish(problems, sha)
+
+        assert not(gh.pull_requests.comments.create.called)
+        assert gh.issues.comments.create.called
+
+        calls = gh.issues.comments.create.call_args_list
+
+        msg = ('Could not review pull request. '
+               'It may be too large, or contain no reviewable changes.')
+        expected = call(3, msg)
+        eq_(calls[0], expected)
+
 
 class TestProblems(TestCase):
 
@@ -191,76 +283,9 @@ class TestProblems(TestCase):
         expected = [Comment(filename_2, 3, 3, 'Something bad')]
         eq_(result, expected)
 
-    def test_publish_problems(self):
-        gh = Mock()
-        problems = Problems()
+    def test_has_changes(self):
+        problems = Problems(changes=None)
+        self.assertFalse(problems.has_changes())
 
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
-        )
-        problems.add_many(errors)
-        sha = 'abc123'
-
-        review = Review(gh, 3)
-        review.publish_problems(problems, sha)
-
-        assert gh.pull_requests.comments.create.called
-        eq_(2, gh.pull_requests.comments.create.call_count)
-        calls = gh.pull_requests.comments.create.call_args_list
-
-        expected = call(3, {
-            'commit_id': sha,
-            'path': errors[0][0],
-            'position': errors[0][1],
-            'body': errors[0][2]
-        })
-        eq_(calls[0], expected)
-
-        expected = call(3, {
-            'commit_id': sha,
-            'path': errors[1][0],
-            'position': errors[1][1],
-            'body': errors[1][2]
-        })
-        eq_(calls[1], expected)
-
-    @patch('lintreview.review.time')
-    def test_publish_with__wait_time(self, time):
-        gh = Mock()
-        problems = Problems()
-        review = Review(gh, 3)
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
-        )
-        problems.add_many(errors)
-        sha = 'abc123'
-
-        review.publish_problems(problems, sha, 1)
-        assert time.sleep.called
-        eq_(2, time.sleep.call_count)
-        calls = time.sleep.call_args_list
-
-        expected = call(1)
-        eq_(calls[0], expected)
-        eq_(calls[1], expected)
-
-    def test_publish_ok_comment(self):
-        gh = Mock()
-        problems = Problems()
-        review = Review(gh, 3)
-
-        sha = 'abc123'
-        review.publish(problems, sha)
-
-        assert not(gh.pull_requests.comments.create.called)
-        assert gh.issues.comments.create.called
-
-        calls = gh.issues.comments.create.call_args_list
-
-        expected = call(3, ':+1: No lint errors found.')
-        eq_(calls[0], expected)
+        problems = Problems(changes=[1])
+        assert problems.has_changes()

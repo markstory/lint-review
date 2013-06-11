@@ -110,8 +110,8 @@ class Review(object):
         self._gh.issues.comments.create(self._number, comment)
 
     def publish_empty_comment(self):
-        msg = 'Could not review pull request. ' +
-            'It may be too large, or contain no reviewable changes.'
+        msg = ('Could not review pull request. '
+               'It may be too large, or contain no reviewable changes.')
         self._gh.issues.comments.create(self._number, msg)
 
 
@@ -135,7 +135,7 @@ class Problems(object):
         self._changes = changes
 
     def has_changes(self):
-        return len(self._changes) > 0
+        return self._changes and len(self._changes) > 0
 
     def _trim_filename(self, filename):
         if not self._base:
