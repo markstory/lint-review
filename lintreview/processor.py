@@ -27,7 +27,7 @@ class Processor(object):
         self._problems.set_changes(self._changes)
 
     def run_tools(self, repo_config):
-        if not self._changes:
+        if self._changes is None:
             raise RuntimeError('No loaded changes, cannot run tools. '
                                'Try calling load_changes first.')
         files_to_check = self._changes.get_files(append_base=self._target_path)
