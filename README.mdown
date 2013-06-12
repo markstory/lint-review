@@ -30,9 +30,9 @@ Its recommended that you use `virtualenv` to save shaving yaks down the road.
 
 In addtion to installing the dependencies for lint-review you will also need to install
 the various lint tools you want to use. Lint-review requires that lint tools be installed
-system wide and on the $PATH of the user who runs the application. `pep8` and `flake8` will
+system wide or on the $PATH of the user running the celery process. `pep8` and `flake8` will
 be installed as dependencies for lint-review, but any other tools will need to be installed
-manually.
+manually using their respective installers.
 
 Once the dependencies are installed you should configure the lint review applications.
 
@@ -145,7 +145,7 @@ to do style checks on PHP, Javascript and or CSS files.
 * `standard` The coding standard to use. By default the `PEAR` standard is used. You can
   use any of the built-in standards or provide your own inside your project directory.
 * `extensions` The extensions to check. By default only `.php` files will be checked.
-* `tab_width` The number of spaces to convert tabs into, this is useful for projects using 
+* `tab_width` The number of spaces to convert tabs into, this is useful for projects using
   tabs for indentation.
 
 ### Javascript:
