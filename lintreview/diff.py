@@ -36,7 +36,7 @@ class DiffCollection(object):
         - Removed files never need to be linted as they are dead.
         - Any other file with a `+` in it should be checked.
         """
-        if content.status is 'removed':
+        if content.status == 'removed':
             return False
         if not hasattr(content, 'patch'):
             return False
