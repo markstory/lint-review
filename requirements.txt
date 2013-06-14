@@ -3,6 +3,6 @@ pygithub3==0.5
 nose==1.2.1
 pep8==1.4.1
 flake8==1.7.0
-celery==3.0.13
+celery==3.0.19
 mock==1.0.1
 gunicorn==0.17.2
