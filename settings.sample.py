@@ -62,5 +62,5 @@ GITHUB_PASSWORD = ''
 SSL_CA_BUNDLE = None
 
 # Delay publishing multiple comments by this value.
-# Github:e will block lots of fast requests and return 500 errors.
+# If you're having issues with rate limits, you can fiddle with this.
 PUBLISH_THROTTLE = 0
