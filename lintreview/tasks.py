@@ -20,7 +20,7 @@ def process_pull_request(user, repo, number, lintrc):
     Starts processing a pull request and running the various
     lint tools against it.
     """
-    log.info('Starting to process lint for %s, %s, %s', user, repo, number)
+    log.info('Starting to process lint for %s/%s/%s', user, repo, number)
     log.debug("lintrc contents '%s'", lintrc)
     review_config = ReviewConfig(lintrc)
 
@@ -44,7 +44,7 @@ def process_pull_request(user, repo, number, lintrc):
         processor.run_tools(review_config)
         processor.publish(config.get('PUBLISH_THROTTLE', 0))
 
-        log.info('Completed lint processing for %s, %s, %s' % (
+        log.info('Completed lint processing for %s/%s/%s' % (
             user, repo, number))
     except BaseException, e:
         log.exception(e)
@@ -55,7 +55,7 @@ def cleanup_pull_request(user, repo, number):
     """
     Cleans up a pull request once its been closed.
     """
-    log.info("Cleaning up pull request '%s' for %s/%s", number, user, repo)
+    log.info("Cleaning up pull request %s/%s/%s", user, repo, number)
     path = git.get_repo_path(user, repo, number, config)
     try:
         git.destroy(path)
