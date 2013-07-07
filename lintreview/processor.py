@@ -26,13 +26,15 @@ class Processor(object):
         self._changes = DiffCollection(pull_request_patches)
         self._problems.set_changes(self._changes)
 
-    def run_tools(self, repo_config):
+    def run_tools(self, review_config):
         if self._changes is None:
             raise RuntimeError('No loaded changes, cannot run tools. '
                                'Try calling load_changes first.')
-        files_to_check = self._changes.get_files(append_base=self._target_path)
+        files_to_check = self._changes.get_files(
+            append_base=self._target_path,
+            ignore_patterns=review_config.ignore_patterns())
         tools.run(
-            repo_config,
+            review_config,
             self._problems,
             files_to_check,
             self._target_path)
