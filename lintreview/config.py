@@ -57,3 +57,11 @@ class ReviewConfig(object):
             return dict(config)
         except:
             return []
+
+    def ignore_patterns(self):
+        try:
+            value = self._config.get('files', 'ignore')
+            patterns = map(lambda x: x.strip(), value.split("\n"))
+            return patterns
+        except:
+            return []

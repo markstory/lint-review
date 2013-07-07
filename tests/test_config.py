@@ -4,6 +4,10 @@ from nose.tools import eq_
 from unittest import TestCase
 
 sample_ini = """
+[files]
+ignore = test/CodeStandards/test/**
+    vendor/**
+
 [tools]
 linters = phpcs, pep8, jshint
 
@@ -54,4 +58,15 @@ class ReviewConfigTest(TestCase):
         eq_(res, expected)
 
         res = config.linter_config('not there')
+        eq_(res, [])
+
+    def test_ignore_patterns(self):
+        config = ReviewConfig(sample_ini)
+        res = config.ignore_patterns()
+        expected = ['test/CodeStandards/test/**', 'vendor/**']
+        eq_(res, expected)
+
+    def test_ignore_patterns_missing(self):
+        config = ReviewConfig("")
+        res = config.ignore_patterns()
         eq_(res, [])

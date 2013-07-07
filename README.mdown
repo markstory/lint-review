@@ -87,7 +87,8 @@ tools must be tools Lint Review knows about. See [lint tools](#lint-tools) for a
 tools. A sample `.lintrc` file would look like.
 
     [files]
-    ignore[] = generated/**
+    ignore = generated/**
+        vendor/**
 
     [tools]
     linters = pep8, jshint
@@ -105,7 +106,8 @@ each tool outlines which options are supported.
 
 The `[files]` section is optional and allows you to define ignore patterns. These patterns
 are used to find and exclude files when doing a review. Ignore patterns use glob expressions
-to find files. The patterns start at the reviewed repository root.
+to find files. The patterns start at the reviewed repository root. If you need to ignore mulitple
+patterns separate them with new lines.
 
 
 ## Running Lint Review
