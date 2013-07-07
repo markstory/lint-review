@@ -65,6 +65,15 @@ class TestDiffCollection(TestCase):
         result = changes.get_files(append_base="/some/path")
         eq_(expected, result)
 
+    def test_get_files__two_files__ignore_pattern(self):
+        changes = DiffCollection(self.two_files)
+        expected = [
+            "Console/Command/Task/AssetBuildTask.php",
+        ]
+        ignore = ['Test/**']
+        result = changes.get_files(ignore_patterns=ignore)
+        eq_(expected, result)
+
     def test_has_line_changed__no_file(self):
         changes = DiffCollection(self.two_files)
         self.assertFalse(changes.has_line_changed('derp', 99))

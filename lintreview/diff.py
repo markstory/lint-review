@@ -1,3 +1,4 @@
+import fnmatch
 import re
 import os
 import logging
@@ -52,14 +53,22 @@ class DiffCollection(object):
             yield self._changes[i]
             i += 1
 
-    def get_files(self, append_base=''):
+    def get_files(self, append_base='', ignore_patterns=None):
         """
         Get the names of all files that have changed
         """
         if append_base:
             append_base = os.path.realpath(append_base) + os.sep
         return [append_base + change.filename
-                for change in self._changes]
+                for change in self._changes
+                if not self._ignore_file(change.filename, ignore_patterns)]
+
+    def _ignore_file(self, filename, ignore_patterns):
+        if not ignore_patterns:
+            return False
+        matches = [fnmatch.fnmatch(filename, pattern)
+                   for pattern in ignore_patterns]
+        return any(matches)
 
     def all_changes(self, filename):
         """
