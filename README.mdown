@@ -86,6 +86,9 @@ Lint Review use hidden ini files to configure the tools used on each project. Th
 tools must be tools Lint Review knows about. See [lint tools](#lint-tools) for available
 tools. A sample `.lintrc` file would look like.
 
+    [files]
+    ignore[] = generated/**
+
     [tools]
     linters = pep8, jshint
 
@@ -99,6 +102,10 @@ The `[tools]` section is required, and `linters` should be a list of
 linters your project uses.  Each tool can also have a section prefixed with `tool_`
 to define additional configuration options for each tool. The documentation for
 each tool outlines which options are supported.
+
+The `[files]` section is optional and allows you to define ignore patterns. These patterns
+are used to find and exclude files when doing a review. Ignore patterns use glob expressions
+to find files. The patterns start at the reviewed repository root.
 
 
 ## Running Lint Review
