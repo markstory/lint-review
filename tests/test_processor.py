@@ -34,11 +34,13 @@ class ProcessorTest(TestCase):
 
     @patch('lintreview.processor.tools')
     def test_run_tools(self, tool_stub):
+        stub = Mock()
         subject = Processor(None, 1, '123abc', './tests')
         subject._changes = Mock()
-        subject.run_tools(None)
+        subject.run_tools(stub)
         assert tool_stub.run.called, 'Should have ran'
         assert subject._changes.get_files.called, 'Should have been called'
+        assert stub.ignore_patterns.called
 
     def test_publish(self):
         subject = Processor(None, 1, '123abc', './tests')
