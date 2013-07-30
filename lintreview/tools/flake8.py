@@ -11,6 +11,17 @@ class Flake8(Tool):
 
     name = 'flake8'
 
+    # see: http://flake8.readthedocs.org/en/latest/config.html
+    PYFLAKE_OPTIONS = [
+        'exclude',
+        'filename',
+        'select',
+        'ignore',
+        'max-line-length',
+        'format',
+        'max-complexity',
+    ]
+
     def check_dependencies(self):
         """
         See if flake8 is on the PATH
@@ -30,8 +41,10 @@ class Flake8(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = ['flake8']
-        if self.options.get('ignore'):
-            command += ['--ignore', self.options.get('ignore')]
+        for option in self.PYFLAKE_OPTIONS:
+            if self.options.get(option):
+                command.extend(['--%(option)s' % {'option': option}, self.options.get(option)])
+
         command += files
         output = run_command(command, split=True, ignore_error=True)
         if not output:
