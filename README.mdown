@@ -24,6 +24,7 @@ You install Lint Review by cloning the repository and installing dependecies.
 Its recommended that you use `virtualenv` to save shaving yaks down the road.
 
     git clone git://github.com/markstory/lint-review.git
+    cd lint-review
     virtualenv env
     source env/bin/activate
     pip install .
@@ -75,7 +76,7 @@ You can also use the cli tool to remove webhooks:
     lintreview unregister mark awesome-stuff
 
 **Warning** The current web server name will be registered with github. Make sure
-it is configured properly configured before registering hooks, or you'll need to remove
+it is configured properly before registering hooks, or you'll need to remove
 any registered hooks and start over.
 
 
