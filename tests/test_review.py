@@ -123,29 +123,6 @@ class TestReview(TestCase):
         })
         eq_(calls[1], expected)
 
-    @patch('lintreview.review.time')
-    def test_publish_with__wait_time(self, time):
-        gh = Mock()
-        problems = Problems()
-        review = Review(gh, 3)
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
-        )
-        problems.add_many(errors)
-        sha = 'abc123'
-
-        review.publish_problems(problems, sha, 1)
-        assert time.sleep.called
-        eq_(2, time.sleep.call_count)
-        calls = time.sleep.call_args_list
-
-        expected = call(1)
-        eq_(calls[0], expected)
-        eq_(calls[1], expected)
-
     def test_publish_ok_comment(self):
         gh = Mock()
         problems = Problems(changes=[1])

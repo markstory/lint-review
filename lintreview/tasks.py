@@ -42,7 +42,7 @@ def process_pull_request(user, repo, number, lintrc):
         processor = Processor(gh, number, pr_head, target_path)
         processor.load_changes()
         processor.run_tools(review_config)
-        processor.publish(config.get('PUBLISH_THROTTLE', 0))
+        processor.publish()
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo, number))
