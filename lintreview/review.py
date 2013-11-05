@@ -22,7 +22,7 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems, head_sha):
+    def publish(self, problems, head_sha, summary_threshold=None):
         """
         Publish the review.
 
@@ -33,14 +33,19 @@ class Review(object):
         log.info('Publishing review of %s to github.', self._number)
 
         problem_count = len(problems)
-        if problem_count:
-            self.load_comments()
-            self.remove_existing(problems)
+        if not problems.has_changes():
+            return self.publish_empty_comment()
+        if problem_count == 0:
+            return self.publish_ok_comment()
+
+        under_threshold = summary_threshold is None or problem_count < summary_threshold
+
+        self.load_comments()
+        self.remove_existing(problems)
+        if under_threshold:
             self.publish_problems(problems, head_sha)
-        elif not problems.has_changes():
-            self.publish_empty_comment()
         else:
-            self.publish_ok_comment()
+            self.publish_summary(problems)
 
     def load_comments(self):
         """
@@ -105,6 +110,13 @@ class Review(object):
     def publish_empty_comment(self):
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
+        self._gh.issues.comments.create(self._number, msg)
+
+    def publish_summary(self, problems):
+        msg = "There are {0} errors:\n\n".format(len(problems))
+        for problem in problems:
+            msg += "* {0.filename}, line {0.line} - {0.body}\n".format(problem)
+
         self._gh.issues.comments.create(self._number, msg)
 
 
