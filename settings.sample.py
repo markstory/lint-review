@@ -64,4 +64,4 @@ SSL_CA_BUNDLE = None
 # After this many comments in a review, a single summary comment
 # should be posted instead of individual line comments. This helps
 # prevent really noisy reviews from slowing down github.
-SUMMARY_THROTTLE = 50
+SUMMARY_THRESHOLD = 50
