@@ -10,14 +10,26 @@ log = logging.getLogger(__name__)
 
 class Processor(object):
 
-    def __init__(self, client, number, head, target_path):
+    _client = None
+    _number = None
+    _head = None
+    _target_path = None
+    _changes = None
+    _problems = None
+    _review = None
+    _config = None
+
+    def __init__(self, client, number, head, target_path, config=None):
         self._client = client
         self._number = number
         self._head = head
         self._target_path = target_path
-        self._changes = None
         self._problems = Problems(target_path)
         self._review = Review(client, number)
+
+        if config is None:
+            config = {}
+        self._config = config
 
     def load_changes(self):
         log.info('Loading pull request patches from github.')
@@ -41,4 +53,7 @@ class Processor(object):
 
     def publish(self):
         self._problems.limit_to_changes()
-        self._review.publish(self._problems, self._head)
+        self._review.publish(
+            self._problems,
+            self._head,
+            self._config.get('SUMMARY_THRESHOLD'))
