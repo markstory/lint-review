@@ -54,4 +54,5 @@ class ProcessorTest(TestCase):
         self.assertTrue(
             subject._review.publish.called,
             'Review should be published.')
-        subject._review.publish.assert_called_with(subject._problems, '123abc', 50)
+        subject._review.publish.assert_called_with(
+            subject._problems, '123abc', 50)
