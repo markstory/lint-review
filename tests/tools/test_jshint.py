@@ -41,7 +41,7 @@ class TestJshint(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        eq_(5, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(fname, 1, 1,'Missing name in function declaration.')
@@ -50,20 +50,17 @@ class TestJshint(TestCase):
         expected = Comment(fname, 6, 6, "Use '===' to compare with 'null'.")
         eq_(expected, problems[2])
 
-        expected = Comment(fname, 7, 7, "Implied global 'alert'")
-        eq_(expected, problems[6])
-
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[2]])
         problems = self.problems.all(self.fixtures[2])
-        eq_(6, len(problems))
+        eq_(7, len(problems))
 
         fname = self.fixtures[2]
-        expected = Comment(fname, 4, 4, "Implied global 'go'")
-        eq_(expected, problems[3])
+        expected = Comment(fname, 9, 9, "Missing semicolon.")
+        eq_(expected, problems[2])
 
-        expected = Comment(fname, 6, 6, "Implied global 'go'")
+        expected = Comment(fname, 5, 5, "'go' is not defined.")
         eq_(expected, problems[4])
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
@@ -73,7 +70,7 @@ class TestJshint(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        eq_(5, len(problems))
 
     @skipIf(jshint_missing, 'Missing jshint, cannot run')
     def test_process_files_with_config(self):
@@ -85,7 +82,7 @@ class TestJshint(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(6, len(problems), 'Config file should lower error count.')
+        eq_(4, len(problems), 'Config file should lower error count.')
 
     def test_create_command__with_path_based_standard(self):
         config = {
