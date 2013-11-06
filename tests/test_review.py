@@ -123,29 +123,6 @@ class TestReview(TestCase):
         })
         eq_(calls[1], expected)
 
-    @patch('lintreview.review.time')
-    def test_publish_with__wait_time(self, time):
-        gh = Mock()
-        problems = Problems()
-        review = Review(gh, 3)
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
-        )
-        problems.add_many(errors)
-        sha = 'abc123'
-
-        review.publish_problems(problems, sha, 1)
-        assert time.sleep.called
-        eq_(2, time.sleep.call_count)
-        calls = time.sleep.call_args_list
-
-        expected = call(1)
-        eq_(calls[0], expected)
-        eq_(calls[1], expected)
-
     def test_publish_ok_comment(self):
         gh = Mock()
         problems = Problems(changes=[1])
@@ -177,6 +154,59 @@ class TestReview(TestCase):
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
+        expected = call(3, msg)
+        eq_(calls[0], expected)
+
+    @patch('pygithub3.core.client.Client.get')
+    def test_publish_comment_threshold_checks(self, http):
+        fixture_data = load_fixture('comments_current.json')
+        response = Response()
+        response._content = fixture_data
+        http.return_value = response
+
+        gh = Github()
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        problems.set_changes([1])
+        sha = 'abc123'
+
+        review = Review(gh, 3)
+        review.publish_summary = Mock()
+        review.publish(problems, sha, 1)
+
+        assert review.publish_summary.called, 'Should have been called.'
+
+    def test_publish_summary(self):
+        gh = Mock()
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        problems.set_changes([1])
+        sha = 'abc123'
+
+        review = Review(gh, 3)
+        review.publish_summary(problems)
+
+        assert gh.issues.comments.create.called
+        eq_(1, gh.issues.comments.create.call_count)
+        calls = gh.issues.comments.create.call_args_list
+
+        msg = """There are 2 errors:
+
+* Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
+* Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
+"""
         expected = call(3, msg)
         eq_(calls[0], expected)
 

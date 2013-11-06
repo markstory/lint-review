@@ -39,10 +39,10 @@ def process_pull_request(user, repo, number, lintrc):
         target_path = git.get_repo_path(user, repo, number, config)
         git.clone_or_update(head_repo, target_path, pr_head)
 
-        processor = Processor(gh, number, pr_head, target_path)
+        processor = Processor(gh, number, pr_head, target_path, config)
         processor.load_changes()
         processor.run_tools(review_config)
-        processor.publish(config.get('PUBLISH_THROTTLE', 0))
+        processor.publish()
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo, number))

@@ -22,29 +22,30 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems, head_sha, wait_time=0):
+    def publish(self, problems, head_sha, summary_threshold=None):
         """
         Publish the review.
 
         Existing comments are loaded, and compared
         to new problems. Once the new unique problems
         are distilled new comments are published.
-
-        If a wait_time is provided the process will sleep before
-        sending additional requests. Sometimes github blocks many fast
-        requests.
         """
         log.info('Publishing review of %s to github.', self._number)
 
         problem_count = len(problems)
-        if problem_count:
-            self.load_comments()
-            self.remove_existing(problems)
-            self.publish_problems(problems, head_sha, wait_time)
-        elif not problems.has_changes():
-            self.publish_empty_comment()
+        if not problems.has_changes():
+            return self.publish_empty_comment()
+        if problem_count == 0:
+            return self.publish_ok_comment()
+
+        under_threshold = summary_threshold is None or problem_count < summary_threshold
+
+        self.load_comments()
+        self.remove_existing(problems)
+        if under_threshold:
+            self.publish_problems(problems, head_sha)
         else:
-            self.publish_ok_comment()
+            self.publish_summary(problems)
 
     def load_comments(self):
         """
@@ -81,7 +82,7 @@ class Review(object):
         for comment in self._comments:
             problems.remove(comment.filename, comment.position, comment.body)
 
-    def publish_problems(self, problems, head_commit, wait_time=0):
+    def publish_problems(self, problems, head_commit):
         """
         Publish the issues contains in the problems
         parameter. changes is used to fetch the commit sha
@@ -101,9 +102,6 @@ class Review(object):
                 self._gh.pull_requests.comments.create(self._number, comment)
             except:
                 log.warn("Failed to save comment '%s'", comment)
-            if wait_time > 0:
-                log.info("Sleeping %s before posting next comment", wait_time)
-                time.sleep(wait_time)
 
     def publish_ok_comment(self):
         comment = ':+1: No lint errors found.'
@@ -112,6 +110,13 @@ class Review(object):
     def publish_empty_comment(self):
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
+        self._gh.issues.comments.create(self._number, msg)
+
+    def publish_summary(self, problems):
+        msg = "There are {0} errors:\n\n".format(len(problems))
+        for problem in problems:
+            msg += "* {0.filename}, line {0.line} - {0.body}\n".format(problem)
+
         self._gh.issues.comments.create(self._number, msg)
 
 

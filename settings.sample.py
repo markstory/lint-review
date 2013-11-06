@@ -61,6 +61,7 @@ GITHUB_PASSWORD = ''
 # network with self-signed certificates.
 SSL_CA_BUNDLE = None
 
-# Delay publishing multiple comments by this value.
-# If you're having issues with rate limits, you can fiddle with this.
-PUBLISH_THROTTLE = 0
+# After this many comments in a review, a single summary comment
+# should be posted instead of individual line comments. This helps
+# prevent really noisy reviews from slowing down github.
+SUMMARY_THRESHOLD = 50
