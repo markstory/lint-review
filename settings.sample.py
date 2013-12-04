@@ -56,6 +56,11 @@ GITHUB_URL = 'https://api.github.com/'
 GITHUB_USER = 'octocat'
 GITHUB_PASSWORD = ''
 
+# You can also use an Oauth token for github, if you do
+# uncomment this line. Using a token will take precedence
+# over a username and password.
+# GITHUB_OAUTH_TOKEN = None
+
 # Set to a path containing a custom CA bundle.
 # This is useful when you have github:enterprise on an internal
 # network with self-signed certificates.

@@ -9,12 +9,20 @@ def get_client(config, user, repo):
     """
     Factory for the Github client
     """
-    gh = Github(
-        base_url=config['GITHUB_URL'],
-        login=config['GITHUB_USER'],
-        password=config['GITHUB_PASSWORD'],
-        user=user,
-        repo=repo)
+    if 'GITHUB_OAUTH_TOKEN' in config:
+        gh = Github(
+            base_url=config['GITHUB_URL'],
+            login=config['GITHUB_USER'],
+            token=config['GITHUB_OAUTH_TOKEN'],
+            user=user,
+            repo=repo)
+    else:
+        gh = Github(
+            base_url=config['GITHUB_URL'],
+            login=config['GITHUB_USER'],
+            password=config['GITHUB_PASSWORD'],
+            user=user,
+            repo=repo)
     return gh
 
 
