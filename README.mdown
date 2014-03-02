@@ -200,3 +200,16 @@ code review comments for specific rules, you should ignore them.
 
 * `ignore` A comma separated list of rule ids to ignore.
 
+### Ruby:
+
+#### RuboCop
+
+Uses the [rubocop](http://rubygems.org/gems/rubocop) gem to check ruby files.
+You'll need to install it to use it:
+
+    gem install rubocop
+
+*Options*
+
+No options. `.rubocop.yml` files will be respected, as described
+[here](https://github.com/bbatsov/rubocop#configuration).
