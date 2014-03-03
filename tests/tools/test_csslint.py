@@ -9,7 +9,10 @@ from nose.tools import eq_
 
 csslint_missing = not(in_path('csslint') or npm_exists('csslint'))
 
+
 class TestCsslint(TestCase):
+
+    needs_csslint = skipIf(csslint_missing, 'Needs csslint')
 
     fixtures = [
         'tests/fixtures/csslint/no_errors.css',
@@ -27,16 +30,16 @@ class TestCsslint(TestCase):
         self.assertTrue(self.tool.match_file('test.css'))
         self.assertTrue(self.tool.match_file('dir/name/test.css'))
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -53,7 +56,7 @@ class TestCsslint(TestCase):
             "Using width with padding can sometimes make elements larger than you expect.")
         eq_(expected, problems[1])
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -62,7 +65,7 @@ class TestCsslint(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(2, len(problems))
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_process_files_with_config(self):
         config = {
             'ignore': 'box-model'
@@ -74,7 +77,7 @@ class TestCsslint(TestCase):
 
         eq_(1, len(problems), 'Config file should lower error count.')
 
-    @skipIf(csslint_missing, 'Missing csslint, cannot run')
+    @needs_csslint
     def test_process_files_with_config_from_evil_jerk(self):
         config = {
             'ignore': '`cat /etc/passwd`'

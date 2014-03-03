@@ -2,14 +2,17 @@ from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jshint import Jshint
 from lintreview.utils import in_path
+from lintreview.utils import npm_exists
 from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
-jshint_missing = not(in_path('jshint'))
+jshint_missing = not(in_path('jshint') or npm_exists('jshint'))
 
 
 class TestJshint(TestCase):
+
+    needs_jshint = skipIf(jshint_missing, 'Needs jshint to run')
 
     fixtures = [
         'tests/fixtures/jshint/no_errors.js',
@@ -28,16 +31,16 @@ class TestJshint(TestCase):
         self.assertTrue(self.tool.match_file('test.js'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -50,7 +53,7 @@ class TestJshint(TestCase):
         expected = Comment(fname, 6, 6, "Use '===' to compare with 'null'.")
         eq_(expected, problems[2])
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[2]])
         problems = self.problems.all(self.fixtures[2])
@@ -63,7 +66,7 @@ class TestJshint(TestCase):
         expected = Comment(fname, 5, 5, "'go' is not defined.")
         eq_(expected, problems[4])
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -72,7 +75,7 @@ class TestJshint(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(5, len(problems))
 
-    @skipIf(jshint_missing, 'Missing jshint, cannot run')
+    @needs_jshint
     def test_process_files_with_config(self):
         config = {
             'config': 'tests/fixtures/jshint/config.json'
