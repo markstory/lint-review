@@ -11,6 +11,8 @@ phpcs_missing = not(in_path('phpcs'))
 
 class Testphpcs(TestCase):
 
+    needs_phpcs = skipIf(phpcs_missing, 'Needs phpcs')
+
     fixtures = [
         'tests/fixtures/phpcs/no_errors.php',
         'tests/fixtures/phpcs/has_errors.php',
@@ -27,16 +29,16 @@ class Testphpcs(TestCase):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
 
-    @skipIf(phpcs_missing, 'Missing phpcs, cannot run')
+    @needs_phpcs
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @skipIf(phpcs_missing, 'Missing phpcs, cannot run')
+    @needs_phpcs
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @skipIf(phpcs_missing, 'Missing phpcs, cannot run')
+    @needs_phpcs
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -53,7 +55,7 @@ class Testphpcs(TestCase):
             "Line indented incorrectly; expected at least 4 spaces, found 1")
         eq_(expected, problems[11])
 
-    @skipIf(phpcs_missing, 'Missing phpcs, cannot run')
+    @needs_phpcs
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -62,7 +64,7 @@ class Testphpcs(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(12, len(problems))
 
-    @skipIf(phpcs_missing, 'Missing phpcs, cannot run')
+    @needs_phpcs
     def test_process_files_with_config(self):
         config = {
             'standard': 'Zend'
