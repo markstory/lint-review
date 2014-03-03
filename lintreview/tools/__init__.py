@@ -63,6 +63,19 @@ class Tool(object):
         """
         return False
 
+    def _relativize_filename(self, files, name):
+        """
+        Some tools convert filenames to absolute paths.
+        Convert each of the files in `files` to an
+        absolute path to locate the filename
+        """
+        for f in files:
+            abs_path = os.path.realpath(f)
+            if abs_path == name:
+                return f
+        msg = "Could not locate '%s' in changed files." % (name, )
+        raise ValueError(msg)
+
     def _process_checkstyle(self, xml, filename_converter=None):
         """
         Process a checkstyle xml file.

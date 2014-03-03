@@ -1,13 +1,13 @@
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.utils import in_path
+from lintreview.utils import npm_exists
 from lintreview.tools.csslint import Csslint
 from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
-csslint_missing = not(in_path('csslint'))
-
+csslint_missing = not(in_path('csslint') or npm_exists('csslint'))
 
 class TestCsslint(TestCase):
 
