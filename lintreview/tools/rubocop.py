@@ -29,7 +29,12 @@ class Rubocop(Tool):
         log.debug('Processing %s files with %s', files, self.name)
         command = ['rubocop', '--format', 'emacs']
         command += files
-        output = run_command(command, split=True, ignore_error=True)
+        output = run_command(
+            command,
+            split=True,
+            ignore_error=True,
+            include_errors=False
+        )
 
         if not output:
             log.debug('No rubocop errors found.')
