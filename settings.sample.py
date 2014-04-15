@@ -39,6 +39,7 @@ CELERY_QUEUES = (
 
 # General project configuration #
 #################################
+import os
 
 # Path where project code should be
 # checked out when reviews are done
@@ -53,8 +54,10 @@ GITHUB_URL = 'https://api.github.com/'
 # Github username + password
 # This is the user that lintreview will use
 # to fetch repositories and leave review comments.
+# Set the GITHUB_PASSWORD environment variable first.
+# example: $ export GITHUB_PASSWORD=mygithubpassword
 GITHUB_USER = 'octocat'
-GITHUB_PASSWORD = ''
+GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
 
 # You can also use an Oauth token for github, if you do
 # uncomment this line. Using a token will take precedence
