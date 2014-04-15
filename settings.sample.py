@@ -57,7 +57,7 @@ GITHUB_URL = 'https://api.github.com/'
 # Set the GITHUB_PASSWORD environment variable first.
 # example: $ export GITHUB_PASSWORD=mygithubpassword
 GITHUB_USER = 'octocat'
-GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
+GITHUB_PASSWORD = os.environ.get('GITHUB_PASSWORD', '')
 
 # You can also use an Oauth token for github, if you do
 # uncomment this line. Using a token will take precedence
