@@ -213,3 +213,19 @@ You'll need to install it to use it:
 
 No options. `.rubocop.yml` files will be respected, as described
 [here](https://github.com/bbatsov/rubocop#configuration).
+
+### Puppet:
+
+#### puppet-lint
+
+Uses the [puppet-lint](http://rubygems.org/gems/rubocop) gem to check puppet manifests
+against the puppetlabs style guide.
+
+You'll need to install it to use it:
+
+    gem install puppet-lint
+
+*Options*
+
+No options. `.puppet-lintrc` files will be respected, to allow each project to disable
+checks. A list of checks can be found by running "puppet-lint --help"
