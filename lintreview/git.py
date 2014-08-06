@@ -2,6 +2,7 @@ import os
 import logging
 import shutil
 import subprocess
+from urlparse import urlparse, urlunparse
 
 log = logging.getLogger(__name__)
 
@@ -20,10 +21,21 @@ def get_repo_path(user, repo, number, settings):
     return os.path.realpath(path)
 
 
-def clone(url, path):
+def clone(config, url, path):
     """
     Clone a repository from `url` into `path`
     """
+    # Add auth to clone_url
+    parsed_url = urlparse(url)
+    if 'GITHUB_OAUTH_TOKEN' in config:
+        user = config['GITHUB_OAUTH_TOKEN']
+        password = 'x-oauth-basic'
+    else:
+        user = config['GITHUB_USER'],
+        password = config['GITHUB_PASSWORD']
+    url = urlunparse((
+        parsed_url[0], ('%s:%s@%s' % (user, password, parsed_url[1]))
+    ) + parsed_url[2:])
     command = ['git', 'clone', url, path]
     return_code = _process(command)
     if return_code:
@@ -44,7 +56,7 @@ def fetch(path, remote):
     return True
 
 
-def clone_or_update(url, path, head):
+def clone_or_update(config, url, path, head):
     """
     Clone a new repository and checkout commit,
     or update an existing clone to the new head
@@ -55,7 +67,7 @@ def clone_or_update(url, path, head):
         fetch(path, 'origin')
     else:
         log.debug('Repository does not exist, cloning a new one.')
-        clone(url, path)
+        clone(config, url, path)
     log.info("Checking out '%s'", head)
     checkout(path, head)
 
