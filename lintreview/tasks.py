@@ -32,12 +32,14 @@ def process_pull_request(user, repo, number, lintrc):
     try:
         log.info('Loading pull request data from github.')
         pull_request = gh.pull_requests.get(number)
-        head_repo = pull_request.head['repo']['git_url']
+        head_repo = pull_request.head['repo']['clone_url']
+        private_repo = pull_request.head['repo']['private']
         pr_head = pull_request.head['sha']
 
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo, number, config)
-        git.clone_or_update(head_repo, target_path, pr_head)
+        git.clone_or_update(config, head_repo, target_path, pr_head,
+                            private_repo)
 
         processor = Processor(gh, number, pr_head, target_path, config)
         processor.load_changes()

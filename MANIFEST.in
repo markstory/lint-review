@@ -1,0 +1,3 @@
+include README.mdown LICENSE
+include requirements.txt logging.ini settings.sample.py
+recursive-include tests *.py *.json
