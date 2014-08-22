@@ -1,7 +1,7 @@
 Flask==0.9
 pygithub3==0.5
 nose==1.2.1
-pep8==1.4.1
+pep8==1.5.7
 pep8-naming==0.2.2
 flake8==2.2.2
 celery==3.0.19
