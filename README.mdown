@@ -88,8 +88,8 @@ tools must be tools Lint Review knows about. See [lint tools](#lint-tools) for a
 tools. A sample `.lintrc` file would look like.
 
     [files]
-    ignore = generated/**
-        vendor/**
+    ignore = generated/*
+        vendor/*
 
     [tools]
     linters = pep8, jshint
