@@ -33,8 +33,8 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
-        eq_(expected, problems[0])
+        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
+        eq_(expected, problems[1])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[7])
@@ -48,20 +48,20 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
-        eq_(expected, problems[0])
+        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
+        eq_(expected, problems[1])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[7])
 
     def test_config_options_and_process_file(self):
         options = {
-            'ignore': 'E2,W603'
+            'ignore': 'F4,W603'
         }
         self.tool = Flake8(self.problems, options)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         eq_(6, len(problems))
         for p in problems:
-            self.assertFalse('E2' in p)
+            self.assertFalse('F4' in p)
             self.assertFalse('W603' in p)
