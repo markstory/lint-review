@@ -33,7 +33,7 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
+        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
         eq_(expected, problems[0])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
@@ -48,7 +48,7 @@ class TestFlake8(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "W402 're' imported but unused")
+        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
         eq_(expected, problems[0])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
