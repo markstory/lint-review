@@ -90,11 +90,11 @@ class Tool(object):
             log.error("Unable to parse checkstyleXML from %s.", self.name)
             raise
 
-        for f in tree.iter('file'):
+        for f in tree.findall('file'):
             filename = f.get('name')
             if filename_converter:
                 filename = filename_converter(filename)
-            for err in f.iter('error'):
+            for err in f.findall('error'):
                 line = err.get('line')
                 message = err.get('message')
                 if ',' in line:
