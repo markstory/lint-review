@@ -73,3 +73,5 @@ SSL_CA_BUNDLE = None
 # should be posted instead of individual line comments. This helps
 # prevent really noisy reviews from slowing down github.
 SUMMARY_THRESHOLD = 50
+
+OK_COMMENT = ':+1: No lint errors found.'
