@@ -1,4 +1,5 @@
 from . import load_fixture
+from lintreview.config import load_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
@@ -11,6 +12,8 @@ from pygithub3 import Github
 from pygithub3.resources.base import Resource
 from requests.models import Response
 from unittest import TestCase
+
+config = load_config()
 
 
 class TestReview(TestCase):
@@ -136,7 +139,8 @@ class TestReview(TestCase):
 
         calls = gh.issues.comments.create.call_args_list
 
-        expected = call(3, ':+1: No lint errors found.')
+        expected = call(
+            3, config.get('OK_COMMENT', ':+1: No lint errors found.'))
         eq_(calls[0], expected)
 
     def test_publish_empty_comment(self):

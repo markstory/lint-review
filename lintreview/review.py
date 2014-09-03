@@ -2,6 +2,10 @@ import logging
 import time
 from collections import namedtuple
 
+from config import load_config
+
+config = load_config()
+
 log = logging.getLogger(__name__)
 
 Comment = namedtuple('Comment', ['filename', 'line', 'position', 'body'])
@@ -104,7 +108,7 @@ class Review(object):
                 log.warn("Failed to save comment '%s'", comment)
 
     def publish_ok_comment(self):
-        comment = ':+1: No lint errors found.'
+        comment = config.get('OK_COMMENT', ':+1: No lint errors found.')
         self._gh.issues.comments.create(self._number, comment)
 
     def publish_empty_comment(self):

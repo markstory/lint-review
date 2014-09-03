@@ -1,1 +1,2 @@
-; LintRC file for lint-review
+[tools]
+linters = pep8, flake8
