@@ -1,7 +1,9 @@
+from unittest import TestCase
+
+from nose.tools import eq_
+
 from lintreview.config import load_config
 from lintreview.config import ReviewConfig
-from nose.tools import eq_
-from unittest import TestCase
 
 sample_ini = """
 [files]
