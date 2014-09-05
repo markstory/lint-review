@@ -74,4 +74,7 @@ SSL_CA_BUNDLE = None
 # prevent really noisy reviews from slowing down github.
 SUMMARY_THRESHOLD = 50
 
+# This config file contains default settings for .lintrc
+# LINTRC_DEFAULTS = './lintrc_defaults.ini'
+
 OK_COMMENT = ':+1: No lint errors found.'

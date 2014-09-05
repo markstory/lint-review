@@ -22,7 +22,7 @@ def process_pull_request(user, repo, number, lintrc):
     """
     log.info('Starting to process lint for %s/%s/%s', user, repo, number)
     log.debug("lintrc contents '%s'", lintrc)
-    review_config = ReviewConfig(lintrc)
+    review_config = ReviewConfig(lintrc, config)
 
     if len(review_config.linters()) == 0:
         log.info('No configured linters, skipping processing.')

@@ -39,8 +39,10 @@ class ReviewConfig(object):
     .lintrc file. Allows reading tool names and tool configuration
     """
 
-    def __init__(self, lintrc):
+    def __init__(self, lintrc, lintrc_defaults=None):
         self._config = ConfigParser()
+        if lintrc_defaults:
+            self._config.readfp(StringIO(lintrc_defaults))
         self._config.readfp(StringIO(lintrc))
 
     def linters(self):

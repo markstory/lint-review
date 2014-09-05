@@ -21,6 +21,16 @@ standard = test/CodeStandards
 config = test/phpcs.xml
 """
 
+defaults_ini = """
+[tool_jshint]
+config = /etc/jshint.json
+"""
+
+simple_ini = """
+[tools]
+linters = jshint
+"""
+
 bad_ini = """
 [herp]
 derp=derplily
@@ -72,3 +82,19 @@ class ReviewConfigTest(TestCase):
         config = ReviewConfig("")
         res = config.ignore_patterns()
         eq_(res, [])
+
+    def test_default_settings_overridden(self):
+        config = ReviewConfig(sample_ini, defaults_ini)
+        res = config.linter_config('jshint')
+        expected = {
+            'config': './jshint.json',
+        }
+        eq_(res, expected)
+
+    def test_default_settings(self):
+        config = ReviewConfig(simple_ini, defaults_ini)
+        res = config.linter_config('jshint')
+        expected = {
+            'config': '/etc/jshint.json',
+        }
+        eq_(res, expected)
