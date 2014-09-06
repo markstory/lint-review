@@ -33,6 +33,15 @@ def load_config():
     return config
 
 
+def get_lintrc_defaults(config):
+    """
+    Load the default lintrc, if it exists
+    """
+    if config.get('LINTRC_DEFAULTS'):
+        with open(config.get('LINTRC_DEFAULTS')) as f:
+            return f.read()
+
+
 class ReviewConfig(object):
     """
     Provides a domain level API to a repositories

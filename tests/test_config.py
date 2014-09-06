@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from nose.tools import eq_
 
-from lintreview.config import load_config
+from lintreview.config import load_config, get_lintrc_defaults
 from lintreview.config import ReviewConfig
 
 sample_ini = """
@@ -40,6 +40,12 @@ derp=derplily
 def test_load_config():
     res = load_config()
     assert res['GITHUB_USER'].endswith, 'Exists and is stringy'
+
+
+def test_get_lintrc_defaults():
+    config = load_config()
+    res = get_lintrc_defaults(config)
+    assert res is None
 
 
 class ReviewConfigTest(TestCase):
