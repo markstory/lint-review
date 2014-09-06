@@ -1,7 +1,9 @@
-from lintreview.config import load_config
-from lintreview.config import ReviewConfig
-from nose.tools import eq_
 from unittest import TestCase
+
+from nose.tools import eq_
+
+from lintreview.config import load_config, get_lintrc_defaults
+from lintreview.config import ReviewConfig
 
 sample_ini = """
 [files]
@@ -19,6 +21,16 @@ standard = test/CodeStandards
 config = test/phpcs.xml
 """
 
+defaults_ini = """
+[tool_jshint]
+config = /etc/jshint.json
+"""
+
+simple_ini = """
+[tools]
+linters = jshint
+"""
+
 bad_ini = """
 [herp]
 derp=derplily
@@ -28,6 +40,12 @@ derp=derplily
 def test_load_config():
     res = load_config()
     assert res['GITHUB_USER'].endswith, 'Exists and is stringy'
+
+
+def test_get_lintrc_defaults():
+    config = load_config()
+    res = get_lintrc_defaults(config)
+    assert res is None
 
 
 class ReviewConfigTest(TestCase):
@@ -70,3 +88,19 @@ class ReviewConfigTest(TestCase):
         config = ReviewConfig("")
         res = config.ignore_patterns()
         eq_(res, [])
+
+    def test_default_settings_overridden(self):
+        config = ReviewConfig(sample_ini, defaults_ini)
+        res = config.linter_config('jshint')
+        expected = {
+            'config': './jshint.json',
+        }
+        eq_(res, expected)
+
+    def test_default_settings(self):
+        config = ReviewConfig(simple_ini, defaults_ini)
+        res = config.linter_config('jshint')
+        expected = {
+            'config': '/etc/jshint.json',
+        }
+        eq_(res, expected)
