@@ -53,6 +53,11 @@ share the same configuration file, so configuration is easier to manage and shar
 * You can skip setting `LINTREVIEW_SETTINGS` if you're running lintreview from
   a directory containing your `settings.py` file.
 
+You can also have per install configuration files by defining the `LINTRC_DEFAULTS` config
+option in your settings file. This file should be a `.lintrc` config file. It will be merged
+with each projects `.lintrc` before running tools. This gives you an easy way to have
+global configuration for tools.
+
 ## Setting up Repositories
 
 Once you've configured the server processes, it is time to setup some
