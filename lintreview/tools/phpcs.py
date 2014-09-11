@@ -33,7 +33,8 @@ class Phpcs(Tool):
         command = self.create_command(files)
         output = run_command(
             command,
-            ignore_error=True)
+            ignore_error=True,
+            include_errors=False)
         filename_converter = functools.partial(
             self._relativize_filename,
             files)
