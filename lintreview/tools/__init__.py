@@ -43,6 +43,18 @@ class Tool(object):
         else:
             log.debug('No matching files for %s', self.name)
 
+    def execute_commits(self, commits):
+        """
+        Hook method for looking at commits.
+
+        This is useful for tools that need to look at
+        commit comments or other parts of individual commits.
+
+        Tools implementing this method can expect a list of
+        commit objects from the github API.
+        """
+        pass
+
     def match_file(self, filename):
         """
         Used to check if files can be handled by this
@@ -175,7 +187,7 @@ def factory(problems, config, base_path):
     return tools
 
 
-def run(config, problems, files, base_path):
+def run(config, problems, files, commits, base_path):
     """
     Create and run tools.
 
@@ -189,3 +201,4 @@ def run(config, problems, files, base_path):
     for tool in lint_tools:
         log.debug('Runnning %s', tool)
         tool.execute(files)
+        tool.execute_commits(commits)

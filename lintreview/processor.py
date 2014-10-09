@@ -45,10 +45,12 @@ class Processor(object):
         files_to_check = self._changes.get_files(
             append_base=self._target_path,
             ignore_patterns=review_config.ignore_patterns())
+        commits_to_check = self.get_commits(self._number)
         tools.run(
             review_config,
             self._problems,
             files_to_check,
+            commits_to_check,
             self._target_path)
 
     def publish(self):
@@ -57,3 +59,6 @@ class Processor(object):
             self._problems,
             self._head,
             self._config.get('SUMMARY_THRESHOLD'))
+
+    def get_commits(self, number):
+        return self._client.pull_requests.list_commits(number)

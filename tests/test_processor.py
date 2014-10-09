@@ -32,10 +32,15 @@ class ProcessorTest(TestCase):
         subject = Processor(None, 1, '123abc', './tests')
         subject.run_tools(None)
 
+    @patch('pygithub3.core.client.Client.get')
     @patch('lintreview.processor.tools')
-    def test_run_tools(self, tool_stub):
+    def test_run_tools(self, tool_stub, http):
+        response = Response()
+        response._content = load_fixture('commits.json')
+        http.return_value = response
+
         stub = Mock()
-        subject = Processor(None, 1, '123abc', './tests')
+        subject = Processor(http, 1, '123abc', './tests')
         subject._changes = Mock()
         subject.run_tools(stub)
         assert tool_stub.run.called, 'Should have ran'
