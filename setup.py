@@ -21,4 +21,5 @@ setup(
         ],
     },
     install_requires=requirements.readlines(),
+    dependency_links = ['git+git://github.com/intellisense/python-github3.git#egg=pygithub3'],
 )
