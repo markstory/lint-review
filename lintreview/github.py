@@ -37,7 +37,7 @@ def get_lintrc(gh):
     parts = ['repos', repo.get_user(), repo.get_repo(), 'contents', '.lintrc']
     path = '/'.join(parts)
     response = repo._client.get(path)
-    return base64.b64decode(response.json()['content'])
+    return base64.b64decode(response.json['content'])
 
 
 def register_hook(gh, hook_url, user, repo):
