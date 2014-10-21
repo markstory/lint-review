@@ -23,6 +23,10 @@ def ping():
 
 @app.route("/review/start", methods=["POST"])
 def start_review():
+    event = request.headers.get('X-Github-Event')
+    if event == 'ping':
+       return Response(status=200)
+
     try:
         action = request.json["action"]
         pull_request = request.json["pull_request"]
