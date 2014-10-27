@@ -100,7 +100,7 @@ tools. A sample `.lintrc` file would look like.
     linters = pep8, jshint
 
     [tool_pep8]
-    ignore = 'W2,E401'
+    ignore = W2,E401
 
     [tool_jshint]
     config = path/to/jshint.json
