@@ -39,13 +39,9 @@ class TestRubocop(TestCase):
         self.tool.process_files([linty_filename])
 
         problems = self.problems.all(linty_filename)
-        expected = Comment(linty_filename, 3, 3,
-                           'C: Line is too long. [82/79]')
-        ok_(expected in problems)
-
         expected = Comment(linty_filename, 4, 4,
                            'C: Trailing whitespace detected.')
-        ok_(expected in problems)
+        eq_(expected, problems[5])
 
     @needs_rubocop
     def test_process_files_two_files(self):

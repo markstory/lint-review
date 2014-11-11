@@ -274,9 +274,3 @@ class Problems(object):
         while i < length:
             yield self._items[i]
             i += 1
-
-    def __contains__(self, other):
-        for item in self._items:
-            if item == other:
-                return True
-        return False
