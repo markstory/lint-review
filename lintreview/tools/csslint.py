@@ -6,6 +6,7 @@ from lintreview.tools import run_command
 from lintreview.utils import in_path
 from lintreview.utils import npm_exists
 
+
 log = logging.getLogger(__name__)
 
 

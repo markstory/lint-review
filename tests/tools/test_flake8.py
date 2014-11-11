@@ -63,5 +63,5 @@ class TestFlake8(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(6, len(problems))
         for p in problems:
-            self.assertFalse('F4' in p)
-            self.assertFalse('W603' in p)
+            self.assertFalse('F4' in p.body)
+            self.assertFalse('W603' in p.body)

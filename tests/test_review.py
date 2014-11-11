@@ -4,6 +4,7 @@ from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
 from lintreview.review import Comment
+from lintreview.review import IssueComment
 from mock import patch
 from mock import Mock
 from mock import call
