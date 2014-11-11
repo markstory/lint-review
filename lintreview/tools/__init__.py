@@ -11,11 +11,11 @@ class Tool(object):
     Base class for tools
     """
     name = ''
-    options = {}
 
     def __init__(self, problems, options=None, base_path=None):
         self.problems = problems
         self.base_path = base_path
+        self.options = {}
         if options:
             self.options = options
 

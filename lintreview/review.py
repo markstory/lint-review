@@ -149,7 +149,6 @@ class Review(object):
         log.debug("Publishing (%s) new comments for '%s'",
                   len(problems), self._number)
         for error in problems:
-            log.error(error)
             error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):

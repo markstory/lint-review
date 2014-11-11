@@ -35,13 +35,17 @@ class TestCommitCheck(TestCase):
         self.tool.options['pattern'] = '\d+'
         self.tool.execute_commits(self.fixture_data)
         eq_(1, len(self.problems), 'Commits that do not match cause errors')
-        msg = ('The following commits do not match \d+:\n'
+        msg = ('The following commits had issues. \d+ was not found:\n'
                '* 6dcb09b5b57875f334f61aebed695e2e4193db5e\n')
         expected = IssueComment(msg)
         eq_(expected, self.problems.all()[0])
 
     def test_execute_commits__custom_message(self):
-        pass
-
-    def test_execute_commits__custom_message(self):
-        pass
+        self.tool.options['pattern'] = '\d+'
+        self.tool.options['message'] = 'You are bad.'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(1, len(self.problems), 'Commits that do not match cause errors')
+        msg = ('You are bad. \d+ was not found:\n'
+               '* 6dcb09b5b57875f334f61aebed695e2e4193db5e\n')
+        expected = IssueComment(msg)
+        eq_(expected, self.problems.all()[0])

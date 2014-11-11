@@ -10,10 +10,6 @@ log = logging.getLogger(__name__)
 class Commitcheck(Tool):
 
     name = 'commitcheck'
-    options = {
-        'pattern': '',
-        'message': 'The following commits do not match'
-    }
 
     def check_dependencies(self):
         """
@@ -26,10 +22,11 @@ class Commitcheck(Tool):
         Check all the commit messages in the set for the pattern
         defined in the config file.
         """
-        if not len(self.options['pattern']):
+        pattern = self.options.get('pattern')
+        if not len(pattern):
             return log.warning('Commit pattern is empty, skipping.')
         try:
-            pattern = re.compile(self.options['pattern'])
+            pattern = re.compile(pattern)
         except:
             return log.warning('Commit pattern is invalid, skipping.')
 
@@ -41,7 +38,8 @@ class Commitcheck(Tool):
         if not len(bad):
             return log.debug('No bad commit messages.')
 
-        msg = self.options['message'] + ' %s:\n' % (self.options['pattern'], )
+        msg = self.options.get('message', 'The following commits had issues.')
+        msg = msg + ' %s was not found:\n' % (self.options['pattern'], )
         for commit in bad:
             msg += "* %s\n" % (commit, )
         self.problems.add(IssueComment(msg))
