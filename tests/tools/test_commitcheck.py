@@ -1,0 +1,47 @@
+from tests import load_fixture
+from lintreview.review import Problems
+from lintreview.review import IssueComment
+from lintreview.tools.commitcheck import Commitcheck
+from nose.tools import eq_
+from pygithub3.resources.base import Resource
+from unittest import TestCase
+
+
+class TestCommitCheck(TestCase):
+
+    fixture = load_fixture('commits.json')
+
+    def setUp(self):
+        self.fixture_data = Resource.loads(self.fixture)
+        self.problems = Problems()
+        self.tool = Commitcheck(self.problems)
+
+    def test_execute_commits__no_pattern(self):
+        self.tool.options['pattern'] = ''
+        self.tool.execute_commits(self.fixture_data)
+        eq_(0, len(self.problems), 'Empty pattern does not find issues')
+
+    def test_execute_commits__broken_regex(self):
+        self.tool.options['pattern'] = '(.*'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(0, len(self.problems), 'Empty pattern does not find issues')
+
+    def test_execute_commits__match(self):
+        self.tool.options['pattern'] = '\w+'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(0, len(self.problems), 'Commits that do match are ok')
+
+    def test_execute_commits__no_match(self):
+        self.tool.options['pattern'] = '\d+'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(1, len(self.problems), 'Commits that do not match cause errors')
+        msg = ('The following commits do not match \d+:\n'
+               '* 6dcb09b5b57875f334f61aebed695e2e4193db5e\n')
+        expected = IssueComment(msg)
+        eq_(expected, self.problems.all()[0])
+
+    def test_execute_commits__custom_message(self):
+        pass
+
+    def test_execute_commits__custom_message(self):
+        pass
