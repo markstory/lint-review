@@ -1,21 +1,21 @@
 import logging
-import time
 from lintreview.config import load_config
+
 
 config = load_config()
 log = logging.getLogger(__name__)
 
 
 class IssueComment(object):
+    """
+    A simple comment that will be published as a
+    pull request/issue comment.
+    """
     filename = None
     line = 0
     position = 0
     body = None
 
-    """
-    A simple comment that will be published as a
-    pull request/issue comment.
-    """
     def __init__(self, body=''):
         self.body = body
 
@@ -34,11 +34,11 @@ class IssueComment(object):
 
     def __repr__(self):
         return "%s(filename=%s, line=%s, position=%s, body=%s)" % (
-                str(self.__class__),
-                self.filename,
-                self.line,
-                self.position,
-                self.body)
+            str(self.__class__),
+            self.filename,
+            self.line,
+            self.position,
+            self.body)
 
 
 class Comment(IssueComment):
@@ -46,7 +46,7 @@ class Comment(IssueComment):
     A line comment on the pull request.
     """
     def __init__(self, filename='', line=0, position=0, body=''):
-        self.body = body
+        super(Comment, self).__init__(body)
         self.line = line
         self.filename = filename
         self.position = position
@@ -96,7 +96,8 @@ class Review(object):
         if problem_count == 0:
             return self.publish_ok_comment()
 
-        under_threshold = summary_threshold is None or problem_count < summary_threshold
+        under_threshold = (summary_threshold is None or
+                           problem_count < summary_threshold)
 
         self.load_comments()
         self.remove_existing(problems)
@@ -210,7 +211,9 @@ class Problems(object):
 
     def all(self, filename=None):
         if filename:
-            return [error for error in self._items if error.filename == filename]
+            return [error
+                    for error in self._items
+                    if error.filename == filename]
         return self._items
 
     def add(self, filename, line=None, text=None, position=None):
@@ -249,7 +252,9 @@ class Problems(object):
         in the DiffCollection
         """
         self._items = [error for error in self._items
-                       if self._changes.has_line_changed(error.filename, error.line)]
+                       if self._changes.has_line_changed(
+                           error.filename,
+                           error.line)]
 
     def remove(self, filename, position, body):
         """
@@ -258,7 +263,8 @@ class Problems(object):
         """
         found = False
         for i, item in enumerate(self._items):
-            if item.filename == filename and item.position == position and item.body == body:
+            if (item.filename == filename and
+                    item.position == position and item.body == body):
                 found = i
                 break
         if found is not False:
