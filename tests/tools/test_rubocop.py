@@ -5,7 +5,8 @@ from lintreview.utils import in_path
 from lintreview.tools.rubocop import Rubocop
 from unittest import TestCase
 from unittest import skipIf
-from nose.tools import eq_, ok_
+from nose.tools import eq_
+
 
 rubocop_missing = not(in_path('rubocop'))
 

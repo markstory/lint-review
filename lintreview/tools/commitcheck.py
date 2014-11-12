@@ -23,7 +23,7 @@ class Commitcheck(Tool):
         defined in the config file.
         """
         pattern = self.options.get('pattern')
-        if not len(pattern):
+        if not pattern:
             return log.warning('Commit pattern is empty, skipping.')
         try:
             pattern = re.compile(pattern)
@@ -33,16 +33,16 @@ class Commitcheck(Tool):
         bad = []
         for commit in commits:
             bad.append(self._check_commit(pattern, commit))
-        bad = filter(lambda x: x is not None, bad)
+        bad = filter(None, bad)
 
-        if not len(bad):
+        if not bad:
             return log.debug('No bad commit messages.')
 
-        msg = self.options.get('message', 'The following commits had issues.')
-        msg = msg + ' %s was not found:\n' % (self.options['pattern'], )
+        body = self.options.get('message', 'The following commits had issues.')
+        body = body + ' %s was not found:\n' % (self.options['pattern'], )
         for commit in bad:
-            msg += "* %s\n" % (commit, )
-        self.problems.add(IssueComment(msg))
+            body += "* %s\n" % (commit, )
+        self.problems.add(IssueComment(body))
 
     def _check_commit(self, pattern, commit):
         match = pattern.match(commit.commit['message'])

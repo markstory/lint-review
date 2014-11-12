@@ -153,21 +153,22 @@ class Review(object):
             error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):
-        text = config.get('OK_COMMENT', ':+1: No lint errors found.')
-        comment = IssueComment(text)
+        body = config.get('OK_COMMENT', ':+1: No lint errors found.')
+        comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
-        msg = ('Could not review pull request. '
-               'It may be too large, or contain no reviewable changes.')
-        comment = IssueComment(msg)
+        body = ('Could not review pull request. '
+                'It may be too large, or contain no reviewable changes.')
+        comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_summary(self, problems):
-        msg = "There are {0} errors:\n\n".format(len(problems))
+        body = "There are {0} errors:\n\n".format(len(problems))
         for problem in problems:
-            msg += "* {0.filename}, line {0.line} - {0.body}\n".format(problem)
-        comment = IssueComment(msg)
+            body += "* {0.filename}, line {0.line} - {0.body}\n".format(
+                problem)
+        comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
 
@@ -216,7 +217,7 @@ class Problems(object):
                     if error.filename == filename]
         return self._items
 
-    def add(self, filename, line=None, text=None, position=None):
+    def add(self, filename, line=None, body=None, position=None):
         """
         Add a problem to the review.
 
@@ -234,7 +235,7 @@ class Problems(object):
             filename=filename,
             line=line,
             position=position,
-            body=text)
+            body=body)
         if error not in self._items:
             log.debug("Adding error '%s'", error)
             self._items.append(error)
