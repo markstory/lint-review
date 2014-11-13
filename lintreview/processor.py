@@ -1,4 +1,4 @@
-import logging
+:vs
 import lintreview.tools as tools
 
 from lintreview.diff import DiffCollection
@@ -61,4 +61,4 @@ class Processor(object):
             self._config.get('SUMMARY_THRESHOLD'))
 
     def get_commits(self, number):
-        return self._client.pull_requests.list_commits(number)
+        return self._client.pull_requests.list_commits(number).all()
