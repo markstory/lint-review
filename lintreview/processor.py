@@ -1,4 +1,4 @@
-:vs
+import logging
 import lintreview.tools as tools
 
 from lintreview.diff import DiffCollection
