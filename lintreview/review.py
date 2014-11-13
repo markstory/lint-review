@@ -1,14 +1,68 @@
 import logging
-import time
-from collections import namedtuple
+from lintreview.config import load_config
 
-from config import load_config
 
 config = load_config()
-
 log = logging.getLogger(__name__)
 
-Comment = namedtuple('Comment', ['filename', 'line', 'position', 'body'])
+
+class IssueComment(object):
+    """
+    A simple comment that will be published as a
+    pull request/issue comment.
+    """
+    filename = None
+    line = 0
+    position = 0
+    body = None
+
+    def __init__(self, body=''):
+        self.body = body
+
+    def publish(self, gh, pull_request_number, head_commit=None):
+        log.debug("Publishing issue comment '%s'", self.body)
+        try:
+            gh.issues.comments.create(pull_request_number, self.body)
+        except:
+            log.warn("Failed to save comment '%s'", self.body)
+
+    def __eq__(self, other):
+        """
+        Overload eq to make testing much simpler.
+        """
+        return self.__dict__ == other.__dict__
+
+    def __repr__(self):
+        return "%s(filename=%s, line=%s, position=%s, body=%s)" % (
+            str(self.__class__),
+            self.filename,
+            self.line,
+            self.position,
+            self.body)
+
+
+class Comment(IssueComment):
+    """
+    A line comment on the pull request.
+    """
+    def __init__(self, filename='', line=0, position=0, body=''):
+        super(Comment, self).__init__(body)
+        self.line = line
+        self.filename = filename
+        self.position = position
+
+    def publish(self, gh, pull_request_number, head_commit):
+        comment = {
+            'commit_id': head_commit,
+            'path': self.filename,
+            'position': self.position,
+            'body': self.body,
+        }
+        log.debug("Publishing line comment '%s'", comment)
+        try:
+            gh.pull_requests.comments.create(pull_request_number, comment)
+        except:
+            log.warn("Failed to save comment '%s'", comment)
 
 
 class Review(object):
@@ -42,7 +96,8 @@ class Review(object):
         if problem_count == 0:
             return self.publish_ok_comment()
 
-        under_threshold = summary_threshold is None or problem_count < summary_threshold
+        under_threshold = (summary_threshold is None or
+                           problem_count < summary_threshold)
 
         self.load_comments()
         self.remove_existing(problems)
@@ -95,33 +150,26 @@ class Review(object):
         log.debug("Publishing (%s) new comments for '%s'",
                   len(problems), self._number)
         for error in problems:
-            comment = {
-                'commit_id': head_commit,
-                'path': error.filename,
-                'position': error.position,
-                'body': error.body,
-            }
-            log.debug("Publishing comment '%s'", comment)
-            try:
-                self._gh.pull_requests.comments.create(self._number, comment)
-            except:
-                log.warn("Failed to save comment '%s'", comment)
+            error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):
-        comment = config.get('OK_COMMENT', ':+1: No lint errors found.')
-        self._gh.issues.comments.create(self._number, comment)
+        body = config.get('OK_COMMENT', ':+1: No lint errors found.')
+        comment = IssueComment(body)
+        comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
-        msg = ('Could not review pull request. '
-               'It may be too large, or contain no reviewable changes.')
-        self._gh.issues.comments.create(self._number, msg)
+        body = ('Could not review pull request. '
+                'It may be too large, or contain no reviewable changes.')
+        comment = IssueComment(body)
+        comment.publish(self._gh, self._number)
 
     def publish_summary(self, problems):
-        msg = "There are {0} errors:\n\n".format(len(problems))
+        body = "There are {0} errors:\n\n".format(len(problems))
         for problem in problems:
-            msg += "* {0.filename}, line {0.line} - {0.body}\n".format(problem)
-
-        self._gh.issues.comments.create(self._number, msg)
+            body += "* {0.filename}, line {0.line} - {0.body}\n".format(
+                problem)
+        comment = IssueComment(body)
+        comment.publish(self._gh, self._number)
 
 
 class Problems(object):
@@ -164,16 +212,22 @@ class Problems(object):
 
     def all(self, filename=None):
         if filename:
-            return [error for error in self._items if error[0] == filename]
+            return [error
+                    for error in self._items
+                    if error.filename == filename]
         return self._items
 
-    def add(self, filename, line, text, position=None):
+    def add(self, filename, line=None, body=None, position=None):
         """
         Add a problem to the review.
-        
+
         If position is not supplied the diff collection will be scanned
         and the line numbers diff offset will be fetched from there.
         """
+        if isinstance(filename, IssueComment):
+            self._items.append(filename)
+            return
+
         filename = self._trim_filename(filename)
         if not position:
             position = self.line_to_position(filename, line)
@@ -181,7 +235,7 @@ class Problems(object):
             filename=filename,
             line=line,
             position=position,
-            body=text)
+            body=body)
         if error not in self._items:
             log.debug("Adding error '%s'", error)
             self._items.append(error)
@@ -199,7 +253,9 @@ class Problems(object):
         in the DiffCollection
         """
         self._items = [error for error in self._items
-                       if self._changes.has_line_changed(error.filename, error.line)]
+                       if self._changes.has_line_changed(
+                           error.filename,
+                           error.line)]
 
     def remove(self, filename, position, body):
         """
@@ -208,7 +264,8 @@ class Problems(object):
         """
         found = False
         for i, item in enumerate(self._items):
-            if item.filename == filename and item.position == position and item.body == body:
+            if (item.filename == filename and
+                    item.position == position and item.body == body):
                 found = i
                 break
         if found is not False:

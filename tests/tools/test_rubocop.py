@@ -7,6 +7,7 @@ from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
+
 rubocop_missing = not(in_path('rubocop'))
 
 
@@ -37,20 +38,18 @@ class TestRubocop(TestCase):
     def test_process_files__one_file_fail(self):
         linty_filename = abspath(self.fixtures[1])
         self.tool.process_files([linty_filename])
-        expected_problems = [
-            Comment(linty_filename, 3, 3, 'C: Line is too long. [82/79]'),
-            Comment(linty_filename, 4, 4, 'C: Trailing whitespace detected.')
-        ]
 
         problems = self.problems.all(linty_filename)
-        eq_(expected_problems, problems)
+        expected = Comment(linty_filename, 4, 4,
+                           'C: Trailing whitespace detected.')
+        eq_(expected, problems[5])
 
     @needs_rubocop
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
         linty_filename = abspath(self.fixtures[1])
-        eq_(2, len(self.problems.all(linty_filename)))
+        eq_(6, len(self.problems.all(linty_filename)))
 
         freshly_laundered_filename = abspath(self.fixtures[0])
         eq_([], self.problems.all(freshly_laundered_filename))

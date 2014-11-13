@@ -43,7 +43,7 @@ def test_run():
     config = ReviewConfig(simple_ini)
     problems = Problems()
     files = ['./tests/fixtures/pep8/has_errors.py']
-    tools.run(config, problems, files, '')
+    tools.run(config, problems, files, [], '')
     eq_(6, len(problems))
 
 
@@ -54,5 +54,5 @@ def test_run__filter_files():
         './tests/fixtures/pep8/has_errors.py',
         './tests/fixtures/phpcs/has_errors.php'
     ]
-    tools.run(config, problems, files, '')
+    tools.run(config, problems, files, [], '')
     eq_(6, len(problems))

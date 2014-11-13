@@ -5,6 +5,8 @@ install: "pip install . --use-mirrors"
 before_script:
   - npm install jshint
   - npm install csslint
+  - gem install rubocop
+  - gem install puppet-lint
   - cp settings.sample.py settings.py
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
