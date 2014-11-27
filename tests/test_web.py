@@ -14,6 +14,7 @@ test_data = {
             },
         },
         'base': {
+            'ref': 'master',
             'repo': {
                 'name': 'testing',
                 'git_url': 'git://github.com/mark/testing',
