@@ -5,6 +5,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class DiffCollection(object):
     """
     Collection of changes made in a pull request.

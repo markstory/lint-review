@@ -25,7 +25,7 @@ def ping():
 def start_review():
     event = request.headers.get('X-Github-Event')
     if event == 'ping':
-       return Response(status=200)
+        return Response(status=200)
 
     try:
         action = request.json["action"]
