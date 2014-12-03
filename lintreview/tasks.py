@@ -14,7 +14,7 @@ celery.config_from_object(config)
 log = logging.getLogger(__name__)
 
 
-@celery.task(ignore_result=True)
+@celery.task(ignore_result=True, queue=config.get('TASK_QUEUE', None))
 def process_pull_request(user, repo, number, lintrc):
     """
     Starts processing a pull request and running the various
@@ -53,7 +53,7 @@ def process_pull_request(user, repo, number, lintrc):
         log.exception(e)
 
 
-@celery.task(ignore_result=True)
+@celery.task(ignore_result=True, queue=config.get('TASK_QUEUE', None))
 def cleanup_pull_request(user, repo, number):
     """
     Cleans up a pull request once its been closed.

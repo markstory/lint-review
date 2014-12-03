@@ -15,6 +15,7 @@ SERVER_NAME = '127.0.0.1:5000'
 
 # Config file for logging
 LOGGING_CONFIG = './logging.ini'
+TASK_QUEUE = 'lint'
 
 
 # Celery worker configuration #
@@ -33,7 +34,7 @@ CELERY_ENABLE_UTC = True
 
 # Set the queues that celery will use.
 CELERY_QUEUES = (
-    Queue('lint', Exchange('lintreview'), routing_key='linty'),
+    Queue(TASK_QUEUE, Exchange('lintreview'), routing_key='linty'),
 )
 
 
