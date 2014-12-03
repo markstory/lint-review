@@ -76,3 +76,10 @@ class ReviewConfig(object):
             return patterns
         except:
             return []
+
+    def ignore_branches(self):
+        try:
+            values = self._config.get('branches', 'ignore')
+            return map(lambda x: x.strip(), values.split(','))
+        except:
+            return []
