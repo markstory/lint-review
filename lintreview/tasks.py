@@ -32,6 +32,7 @@ def process_pull_request(user, repo, number, target_branch, lintrc):
     if target_branch in review_config.ignore_branches():
         log.info('Pull request into ignored branch %s, skipping processing.' %
                  target_branch)
+        return
 
     gh = github.get_client(config, user, repo)
     try:
