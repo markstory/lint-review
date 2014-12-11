@@ -6,3 +6,4 @@ flake8==2.2.2
 celery==3.0.19
 mock==1.0.1
 gunicorn==0.17.2
+argparse==1.2.2
