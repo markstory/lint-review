@@ -291,6 +291,7 @@ class TestProblems(TestCase):
         # Setup some fake problems.
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
+            (None, None, 'This is a general comment'),
             (filename_1, 117, 'Something bad'),
             (filename_1, 119, 'Something else bad'),
             (filename_1, 130, 'Filtered out, as line is not changed'),
@@ -309,13 +310,16 @@ class TestProblems(TestCase):
         result = self.problems.all(filename_1)
         eq_(2, len(result))
         expected = [
+            (None, None, 'This is a general comment'),
             (filename_1, 117, 'Something bad'),
             (filename_1, 119, 'Something else bad')]
         eq_(result.sort(), expected.sort())
 
         result = self.problems.all(filename_2)
         eq_(1, len(result))
-        expected = [Comment(filename_2, 3, 3, 'Something bad')]
+        expected = [
+            Comment(filename_2, 3, 3, 'Something bad')
+        ]
         eq_(result, expected)
 
     def test_has_changes(self):

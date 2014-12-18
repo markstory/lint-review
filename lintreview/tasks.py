@@ -36,7 +36,9 @@ def process_pull_request(user, repo, number, target_branch, lintrc):
 
     gh = github.get_client(config, user, repo)
     try:
-        log.info('Loading pull request data from github.')
+        log.info('Loading pull request data from github. user=%s ' +
+                 'repo=%s number=%s target_branch=%s', user, repo,
+                 number, target_branch)
         pull_request = gh.pull_requests.get(number)
         head_repo = pull_request.head['repo']['clone_url']
         private_repo = pull_request.head['repo']['private']
