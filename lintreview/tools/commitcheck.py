@@ -39,7 +39,7 @@ class Commitcheck(Tool):
             return log.debug('No bad commit messages.')
 
         body = self.options.get('message', 'The following commits had issues.')
-        body = body + ' %s was not found:\n' % (self.options['pattern'], )
+        body = body + ' The pattern %s was not found in:\n' % (self.options['pattern'], )
         for commit in bad:
             body += "* %s\n" % (commit, )
         self.problems.add(IssueComment(body))
