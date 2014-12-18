@@ -31,6 +31,10 @@ class TestCommitCheck(TestCase):
         self.tool.execute_commits(self.fixture_data)
         eq_(0, len(self.problems), 'Commits that do match are ok')
 
+        self.tool.options['pattern'] = 'bugs?'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(0, len(self.problems), 'Commits that do match are ok')
+
     def test_execute_commits__no_match(self):
         self.tool.options['pattern'] = '\d+'
         self.tool.execute_commits(self.fixture_data)
