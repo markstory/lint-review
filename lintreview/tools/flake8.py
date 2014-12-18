@@ -43,7 +43,9 @@ class Flake8(Tool):
         command = ['flake8']
         for option in self.PYFLAKE_OPTIONS:
             if self.options.get(option):
-                command.extend(['--%(option)s' % {'option': option}, self.options.get(option)])
+                command.extend(
+                    ['--%(option)s' % {'option': option},
+                     self.options.get(option)])
 
         command += files
         output = run_command(command, split=True, ignore_error=True)

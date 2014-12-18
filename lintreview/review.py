@@ -252,10 +252,14 @@ class Problems(object):
         Limit the contained problems to only those changed
         in the DiffCollection
         """
-        self._items = [error for error in self._items
-                       if self._changes.has_line_changed(
-                           error.filename,
-                           error.line)]
+        changes = self._changes
+        def sieve(err):
+            if err.filename is None:
+                return True
+            if changes.has_line_changed(err.filename, err.line):
+                return True
+            return False
+        self._items = [error for error in self._items if sieve(error)]
 
     def remove(self, filename, position, body):
         """

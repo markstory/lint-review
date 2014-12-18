@@ -31,11 +31,6 @@ CELERY_TASK_SERIALIZER = 'json'
 # Show dates and times in UTC
 CELERY_ENABLE_UTC = True
 
-# Set the queues that celery will use.
-CELERY_QUEUES = (
-    Queue('lint', Exchange('lintreview'), routing_key='linty'),
-)
-
 
 # General project configuration #
 #################################

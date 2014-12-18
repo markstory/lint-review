@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @celery.task(ignore_result=True)
-def process_pull_request(user, repo, number, lintrc):
+def process_pull_request(user, repo, number, target_branch, lintrc):
     """
     Starts processing a pull request and running the various
     lint tools against it.
@@ -29,9 +29,16 @@ def process_pull_request(user, repo, number, lintrc):
         log.info('No configured linters, skipping processing.')
         return
 
+    if target_branch in review_config.ignore_branches():
+        log.info('Pull request into ignored branch %s, skipping processing.' %
+                 target_branch)
+        return
+
     gh = github.get_client(config, user, repo)
     try:
-        log.info('Loading pull request data from github.')
+        log.info('Loading pull request data from github. user=%s ' +
+                 'repo=%s number=%s target_branch=%s', user, repo,
+                 number, target_branch)
         pull_request = gh.pull_requests.get(number)
         head_repo = pull_request.head['repo']['clone_url']
         private_repo = pull_request.head['repo']['private']
