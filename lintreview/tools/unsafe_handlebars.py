@@ -37,7 +37,11 @@ class UnsafeHandlebars(Tool):
             ignore_error=True, # no matches returns exit status of 1
             shell=True)
         for line in output:
-            filename, lineNumber, lineContents = re.search('^(.*?):([0-9]+):\s*(.*?)$', line).groups()
+            re_result = re.search('^(.*?):([0-9]+):\s*(.*?)$', line)
+            if re_result is None:
+                return
+
+            filename, lineNumber, lineContents = re_result.groups()
             lineNumber = int(lineNumber)
             message = """
 :warning: Warning! Potential XSS vulnerability. Are you sure you intended to use 3 curlybraces?
