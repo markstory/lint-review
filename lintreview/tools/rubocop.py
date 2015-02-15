@@ -3,6 +3,7 @@ import logging
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from lintreview.utils import bundle_exists
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Rubocop(Tool):
         """
         See if rubocop is on the PATH
         """
-        return in_path('rubocop')
+        return in_path('rubocop') or bundle_exists('rubocop')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -27,7 +28,10 @@ class Rubocop(Tool):
         Run code checks with rubocop
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['rubocop', '--format', 'emacs']
+        command = ['rubocop']
+        if bundle_exists('rubocop'):
+            command = ['bundle', 'exec', 'rubocop']
+        command += ['--format', 'emacs']
         command += files
         output = run_command(
             command,

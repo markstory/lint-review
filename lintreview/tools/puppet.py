@@ -3,6 +3,7 @@ import logging
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from lintreview.utils import bundle_exists
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Puppet(Tool):
         """
         See if puppet-lint is on the PATH
         """
-        return in_path('puppet-lint')
+        return in_path('puppet-lint') or bundle_exists('puppet-lint')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -27,7 +28,10 @@ class Puppet(Tool):
         Run code checks with puppet-lint
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = [self.name, '--log-format',
+        command = ['puppet-lint']
+        if bundle_exists('puppet-lint'):
+            command = ['bundle', 'exec', 'puppet-lint']
+        command += ['--log-format',
                    '%{path}:%{linenumber}:%{KIND}:%{message}']
         command += files
         output = run_command(
