@@ -29,13 +29,24 @@ Its recommended that you use `virtualenv` to save shaving yaks down the road.
     source env/bin/activate
     pip install .
 
-In addtion to installing the dependencies for lint-review you will also need to install
-the various lint tools you want to use. Lint-review requires that lint tools be installed
-system wide or on the $PATH of the user running the celery process. `pep8` and `flake8` will
-be installed as dependencies for lint-review, but any other tools will need to be installed
-manually using their respective installers.
+In addtion to installing the dependencies for lint-review you will also need to
+install the various lint tools you want to use. Lint-review requires that lint
+tools be installed relative to the source code. `pep8` and `flake8` will be
+installed as dependencies for lint-review, but any other tools will need to be
+installed using their respective installers. To install all the tools run the following:
 
-Once the dependencies are installed you should configure the lint review applications.
+```bash
+# Install ruby tools
+bundle install --path ./bundle
+
+# Install javascript tools.
+npm install
+
+# Install PHP tools
+php composer.phar install
+```
+
+Once the dependencies are installed you should configure the repositories you want to review.
 
 
 ## Lint Review Configuration
