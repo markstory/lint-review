@@ -1,4 +1,5 @@
 from . import load_fixture
+from contextlib import contextmanager
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review
@@ -127,6 +128,52 @@ class TestReview(TestCase):
         })
         eq_(calls[1], expected)
 
+    def test_publish_problems_no_ok_notify(self):
+        gh = Mock()
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            (filename_1, 117, 'Something bad'),
+            (filename_1, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review = Review(gh, 3)
+
+        with no_ok_notify():
+            sha = 'abc123'
+            review.publish_problems(problems, sha)
+
+        assert gh.issues.labels.remove_from_issue.called
+        assert gh.pull_requests.comments.create.called
+        eq_(2, gh.pull_requests.comments.create.call_count)
+        assert not gh.issues.labels.add.called
+
+        calls = gh.issues.labels.remove_from_issue.call_args_list
+
+        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        eq_(calls, [expected])
+
+        calls = gh.pull_requests.comments.create.call_args_list
+
+        expected = call(3, {
+            'commit_id': sha,
+            'path': errors[0][0],
+            'position': errors[0][1],
+            'body': errors[0][2]
+        })
+        eq_(calls[0], expected)
+
+        expected = call(3, {
+            'commit_id': sha,
+            'path': errors[1][0],
+            'position': errors[1][1],
+            'body': errors[1][2]
+        })
+        eq_(calls[1], expected)
+
     def test_publish_ok_comment(self):
         gh = Mock()
         problems = Problems(changes=[1])
@@ -144,6 +191,32 @@ class TestReview(TestCase):
             3, config.get('OK_COMMENT', ':+1: No lint errors found.'))
         eq_(calls[0], expected)
 
+    def test_publish_ok_comment_no_ok_notify(self):
+        gh = Mock()
+        problems = Problems(changes=[1])
+        review = Review(gh, 3)
+
+        with no_ok_notify():
+            sha = 'abc123'
+            review.publish(problems, sha)
+
+        assert not gh.pull_requests.comments.create.called
+        assert not gh.issues.comments.create.called
+        assert gh.issues.labels.remove_from_issue.called
+        assert gh.issues.labels.add.called
+
+        calls = gh.issues.labels.remove_from_issue.call_args_list
+
+        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        eq_(calls, [expected])
+
+        calls = gh.issues.labels.add.call_args_list
+
+        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        eq_(calls[0], expected)
+
+        assert not(gh.pull_requests.comments.create.called)
+
     def test_publish_empty_comment(self):
         gh = Mock()
         problems = Problems(changes=[])
@@ -154,6 +227,32 @@ class TestReview(TestCase):
 
         assert not(gh.pull_requests.comments.create.called)
         assert gh.issues.comments.create.called
+
+        calls = gh.issues.comments.create.call_args_list
+
+        msg = ('Could not review pull request. '
+               'It may be too large, or contain no reviewable changes.')
+        expected = call(3, msg)
+        eq_(calls[0], expected)
+
+    def test_publish_empty_comment_no_ok_notify(self):
+        gh = Mock()
+        problems = Problems(changes=[])
+        review = Review(gh, 3)
+
+        with no_ok_notify():
+            sha = 'abc123'
+            review.publish(problems, sha)
+
+        assert not gh.pull_requests.comments.create.called
+        assert gh.issues.comments.create.called
+        assert gh.issues.labels.remove_from_issue.called
+        assert not gh.issues.labels.add.called
+
+        calls = gh.issues.labels.remove_from_issue.call_args_list
+
+        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        eq_(calls, [expected])
 
         calls = gh.issues.comments.create.call_args_list
 
@@ -328,3 +427,13 @@ class TestProblems(TestCase):
 
         problems = Problems(changes=[1])
         assert problems.has_changes()
+
+@contextmanager
+def no_ok_notify():
+    from lintreview.review import config
+    eq_(config["NO_OK_NOTIFY"], False)
+    config["NO_OK_NOTIFY"] = True
+    try:
+        yield
+    finally:
+        config["NO_OK_NOTIFY"] = False

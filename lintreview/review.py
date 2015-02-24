@@ -41,6 +41,30 @@ class IssueComment(object):
             self.body)
 
 
+class IssueLabel(object):
+
+    OK_LABEL = 'No lint errors'
+
+    def __init__(self, label):
+        self.label = label
+
+    def remove(self, gh, pull_request_number):
+        try:
+            log.debug("Removing issue label '%s'", self.label)
+            gh.issues.labels.remove_from_issue(pull_request_number, self.label)
+        except:
+            log.warn("Failed to remove label '%s'", self.label)
+
+    def publish(self, gh, pull_request_number):
+        # remove+add to show latest activity
+        self.remove(gh, pull_request_number)
+        log.debug("Publishing issue label '%s'", self.label)
+        try:
+            gh.issues.labels.add(pull_request_number, self.label)
+        except:
+            log.warn("Failed to add label '%s'", self.label)
+
+
 class Comment(IssueComment):
     """
     A line comment on the pull request.
@@ -141,6 +165,11 @@ class Review(object):
         for comment in self._comments:
             problems.remove(comment.filename, comment.position, comment.body)
 
+    def remove_ok_label(self):
+        if config.get('NO_OK_NOTIFY', False):
+            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+            IssueLabel(label).remove(self._gh, self._number)
+
     def publish_problems(self, problems, head_commit):
         """
         Publish the issues contains in the problems
@@ -149,21 +178,28 @@ class Review(object):
         """
         log.debug("Publishing (%s) new comments for '%s'",
                   len(problems), self._number)
+        self.remove_ok_label()
         for error in problems:
             error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):
-        body = config.get('OK_COMMENT', ':+1: No lint errors found.')
-        comment = IssueComment(body)
+        if config.get('NO_OK_NOTIFY', False):
+            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+            comment = IssueLabel(label)
+        else:
+            body = config.get('OK_COMMENT', ':+1: No lint errors found.')
+            comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
+        self.remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_summary(self, problems):
+        self.remove_ok_label()
         body = "There are {0} errors:\n\n".format(len(problems))
         for problem in problems:
             body += "* {0.filename}, line {0.line} - {0.body}\n".format(
