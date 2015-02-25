@@ -141,19 +141,20 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(gh, 3)
+        label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify():
+        with no_ok_notify(gh, 3, label):
             sha = 'abc123'
             review.publish_problems(problems, sha)
 
         assert gh.issues.labels.remove_from_issue.called
         assert gh.pull_requests.comments.create.called
         eq_(2, gh.pull_requests.comments.create.call_count)
-        assert not gh.issues.labels.add.called
+        assert_add_to_issue(gh)
 
         calls = gh.issues.labels.remove_from_issue.call_args_list
 
-        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        expected = call(3, label)
         eq_(calls, [expected])
 
         calls = gh.pull_requests.comments.create.call_args_list
@@ -195,26 +196,22 @@ class TestReview(TestCase):
         gh = Mock()
         problems = Problems(changes=[1])
         review = Review(gh, 3)
+        label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify():
+        with no_ok_notify(gh, 3, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
         assert not gh.pull_requests.comments.create.called
         assert not gh.issues.comments.create.called
         assert gh.issues.labels.remove_from_issue.called
-        assert gh.issues.labels.add.called
 
         calls = gh.issues.labels.remove_from_issue.call_args_list
 
-        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        expected = call(3, label)
         eq_(calls, [expected])
 
-        calls = gh.issues.labels.add.call_args_list
-
-        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
-        eq_(calls[0], expected)
-
+        assert_add_to_issue(gh, 3, label)
         assert not(gh.pull_requests.comments.create.called)
 
     def test_publish_empty_comment(self):
@@ -239,19 +236,20 @@ class TestReview(TestCase):
         gh = Mock()
         problems = Problems(changes=[])
         review = Review(gh, 3)
+        label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify():
+        with no_ok_notify(gh, 3, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
         assert not gh.pull_requests.comments.create.called
         assert gh.issues.comments.create.called
         assert gh.issues.labels.remove_from_issue.called
-        assert not gh.issues.labels.add.called
+        assert_add_to_issue(gh)
 
         calls = gh.issues.labels.remove_from_issue.call_args_list
 
-        expected = call(3, config.get('OK_LABEL', 'No lint errors'))
+        expected = call(3, label)
         eq_(calls, [expected])
 
         calls = gh.issues.comments.create.call_args_list
@@ -428,12 +426,44 @@ class TestProblems(TestCase):
         problems = Problems(changes=[1])
         assert problems.has_changes()
 
+
 @contextmanager
-def no_ok_notify():
+def no_ok_notify(gh, pr_number, *labels):
     from lintreview.review import config
+
+    if labels:
+        class Label(object):
+            def __init__(self, name):
+                self.name = name
+        gh.issues.labels.list_by_issue.return_value = [Label(n) for n in labels]
+
     eq_(config["NO_OK_NOTIFY"], False)
     config["NO_OK_NOTIFY"] = True
     try:
         yield
     finally:
         config["NO_OK_NOTIFY"] = False
+
+
+def assert_add_to_issue(gh, *pr_number_and_labels):
+    if not pr_number_and_labels:
+        assert not gh.issues.labels.add_to_issue.called
+    else:
+        import json
+        pr_number = pr_number_and_labels[0]
+        labels = list(pr_number_and_labels[1:])
+
+        # the assertion should be this simple, but bugs...
+        #expected = call(pr_number, labels)
+        #eq_(gh.issues.labels.add_to_issue.call_args_list, [expected])
+
+        assert gh.issues.labels.make_request.called
+        expected = call(
+            'issues.labels.add_to_issue',
+            user=None,
+            repo=None,
+            number=pr_number,
+            body=json.dumps(labels)
+        )
+        eq_(gh.issues.labels.make_request.call_args_list, [expected])
+        eq_(gh.issues.labels._client.request.call_count, 1)
