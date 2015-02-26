@@ -63,9 +63,9 @@ class IssueLabel(object):
         self.remove(gh, pull_request_number)
         log.debug("Publishing issue label '%s'", self.label)
         try:
+            # add_to_issue should be all we need to do, but it's buggy...
             #gh.issues.labels.add_to_issue(pull_request_number, [self.label])
-
-            # work around the bugs in gh.issues.labels.add_to_issue
+            # work around the bugs in add_to_issue
             import json
             request = gh.issues.labels.make_request(
                 'issues.labels.add_to_issue',
