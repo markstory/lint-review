@@ -198,7 +198,7 @@ class TestReview(TestCase):
         review = Review(gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with add_ok_label(gh, 3, label):
+        with add_ok_label(gh, 3, label, create=True):
             sha = 'abc123'
             review.publish(problems, sha)
 
@@ -211,7 +211,7 @@ class TestReview(TestCase):
         expected = call(3, label)
         eq_(calls, [expected])
 
-        assert_add_to_issue(gh, 3, label)
+        assert_add_to_issue(gh, 3, label, create=True)
         assert not(gh.pull_requests.comments.create.called)
 
     def test_publish_empty_comment(self):
@@ -428,14 +428,18 @@ class TestProblems(TestCase):
 
 
 @contextmanager
-def add_ok_label(gh, pr_number, *labels):
+def add_ok_label(gh, pr_number, *labels, **kw):
     from lintreview.review import config
+    from pygithub3.exceptions import NotFound
 
     if labels:
         class Label(object):
             def __init__(self, name):
                 self.name = name
         gh.issues.labels.list_by_issue.return_value = [Label(n) for n in labels]
+
+        if kw.get("create"):
+            gh.issues.labels.get.side_effect = NotFound
 
     eq_(config["ADD_OK_LABEL"], False)
     config["ADD_OK_LABEL"] = True
@@ -445,13 +449,20 @@ def add_ok_label(gh, pr_number, *labels):
         config["ADD_OK_LABEL"] = False
 
 
-def assert_add_to_issue(gh, *pr_number_and_labels):
+def assert_add_to_issue(gh, *pr_number_and_labels, **kw):
     if not pr_number_and_labels:
         assert not gh.issues.labels.add_to_issue.called
     else:
         import json
         pr_number = pr_number_and_labels[0]
         labels = list(pr_number_and_labels[1:])
+
+        if kw.get("create"):
+            expected = call({
+                "name": labels[0],
+                "color": "bfe5bf",
+            })
+            eq_(gh.issues.labels.create.call_args_list, [expected])
 
         # the assertion should be this simple, but bugs...
         #expected = call(pr_number, labels)

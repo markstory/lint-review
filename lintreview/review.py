@@ -1,5 +1,6 @@
 import logging
 from lintreview.config import load_config
+from pygithub3.exceptions import NotFound
 
 
 config = load_config()
@@ -63,6 +64,15 @@ class IssueLabel(object):
         self.remove(gh, pull_request_number)
         log.debug("Publishing issue label '%s'", self.label)
         try:
+            try:
+                gh.issues.labels.get(self.label)
+            except NotFound:
+                # create label if it doesn't exist yet
+                gh.issues.labels.create({
+                    "name": self.label,
+                    "color": "bfe5bf", # a nice light green
+                })
+
             # add_to_issue should be all we need to do, but it's buggy...
             #gh.issues.labels.add_to_issue(pull_request_number, [self.label])
             # work around the bugs in add_to_issue
