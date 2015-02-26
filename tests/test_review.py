@@ -128,7 +128,7 @@ class TestReview(TestCase):
         })
         eq_(calls[1], expected)
 
-    def test_publish_problems_no_ok_notify(self):
+    def test_publish_problems_add_ok_label(self):
         gh = Mock()
         problems = Problems()
 
@@ -143,7 +143,7 @@ class TestReview(TestCase):
         review = Review(gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify(gh, 3, label):
+        with add_ok_label(gh, 3, label):
             sha = 'abc123'
             review.publish_problems(problems, sha)
 
@@ -192,13 +192,13 @@ class TestReview(TestCase):
             3, config.get('OK_COMMENT', ':+1: No lint errors found.'))
         eq_(calls[0], expected)
 
-    def test_publish_ok_comment_no_ok_notify(self):
+    def test_publish_ok_comment_add_ok_label(self):
         gh = Mock()
         problems = Problems(changes=[1])
         review = Review(gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify(gh, 3, label):
+        with add_ok_label(gh, 3, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
@@ -232,13 +232,13 @@ class TestReview(TestCase):
         expected = call(3, msg)
         eq_(calls[0], expected)
 
-    def test_publish_empty_comment_no_ok_notify(self):
+    def test_publish_empty_comment_add_ok_label(self):
         gh = Mock()
         problems = Problems(changes=[])
         review = Review(gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with no_ok_notify(gh, 3, label):
+        with add_ok_label(gh, 3, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
@@ -428,7 +428,7 @@ class TestProblems(TestCase):
 
 
 @contextmanager
-def no_ok_notify(gh, pr_number, *labels):
+def add_ok_label(gh, pr_number, *labels):
     from lintreview.review import config
 
     if labels:
@@ -437,12 +437,12 @@ def no_ok_notify(gh, pr_number, *labels):
                 self.name = name
         gh.issues.labels.list_by_issue.return_value = [Label(n) for n in labels]
 
-    eq_(config["NO_OK_NOTIFY"], False)
-    config["NO_OK_NOTIFY"] = True
+    eq_(config["ADD_OK_LABEL"], False)
+    config["ADD_OK_LABEL"] = True
     try:
         yield
     finally:
-        config["NO_OK_NOTIFY"] = False
+        config["ADD_OK_LABEL"] = False
 
 
 def assert_add_to_issue(gh, *pr_number_and_labels):

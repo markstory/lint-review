@@ -186,7 +186,7 @@ class Review(object):
             problems.remove(comment.filename, comment.position, comment.body)
 
     def remove_ok_label(self):
-        if config.get('NO_OK_NOTIFY', False):
+        if config.get('ADD_OK_LABEL', False):
             label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
             IssueLabel(label).remove(self._gh, self._number)
 
@@ -203,7 +203,7 @@ class Review(object):
             error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):
-        if config.get('NO_OK_NOTIFY', False):
+        if config.get('ADD_OK_LABEL', False):
             label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
             comment = IssueLabel(label)
         else:
