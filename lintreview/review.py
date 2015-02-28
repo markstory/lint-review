@@ -1,5 +1,6 @@
 import logging
 from lintreview.config import load_config
+from pygithub3.exceptions import NotFound
 
 
 config = load_config()
@@ -39,6 +40,59 @@ class IssueComment(object):
             self.line,
             self.position,
             self.body)
+
+
+class IssueLabel(object):
+
+    OK_LABEL = 'No lint errors'
+
+    def __init__(self, label):
+        self.label = label
+
+    def remove(self, gh, pull_request_number):
+        try:
+            labels = gh.issues.labels.list_by_issue(pull_request_number)
+            if not any(self.label == label.name for label in labels):
+                return
+            log.debug("Removing issue label '%s'", self.label)
+            gh.issues.labels.remove_from_issue(pull_request_number, self.label)
+        except:
+            log.warn("Failed to remove label '%s'", self.label)
+
+    def publish(self, gh, pull_request_number):
+        # remove+add to show latest activity
+        self.remove(gh, pull_request_number)
+        log.debug("Publishing issue label '%s'", self.label)
+        try:
+            try:
+                gh.issues.labels.get(self.label)
+            except NotFound:
+                # create label if it doesn't exist yet
+                gh.issues.labels.create({
+                    "name": self.label,
+                    "color": "bfe5bf", # a nice light green
+                })
+
+            # add_to_issue should be all we need to do, but it's buggy...
+            #gh.issues.labels.add_to_issue(pull_request_number, [self.label])
+            # work around the bugs in add_to_issue
+            import json
+            request = gh.issues.labels.make_request(
+                'issues.labels.add_to_issue',
+                user=None,
+                repo=None,
+                number=pull_request_number,
+                body=json.dumps([self.label])
+            )
+            # gh.issues.labels._post asserts response.status_code == 201
+            # so we have to reach deeper because the github API returns 200
+            input_data = request.get_body()
+            response = gh.issues.labels._client.request(
+                            'post', request, data=input_data)
+            assert response.status_code == 200
+
+        except:
+            log.warn("Failed to add label '%s'", self.label)
 
 
 class Comment(IssueComment):
@@ -141,6 +195,11 @@ class Review(object):
         for comment in self._comments:
             problems.remove(comment.filename, comment.position, comment.body)
 
+    def remove_ok_label(self):
+        if config.get('ADD_OK_LABEL', False):
+            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+            IssueLabel(label).remove(self._gh, self._number)
+
     def publish_problems(self, problems, head_commit):
         """
         Publish the issues contains in the problems
@@ -149,21 +208,28 @@ class Review(object):
         """
         log.debug("Publishing (%s) new comments for '%s'",
                   len(problems), self._number)
+        self.remove_ok_label()
         for error in problems:
             error.publish(self._gh, self._number, head_commit)
 
     def publish_ok_comment(self):
-        body = config.get('OK_COMMENT', ':+1: No lint errors found.')
-        comment = IssueComment(body)
+        if config.get('ADD_OK_LABEL', False):
+            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+            comment = IssueLabel(label)
+        else:
+            body = config.get('OK_COMMENT', ':+1: No lint errors found.')
+            comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
+        self.remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         comment = IssueComment(body)
         comment.publish(self._gh, self._number)
 
     def publish_summary(self, problems):
+        self.remove_ok_label()
         body = "There are {0} errors:\n\n".format(len(problems))
         for problem in problems:
             body += "* {0.filename}, line {0.line} - {0.body}\n".format(

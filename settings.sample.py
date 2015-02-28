@@ -73,3 +73,8 @@ SUMMARY_THRESHOLD = 50
 # LINTRC_DEFAULTS = './lintrc_defaults.ini'
 
 OK_COMMENT = ':+1: No lint errors found.'
+
+# Set to True to use a label instead of a comment for OK status.
+# Cuts down on github notification noise.
+ADD_OK_LABEL = False
+OK_LABEL = 'No lint errors'
