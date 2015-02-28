@@ -24,3 +24,27 @@ def npm_exists(name):
     cwd = os.getcwd()
     path = os.path.join(cwd, 'node_modules', '.bin', name)
     return os.path.exists(path)
+
+
+def composer_exists(name):
+    """
+    Check whether or not a cli tool exists in vendor/bin/{name}
+    relative to os.cwd
+
+    @return boolean
+    """
+    cwd = os.getcwd()
+    path = os.path.join(cwd, 'vendor', 'bin', name)
+    return os.path.exists(path)
+
+
+def bundle_exists(name):
+    """
+    Check whether or not a ruby tool exists in
+    the os.cwd using bundler.
+
+    @return boolean
+    """
+    cwd = os.getcwd()
+    path = os.path.join(cwd, 'vendor', 'bin', name)
+    return os.path.exists(path)
