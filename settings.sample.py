@@ -5,9 +5,11 @@ import os
 
 # gunicorn config
 bind = os.environ.get('LINTREVIEW_GUNICORN_BIND', '127.0.0.1:5000')
-errorlog = os.environ.get('GUNICORN_LOG_ERROR', 'lintreview.error.log')
-accesslog = os.environ.get('GUNICORN_LOG_ACCESS', 'lintreview.access.log')
-debug = os.environ.get('LINTREVIEW_GUNICORN_DEBUG', True)
+errorlog = os.environ.get('LINTREVIEW_GUNICORN_LOG_ERROR',
+                          'lintreview.error.log')
+accesslog = os.environ.get('LINTREVIEW_GUNICORN_LOG_ACCESS',
+                           'lintreview.access.log')
+debug = bool(os.environ.get('LINTREVIEW_GUNICORN_DEBUG', True))
 loglevel = os.environ.get('LINTREVIEW_GUNICORN_LOGLEVEL', 'debug')
 
 # Basic flask config
@@ -76,14 +78,15 @@ SSL_CA_BUNDLE = None
 # After this many comments in a review, a single summary comment
 # should be posted instead of individual line comments. This helps
 # prevent really noisy reviews from slowing down github.
-SUMMARY_THRESHOLD = os.environ.get('LINTREVIEW_SUMMARY_THRESHOLD', 50)
+SUMMARY_THRESHOLD = int(os.environ.get('LINTREVIEW_SUMMARY_THRESHOLD', 50))
 
 # This config file contains default settings for .lintrc
 # LINTRC_DEFAULTS = './lintrc_defaults.ini'
 
-OK_COMMENT = os.environ.get('LINTREVIEW_OK_COMMENT', ':+1: No lint errors found.')
+OK_COMMENT = os.environ.get('LINTREVIEW_OK_COMMENT',
+                            ':+1: No lint errors found.')
 
 # Set to True to use a label instead of a comment for OK status.
 # Cuts down on github notification noise.
-ADD_OK_LABEL = os.environ.get('LINTREVIEW_ADD_OK_LABEL', False)
+ADD_OK_LABEL = bool(os.environ.get('LINTREVIEW_ADD_OK_LABEL', False))
 OK_LABEL = os.environ.get('LINTREVIEW_OK_LABEL', 'No lint errors')
