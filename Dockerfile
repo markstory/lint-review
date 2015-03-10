@@ -3,10 +3,10 @@ WORKDIR /code
 ADD . /code
 ENV LINTREVIEW_SETTINGS /code/settings.sample.py
 RUN apt-get update && apt-get install -y php-pear ruby npm && \
-    pip install -r requirements.txt && pip install . && \
-    pear install PHP_CodeSniffer && \
-    gem install bundler && bundle install --system && \
-    npm install -y csslint jshint && \
-    ln -s /usr/bin/nodejs /usr/bin/node && \
-    apt-get -y autoremove && apt-get -y clean && \
-    nosetests -v
+    apt-get -y autoremove && apt-get -y clean
+RUN pip install -r requirements.txt && pip install .
+RUN pear install PHP_CodeSniffer
+RUN gem install bundler && bundle install --system
+RUN npm install -y csslint jshint
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+RUN nosetests -v
