@@ -10,4 +10,5 @@ tags
 /node_modules
 /vendor
 /bundle
+/.bundle
 output.log

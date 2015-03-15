@@ -20,8 +20,9 @@ need to have rabbitmq-server running.
 
 ## Installation
 
-You install Lint Review by cloning the repository and installing dependecies.
-Its recommended that you use `virtualenv` to save shaving yaks down the road.
+You install Lint Review by cloning the repository and installing dependecies,
+or by using docker. If you are not using docker, it is recommended that you use
+`virtualenv` to save shaving yaks down the road.
 
     git clone git://github.com/markstory/lint-review.git
     cd lint-review
@@ -48,6 +49,13 @@ php composer.phar install
 
 Once the dependencies are installed you should configure the repositories you want to review.
 
+## Using Docker
+
+To use docker, you'll need to install both docker, docker-compose and possibly boot2docker
+depending on your operating system. Once you have the docker installed, you can boot up lint-review
+into docker using:
+
+    docker-compose up
 
 ## Lint Review Configuration
 
@@ -55,7 +63,7 @@ Lint review is configured through a settings file. Both the web app and celery p
 share the same configuration file, so configuration is easier to manage and share.
 
 * Copy the `settings.sample.py` to `settings.py`
-* Edit the required configuration options.
+* Edit the required configuration options, or set the correct environment variables.
 * Set the `LINTREVIEW_SETTINGS` environment variable to the path
   of your configuration files. In \*nix system this can be done via:
 
