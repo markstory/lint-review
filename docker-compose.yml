@@ -1,0 +1,20 @@
+broker:
+  image: rabbitmq:3-management
+  ports:
+    - "15672:15672"
+image:
+  build: .
+web:
+  image: lintreview_image
+  command: bash -c 'gunicorn -c ${LINTREVIEW_SETTINGS} lintreview.web:app'
+  environment:
+    LINTREVIEW_GUNICORN_BIND: '0.0.0.0:5000'
+  ports:
+   - "5000:5000"
+  links:
+   - "broker:broker"
+worker:
+  image: lintreview_image
+  command: celery -A lintreview.tasks worker
+  links:
+   - "broker:broker"
