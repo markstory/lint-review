@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 
 def in_path(name):
@@ -43,8 +44,10 @@ def bundle_exists(name):
     Check whether or not a ruby tool exists in
     the os.cwd using bundler.
 
+    This assumes that you installed bundler packages
+    into ./bundle as documented in the README.
+
     @return boolean
     """
-    cwd = os.getcwd()
-    path = os.path.join(cwd, 'vendor', 'bin', name)
-    return os.path.exists(path)
+    installed = subprocess.check_output('bundle list')
+    return name in installed

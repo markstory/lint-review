@@ -3,7 +3,7 @@ import os
 import functools
 from lintreview.tools import Tool
 from lintreview.tools import run_command
-from lintreview.utils import in_path
+from lintreview.utils import composer_exists, in_path
 
 log = logging.getLogger(__name__)
 
