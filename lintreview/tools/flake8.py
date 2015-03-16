@@ -20,6 +20,7 @@ class Flake8(Tool):
         'max-line-length',
         'format',
         'max-complexity',
+        'snippet',
     ]
 
     def check_dependencies(self):
