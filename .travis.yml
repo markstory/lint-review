@@ -5,7 +5,7 @@ install: "pip install ."
 before_script:
   - npm install
   - bundle install --path ./bundle
-  - composer install
+  - pear install PHP_CodeSniffer
   - cp settings.sample.py settings.py
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
