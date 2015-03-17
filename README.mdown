@@ -147,6 +147,8 @@ Uses the [flake8](http://pypi.python.org/pypi/flake8) module to check code.
 * `max-line-length` Set maximum allowed line length (default: 79)
 * `format` Set the error format [default|pylint|<custom>]
 * `max-complexity` McCabe complexity threshold
+* `snippet` Interacts with [flake8-snippets](https://pypi.python.org/pypi/flake8-snippets) allowing
+  you to trigger errors on specific snippets you want to disallow.
 
 These options are passed into flake8 as cli options.
 
