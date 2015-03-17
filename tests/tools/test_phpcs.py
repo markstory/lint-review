@@ -83,7 +83,7 @@ class Testphpcs(TestCase):
         tool = Phpcs(self.problems, config, '/some/path')
         result = tool.create_command(['some/file.php'])
         expected = [
-            'vendor/bin/phpcs',
+            'phpcs',
             '--report=checkstyle',
             '--standard=/some/path/test/CodeStandards',
             '--extensions=php',
