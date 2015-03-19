@@ -8,4 +8,7 @@ tags
 /workspace
 /ca.crt
 /node_modules
+/vendor
+/bundle
+/.bundle
 output.log

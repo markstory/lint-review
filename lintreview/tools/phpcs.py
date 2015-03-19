@@ -3,7 +3,7 @@ import os
 import functools
 from lintreview.tools import Tool
 from lintreview.tools import run_command
-from lintreview.utils import in_path
+from lintreview.utils import composer_exists, in_path
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class Phpcs(Tool):
         """
         See if phpcs is on the system path.
         """
-        return in_path('phpcs')
+        return in_path('phpcs') or composer_exists('phpcs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -41,8 +41,11 @@ class Phpcs(Tool):
         self._process_checkstyle(output, filename_converter)
 
     def create_command(self, files):
-        command = ['phpcs', '--report=checkstyle']
-        standard = 'PEAR'
+        command = ['phpcs']
+        if composer_exists('phpcs'):
+            command = ['vendor/bin/phpcs']
+        command += ['--report=checkstyle']
+        standard = 'PSR2'
         if self.options.get('standard'):
             standard = self.apply_base(self.options['standard'])
         extension = 'php'

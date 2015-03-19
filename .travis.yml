@@ -1,12 +1,10 @@
 language: python
 python:
  - "2.7"
-install: "pip install . --use-mirrors"
+install: "pip install ."
 before_script:
-  - npm install jshint
-  - npm install csslint
-  - gem install rubocop
-  - gem install puppet-lint
+  - npm install
+  - bundle install --path ./bundle
   - cp settings.sample.py settings.py
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
