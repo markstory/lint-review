@@ -49,5 +49,8 @@ def bundle_exists(name):
 
     @return boolean
     """
-    installed = subprocess.check_output('bundle list')
+    try:
+        installed = subprocess.check_output('bundle list')
+    except OSError:
+        return False
     return name in installed
