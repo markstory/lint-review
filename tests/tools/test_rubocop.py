@@ -53,3 +53,17 @@ class TestRubocop(TestCase):
 
         freshly_laundered_filename = abspath(self.fixtures[0])
         eq_([], self.problems.all(freshly_laundered_filename))
+
+    @needs_rubocop
+    def test_process_files_one_file_fail_display_cop_names(self):
+        options = {
+            'display_cop_names': 'True',
+        }
+        self.tool = Rubocop(self.problems, options)
+        linty_filename = abspath(self.fixtures[1])
+        self.tool.process_files([linty_filename])
+
+        problems = self.problems.all(linty_filename)
+        expected = Comment(linty_filename, 3, 3,
+                           'C: Metrics/LineLength: Line is too long. [82/80]')
+        eq_(expected, problems[4])

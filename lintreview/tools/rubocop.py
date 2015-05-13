@@ -32,6 +32,8 @@ class Rubocop(Tool):
         if bundle_exists('rubocop'):
             command = ['bundle', 'exec', 'rubocop']
         command += ['--format', 'emacs']
+        if self.options.get('display_cop_names', '').lower() == 'true':
+            command += ['--display-cop-names']
         command += files
         output = run_command(
             command,
