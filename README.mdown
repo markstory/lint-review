@@ -239,7 +239,9 @@ You'll need to install it to use it:
 
 *Options*
 
-No options. `.rubocop.yml` files will be respected, as described
+* `display_cop_names` Set to `true` to pass display cop names in offense messages.
+
+`.rubocop.yml` files will be respected, as described
 [here](https://github.com/bbatsov/rubocop#configuration).
 
 ### Puppet:
