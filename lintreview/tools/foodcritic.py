@@ -17,7 +17,7 @@ class Foodcritic(Tool):
         """
         See if foodcritic is on the PATH
         """
-        return in_path('foodcritic')
+        return in_path('foodcritic') or bundle_exists('foodcritic')
 
     def process_files(self, files):
         command = ['foodcritic']
