@@ -255,3 +255,17 @@ You'll need to install it to use it:
 
 No options. `.puppet-lintrc` files will be respected, to allow each project to disable
 checks. A list of checks can be found by running "puppet-lint --help"
+
+### Chef:
+
+#### Foodcritic
+
+Uses the [Foodcritic](http://www.foodcritic.io/) gem to check Chef files.
+You'll need to install Foodcritit:
+
+    gem install foodcritic
+
+*Options*
+
+* `path` If your cookbooks aren't stored in the root, use this to set the path
+  that foodcritic runs against. Example: `path = cookbooks`
