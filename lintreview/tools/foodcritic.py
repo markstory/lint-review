@@ -4,6 +4,7 @@ import logging
 from lintreview.tools import Tool
 from lintreview.tools import run_command
 from lintreview.utils import in_path
+from lintreview.utils import bundle_exists
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +21,8 @@ class Foodcritic(Tool):
 
     def process_files(self, files):
         command = ['foodcritic']
+        if bundle_exists('foodcritic'):
+            command = ['bundle', 'exec', 'foodcritic']
         # if no directory is set, assume the root
         path = os.path.join(self.base_path, self.options.get('path', ''))
         command += [path]
