@@ -1,0 +1,6 @@
+maintainer       'Foodcritic'
+maintainer_email 'email@address'
+license          'All rights reserved'
+description      'No errors for tests'
+long_description ''
+version          '0.0.1'
