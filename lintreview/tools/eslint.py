@@ -8,7 +8,7 @@ from lintreview.utils import npm_exists
 log = logging.getLogger(__name__)
 
 
-class ESlint(Tool):
+class Eslint(Tool):
 
     name = 'eslint'
 
@@ -34,7 +34,12 @@ class ESlint(Tool):
         cmd = self.name
         if npm_exists('eslint'):
             cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'eslint')
-        command = [cmd, files]
+        command = [cmd, '--format', 'checkstyle']
+        # Add config file if it's present
+        if self.options.get('config'):
+            command += ['--config', self.apply_base(self.options['config'])]
+        command += files
         output = run_command(
             command,
             ignore_error=True)
+        self._process_checkstyle(output)
