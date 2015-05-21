@@ -210,13 +210,24 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 
 * `config` Provide a path to the json config file for jshint.
 
+#### ESLint
+
+Uses the [eslint](http://eslint.org/) npm module to check javascript files. Before
+you can use this linter you'll need to install the eslint npm package:
+
+    cd path/to/lintreview
+    npm install eslint
+
+*Options*
+
+* `config` Provide a path to the json config file for eslint.
 
 ### CSS:
 
 #### CSSLint
 
-Uses the [csslint](http://csslint.net/) npm module to check javascript files. Before
-you can use this linter you'll need to install nodejs and the jshint npm package:
+Uses the [csslint](http://csslint.net/) npm module to check css files. Before
+you can use this linter you'll need to install nodejs and the csslint npm package:
 
     cd path/tp/lintreview
     npm install csslint
