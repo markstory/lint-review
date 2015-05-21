@@ -1,9 +1,4 @@
-function () {
-	"use strict";
-	// no semicolon
-	var foo = bar
-	// eqnull
-	if (foo == null) {
-		alert('oh noes');
-	}
-}();
+// no semicolon, bar is not defined, foo is never used
+var foo = bar
+// alert is not defined
+alert("oh noes");

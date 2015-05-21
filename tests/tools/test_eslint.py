@@ -15,8 +15,7 @@ class TestEslint(TestCase):
 
     fixtures = [
         'tests/fixtures/eslint/no_errors.js',
-        'tests/fixtures/eslint/has_errors.js',
-        'tests/fixtures/eslint/error_on_multiple_lines.js',
+        'tests/fixtures/eslint/has_errors.js'
     ]
 
     def setUp(self):
@@ -35,32 +34,22 @@ class TestEslint(TestCase):
         self.assertTrue(self.tool.check_dependencies())
 
     @needs_eslint
-    def test_process_files__one_file_pass(self):
+    def test_process_files_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
     @needs_eslint
-    def test_process_files__one_file_fail(self):
+    def test_process_files_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(1, len(problems))
+        eq_(5, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 1, 1,'Unexpected token (')
+        expected = Comment(fname, 2, 2, 'foo is defined but never used (no-unused-vars)')
         eq_(expected, problems[0])
 
-    @needs_eslint
-    def test_process_files__multiple_error(self):
-        self.tool.process_files([self.fixtures[2]])
-        problems = self.problems.all(self.fixtures[2])
-        eq_(7, len(problems))
-
-        fname = self.fixtures[2]
-        expected = Comment(fname, 4, 4, "\"go\" is not defined. (no-undef)")
-        eq_(expected, problems[2])
-
-        expected = Comment(fname, 8, 8, "Missing semicolon. (semi)")
-        eq_(expected, problems[6])
+        expected = Comment(fname, 4, 4, '"alert" is not defined. (no-undef)')
+        eq_(expected, problems[4])
 
     @needs_eslint
     def test_process_files_with_config(self):
@@ -68,8 +57,8 @@ class TestEslint(TestCase):
             'config': 'tests/fixtures/eslint/config.json'
         }
         tool = Eslint(self.problems, config)
-        tool.process_files([self.fixtures[2]])
+        tool.process_files([self.fixtures[1]])
 
-        problems = self.problems.all(self.fixtures[2])
+        problems = self.problems.all(self.fixtures[1])
 
-        eq_(6, len(problems), 'Config file should lower error count.')
+        eq_(4, len(problems), 'Config file should lower error count.')
