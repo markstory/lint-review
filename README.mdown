@@ -265,7 +265,7 @@ checks. A list of checks can be found by running "puppet-lint --help"
 #### Foodcritic
 
 Uses the [Foodcritic](http://www.foodcritic.io/) gem to check Chef files.
-You'll need to install Foodcritit:
+You'll need to install Foodcritic:
 
     gem install foodcritic
 
