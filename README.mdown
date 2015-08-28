@@ -57,7 +57,12 @@ To use docker, you'll need to install both docker, docker-compose and possibly b
 depending on your operating system. Once you have the docker installed, you can boot up lint-review
 into docker using:
 
-    docker-compose up
+    docker build --tag=lintreview_image .
+    docker up -d broker worker web
+    
+Edit docker-composer.yml and customise your configuration by setting keys under environment for the
+web and worker processes. For the most basic installation you'll need to set at least `GITHUB_USERNAME`
+and `GITHUB_PASSWORD` (or `GITHUB_OAUTH_TOKEN`), and `LINTREVIEW_SERVER_NAME`.
 
 ## Lint Review Configuration
 
@@ -92,6 +97,10 @@ tool:
 
     source env/bin/activate
     lintreview register mark awesome-stuff
+    
+Or, if you're using Docker:
+
+    docker-compose run web lintreview register mark awesome-stuff
 
 The above register webhooks for the given user & repository. You can use the
 `--user` and `--password` options to provide the repository admin credentials
