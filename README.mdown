@@ -58,7 +58,7 @@ depending on your operating system. Once you have the docker installed, you can 
 into docker using:
 
     docker build --tag=lintreview_image .
-    docker up -d broker worker web
+    docker-compose up -d broker worker web
     
 Edit docker-composer.yml and customise your configuration by setting keys under environment for the
 web and worker processes. For the most basic installation you'll need to set at least `GITHUB_USERNAME`
