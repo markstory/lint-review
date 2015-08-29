@@ -1,14 +1,14 @@
 from os.path import abspath
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.utils import in_path
+from lintreview.utils import in_path, bundle_exists
 from lintreview.tools.rubocop import Rubocop
 from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
 
-rubocop_missing = not(in_path('rubocop'))
+rubocop_missing = not(in_path('rubocop') or bundle_exists('rubocop'))
 
 
 class TestRubocop(TestCase):

@@ -1,12 +1,12 @@
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.phpcs import Phpcs
-from lintreview.utils import in_path
+from lintreview.utils import in_path, composer_exists
 from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
-phpcs_missing = not(in_path('phpcs'))
+phpcs_missing = not(composer_exists('phpcs') or in_path('phpcs'))
 
 
 class Testphpcs(TestCase):
@@ -42,18 +42,22 @@ class Testphpcs(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(12, len(problems))
+        eq_(3, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 7, 7, 'PHP version not specified')
+        expected = Comment(
+            fname,
+            14,
+            14,
+            'Opening brace should be on a new line')
         eq_(expected, problems[0])
 
         expected = Comment(
             fname,
             16,
             16,
-            "Line indented incorrectly; expected at least 4 spaces, found 1")
-        eq_(expected, problems[11])
+            "Spaces must be used to indent lines; tabs are not allowed")
+        eq_(expected, problems[2])
 
     @needs_phpcs
     def test_process_files_two_files(self):
@@ -62,7 +66,7 @@ class Testphpcs(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(12, len(problems))
+        eq_(3, len(problems))
 
     @needs_phpcs
     def test_process_files_with_config(self):

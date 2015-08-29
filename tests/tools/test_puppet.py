@@ -1,14 +1,14 @@
 from os.path import abspath
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.utils import in_path
+from lintreview.utils import in_path, bundle_exists
 from lintreview.tools.puppet import Puppet
 from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 from operator import attrgetter
 
-puppet_missing = not(in_path('puppet-lint'))
+puppet_missing = not(in_path('puppet-lint') or bundle_exists('puppet-lint'))
 
 
 class TestPuppet(TestCase):
