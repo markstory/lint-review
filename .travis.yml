@@ -3,11 +3,9 @@ python:
  - "2.7"
 install: "pip install ."
 before_script:
-  - curl -sS https://getcomposer.org/installer | php
   - npm install
   - bundle install --path ./bundle
   - cp settings.sample.py settings.py
-  - php composer.phar install
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
 script: "nosetests"
