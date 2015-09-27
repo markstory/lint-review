@@ -81,13 +81,16 @@ class Testphpcs(TestCase):
         eq_(8, len(problems), 'Changing standards changes error counts')
 
     def test_create_command__with_path_based_standard(self):
+        command = 'vendor/bin/phpcs'
+        if phpcs_missing:
+            command = 'phpcs'
         config = {
             'standard': 'test/CodeStandards'
         }
         tool = Phpcs(self.problems, config, '/some/path')
         result = tool.create_command(['some/file.php'])
         expected = [
-            'vendor/bin/phpcs',
+            command,
             '--report=checkstyle',
             '--standard=/some/path/test/CodeStandards',
             '--extensions=php',
