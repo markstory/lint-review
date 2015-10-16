@@ -53,7 +53,7 @@ Once the dependencies are installed you should configure the repositories you wa
 
 ## Using Docker
 
-To use docker, you'll need to install both docker, docker-compose and possibly boot2docker
+To use docker, you'll need to install both docker, docker-compose and possibly docker toolbox
 depending on your operating system. Once you have the docker installed, you can boot up lint-review
 into docker using:
 
