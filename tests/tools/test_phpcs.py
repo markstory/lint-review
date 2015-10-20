@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest import skipIf
 from nose.tools import eq_
 
-phpcs_missing = not(composer_exists('phpcs') or in_path('phpcs'))
+phpcs_missing = not(composer_exists('phpcs'))
 
 
 class Testphpcs(TestCase):
