@@ -1,6 +1,7 @@
 # Lint Review
 
 [![Build Status](https://api.travis-ci.org/markstory/lint-review.svg)](https://travis-ci.org/markstory/lint-review)
+[![Docker Repository on Quay.io](https://quay.io/repository/freshbooks/lint-review/status "Docker Repository on Quay.io")](https://quay.io/repository/freshbooks/lint-review)
 
 Lint Review helps automate a tedious part of code review - enforcing coding
 standards. By using the github API Lint Review runs a repository's configured linters
