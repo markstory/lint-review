@@ -46,12 +46,12 @@ def process_hook(func, args):
     with app.app_context():
         if credentials:
             credentials['GITHUB_URL'] = app.config['GITHUB_URL']
-            gh = github.get_client(
+            gh = github.get_repository(
                 credentials,
                 args.user,
                 args.repo)
         else:
-            gh = github.get_client(
+            gh = github.get_repository(
                 app.config,
                 args.user,
                 args.repo)

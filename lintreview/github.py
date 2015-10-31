@@ -1,29 +1,31 @@
-from pygithub3 import Github
-import base64
 import logging
+
+import github3
 
 log = logging.getLogger(__name__)
 
 
-def get_client(config, user, repo):
+def get_client(config):
     """
     Factory for the Github client
     """
     if 'GITHUB_OAUTH_TOKEN' in config:
-        gh = Github(
-            base_url=config['GITHUB_URL'],
-            login=config['GITHUB_USER'],
-            token=config['GITHUB_OAUTH_TOKEN'],
-            user=user,
-            repo=repo)
+        gh = github3.login(
+            username=config['GITHUB_USER'],
+            token=config['GITHUB_OAUTH_TOKEN']
+        )
     else:
-        gh = Github(
-            base_url=config['GITHUB_URL'],
-            login=config['GITHUB_USER'],
-            password=config['GITHUB_PASSWORD'],
-            user=user,
-            repo=repo)
+        gh = github3.login(
+            username=config['GITHUB_USER'],
+            password=config['GITHUB_PASSWORD']
+        )
+
     return gh
+
+
+def get_repository(config, user, repo):
+    gh = get_client(config)
+    return gh.repository(owner=user, repository=repo)
 
 
 def get_lintrc(gh):
@@ -33,11 +35,8 @@ def get_lintrc(gh):
     some hackery will ensue.
     """
     log.info('Fetching lintrc file')
-    repo = gh.repos
-    parts = ['repos', repo.get_user(), repo.get_repo(), 'contents', '.lintrc']
-    path = '/'.join(parts)
-    response = repo._client.get(path)
-    return base64.b64decode(response.json()['content'])
+    response = gh.file_contents('.lintrc')
+    return response.decoded
 
 
 def register_hook(gh, hook_url, user, repo):
@@ -45,7 +44,7 @@ def register_hook(gh, hook_url, user, repo):
     Register a new hook with a user's repository.
     """
     log.info('Registering webhook for %s on %s/%s', hook_url, user, repo)
-    hooks = gh.repos.hooks.list().all()
+    hooks = gh.hooks()
     found = False
     for hook in hooks:
         if hook.name != 'web':
@@ -70,7 +69,7 @@ def register_hook(gh, hook_url, user, repo):
         'events': ['pull_request']
     }
     try:
-        gh.repos.hooks.create(hook, user=user, repo=repo)
+        gh.create_hook(**hook)
     except:
         message = ("Unable to save webhook. You need to have administration"
                    "privileges over the repository to add webhooks.")
@@ -84,7 +83,7 @@ def unregister_hook(gh, hook_url, user, repo):
     Remove a registered webhook.
     """
     log.info('Removing webhook for %s on %s/%s', hook_url, user, repo)
-    hooks = gh.repos.hooks.list().all()
+    hooks = gh.hooks()
     hook_id = False
     for hook in hooks:
         if hook.name != 'web':
@@ -99,7 +98,7 @@ def unregister_hook(gh, hook_url, user, repo):
         log.error(msg)
         raise Exception(msg)
     try:
-        gh.repos.hooks.delete(hook_id, user=user, repo=repo)
+        gh.hook(hook_id).delete()
     except:
         message = ("Unable to remove webhook. You will need admin "
                    "privileges over the repository to remove webhooks.")

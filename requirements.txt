@@ -1,5 +1,5 @@
 Flask==0.10.1
-pygithub3-intellisense==0.5
+github3.py==1.0.0a2
 nose==1.2.1
 pep8==1.5.7
 flake8==2.2.2

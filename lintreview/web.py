@@ -3,7 +3,7 @@ import pkg_resources
 
 from flask import Flask, request, Response
 from lintreview.config import load_config
-from lintreview.github import get_client
+from lintreview.github import get_repository
 from lintreview.github import get_lintrc
 from lintreview.tasks import process_pull_request
 from lintreview.tasks import cleanup_pull_request
@@ -52,7 +52,7 @@ def start_review():
     if action == "closed":
         return close_review(user, repo, pull_request)
 
-    gh = get_client(app.config, user, repo)
+    gh = get_repository(app.config, user, repo)
     try:
         lintrc = get_lintrc(gh)
         log.debug("lintrc file contents '%s'", lintrc)
