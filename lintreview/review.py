@@ -50,11 +50,12 @@ class IssueLabel(object):
 
     def remove(self, gh, pull_request_number):
         try:
-            labels = gh.issue(pull_request_number).labels()
+            issue = gh.issue(pull_request_number)
+            labels = issue.labels()
             if not any(self.label == label.name for label in labels):
                 return
             log.debug("Removing issue label '%s'", self.label)
-            gh.issue(pull_request_number).remove_label(self.label)
+            issue.remove_label(self.label)
         except:
             log.warn("Failed to remove label '%s'", self.label)
 

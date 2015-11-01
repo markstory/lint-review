@@ -21,7 +21,19 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        self.review = Review({}, 2)
+        pr = Mock()
+        issue = Mock()
+        gh = Mock()
+
+        gh.pull_request.return_value = pr
+        gh.issue.return_value = issue
+
+        self.gh, self.pr, self.issue = gh, pr, issue
+        self.review = Review(self.gh, 2)
+
+    def test_ensure_correct_pull_request_loaded(self):
+        # Test the setup setup.
+        self.gh.pull_request.assert_called_with(2)
 
     @patch('pygithub3.core.client.Client.get')
     def test_load_comments__none_active(self, http):
@@ -129,7 +141,6 @@ class TestReview(TestCase):
         eq_(calls[1], expected)
 
     def test_publish_problems_add_ok_label(self):
-        gh = Mock()
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -140,39 +151,43 @@ class TestReview(TestCase):
         problems.add_many(errors)
         sha = 'abc123'
 
-        review = Review(gh, 3)
+        review = Review(self.gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with add_ok_label(gh, 3, label):
+        label_obj = Mock()
+        label_obj.name = label
+        self.issue.labels.return_value = (label_obj,)
+
+        with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
             review.publish_problems(problems, sha)
 
-        assert gh.issues.labels.remove_from_issue.called
-        assert gh.pull_requests.comments.create.called
-        eq_(2, gh.pull_requests.comments.create.call_count)
-        assert_add_to_issue(gh)
+        assert self.issue.remove_label.called
+        assert self.pr.create_review_comment.called
+        eq_(2, self.pr.create_review_comment.call_count)
+        assert_add_to_issue(self.gh)
 
-        calls = gh.issues.labels.remove_from_issue.call_args_list
+        calls = self.issue.remove_label.call_args_list
 
-        expected = call(3, label)
+        expected = call(label)
         eq_(calls, [expected])
 
-        calls = gh.pull_requests.comments.create.call_args_list
+        calls = self.pr.create_review_comment.call_args_list
 
-        expected = call(3, {
-            'commit_id': sha,
-            'path': errors[0][0],
-            'position': errors[0][1],
-            'body': errors[0][2]
-        })
+        expected = call(
+            commit_id=sha,
+            path=errors[0][0],
+            position=errors[0][1],
+            body=errors[0][2]
+        )
         eq_(calls[0], expected)
 
-        expected = call(3, {
-            'commit_id': sha,
-            'path': errors[1][0],
-            'position': errors[1][1],
-            'body': errors[1][2]
-        })
+        expected = call(
+            commit_id=sha,
+            path=errors[1][0],
+            position=errors[1][1],
+            body=errors[1][2]
+        )
         eq_(calls[1], expected)
 
     def test_publish_ok_comment(self):
@@ -215,35 +230,31 @@ class TestReview(TestCase):
         assert not(gh.pull_requests.comments.create.called)
 
     def test_publish_empty_comment(self):
-        gh = Mock()
         problems = Problems(changes=[])
-        review = Review(gh, 3)
+        review = Review(self.gh, 3)
 
         sha = 'abc123'
         review.publish(problems, sha)
 
-        assert not(gh.pull_requests.comments.create.called)
-        assert gh.issues.comments.create.called
+        assert self.issue.create_comment.called
 
-        calls = gh.issues.comments.create.call_args_list
+        calls = self.issue.create_comment.call_args_list
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
-        expected = call(3, msg)
+        expected = call(msg)
         eq_(calls[0], expected)
 
     def test_publish_empty_comment_add_ok_label(self):
-        gh = Mock()
         problems = Problems(changes=[])
-        review = Review(gh, 3)
+        review = Review(self.gh, 3)
         label = config.get('OK_LABEL', 'No lint errors')
 
-        with add_ok_label(gh, 3, label):
+        with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
-        assert not gh.pull_requests.comments.create.called
-        assert gh.issues.comments.create.called
+        assert self.pr.create_comment.called
         assert gh.issues.labels.remove_from_issue.called
         assert_add_to_issue(gh)
 
@@ -285,7 +296,6 @@ class TestReview(TestCase):
         assert review.publish_summary.called, 'Should have been called.'
 
     def test_publish_summary(self):
-        gh = Mock()
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -297,19 +307,19 @@ class TestReview(TestCase):
         problems.set_changes([1])
         sha = 'abc123'
 
-        review = Review(gh, 3)
+        review = Review(self.gh, 3)
         review.publish_summary(problems)
 
-        assert gh.issues.comments.create.called
-        eq_(1, gh.issues.comments.create.call_count)
-        calls = gh.issues.comments.create.call_args_list
+        assert self.issue.create_comment.called
+        eq_(1, self.issue.create_comment.call_count)
+        calls = self.issue.create_comment.call_args_list
 
         msg = """There are 2 errors:
 
 * Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
 * Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
 """
-        expected = call(3, msg)
+        expected = call(msg)
         eq_(calls[0], expected)
 
 
