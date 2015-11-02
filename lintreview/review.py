@@ -50,11 +50,12 @@ class IssueLabel(object):
 
     def remove(self, gh, pull_request_number):
         try:
-            labels = gh.issue(pull_request_number).labels()
+            issue = gh.issue(pull_request_number)
+            labels = issue.labels()
             if not any(self.label == label.name for label in labels):
                 return
             log.debug("Removing issue label '%s'", self.label)
-            gh.issue(pull_request_number).remove_label(self.label)
+            issue.remove_label(self.label)
         except:
             log.warn("Failed to remove label '%s'", self.label)
 
@@ -70,7 +71,6 @@ class IssueLabel(object):
                     color="bfe5bf", # a nice light green
                 )
             gh.issue(pull_request_number).add_labels(self.label)
-
         except:
             log.warn("Failed to add label '%s'", self.label)
 
@@ -153,15 +153,17 @@ class Review(object):
         comments = list(self._pr.review_comments())
 
         for comment in comments:
-            filename = comment.path
-            if not comment.position:
+            # Workaround github3 not exposing attributes for what we need.
+            guts = comment.as_dict()
+            filename = guts['path']
+            if not guts['position']:
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
             self._comments.add(
                 filename,
                 None,
                 comment.body,
-                int(comment.position))
+                int(guts['position']))
         log.debug("'%s' comments loaded", len(self._comments))
 
     def remove_existing(self, problems):
