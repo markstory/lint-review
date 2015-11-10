@@ -1,6 +1,6 @@
 import logging
-
 import github3
+from functools import partial
 
 log = logging.getLogger(__name__)
 
@@ -9,18 +9,14 @@ def get_client(config):
     """
     Factory for the Github client
     """
+    login = github3.login
+    if 'GITHUB_URL' in config:
+        login = partial(github3.enterprise_login, url=config['GITHUB_URL'])
     if 'GITHUB_OAUTH_TOKEN' in config:
-        gh = github3.login(
-            username=config['GITHUB_USER'],
-            token=config['GITHUB_OAUTH_TOKEN']
-        )
-    else:
-        gh = github3.login(
-            username=config['GITHUB_USER'],
-            password=config['GITHUB_PASSWORD']
-        )
-
-    return gh
+        return login(username=config['GITHUB_USER'],
+                     token=config['GITHUB_OAUTH_TOKEN'])
+    return login(username=config['GITHUB_USER'],
+                 password=config['GITHUB_PASSWORD'])
 
 
 def get_repository(config, user, repo):
