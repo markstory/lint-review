@@ -46,17 +46,17 @@ def process_hook(func, args):
     with app.app_context():
         if credentials:
             credentials['GITHUB_URL'] = app.config['GITHUB_URL']
-            gh = github.get_repository(
+            repo = github.get_repository(
                 credentials,
                 args.user,
                 args.repo)
         else:
-            gh = github.get_repository(
+            repo = github.get_repository(
                 app.config,
                 args.user,
                 args.repo)
         endpoint = url_for('start_review', _external=True)
-    func(gh, endpoint, args.user, args.repo)
+    func(repo, endpoint)
 
 
 def create_parser():

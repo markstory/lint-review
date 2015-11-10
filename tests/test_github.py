@@ -1,12 +1,10 @@
 import lintreview.github as github
 
 from . import load_fixture
-from mock import call
-from mock import patch
-from mock import Mock
+from mock import call, patch, Mock
 from nose.tools import eq_
-from pygithub3 import Github
-from requests.models import Response
+import github3
+import json
 
 
 config = {
@@ -28,45 +26,37 @@ def test_get_lintrc():
     assert isinstance(lintrc, str)
 
 
-@patch('pygithub3.core.client.Client.get')
-def test_register_hook(http):
-    response = Response()
-    response._content = '[]'
-    http.return_value = response
+def test_register_hook():
+    repo = Mock(spec=github3.repos.repo.Repository,
+                full_name='mark/lint-review')
+    repo.hooks.return_value = []
 
-    gh = Github()
-    gh.repos.hooks.create = Mock()
     url = 'http://example.com/review/start'
+    github.register_hook(repo, url)
 
-    github.register_hook(gh, url, 'mark', 'lint-test')
-
-    assert gh.repos.hooks.create.called, 'Create not called'
-    calls = gh.repos.hooks.create.call_args_list
-    expected = call({
-        'name': 'web',
-        'active': True,
-        'config': {
+    assert repo.create_hook.called, 'Create not called'
+    calls = repo.create_hook.call_args_list
+    expected = call(
+        name='web',
+        active=True,
+        config={
             'content_type': 'json',
             'url': url,
         },
-        'events': ['pull_request']
-    }, user='mark', repo='lint-test')
+        events=['pull_request']
+    )
     eq_(calls[0], expected)
 
 
-@patch('pygithub3.core.client.Client.get')
-def test_register_hook__already_exists(http):
-    response = Response()
-    response._content = load_fixture('webhook_list.json')
-    http.return_value = response
-
-    gh = Github()
-    gh.repos.hooks.create = Mock()
+def test_register_hook__already_exists():
+    repo = Mock(spec=github3.repos.repo.Repository,
+                full_name='mark/lint-review')
+    repo.hooks.return_value = map(lambda f: github3.repos.hook.Hook(f),
+                                 json.loads(load_fixture('webhook_list.json')))
     url = 'http://example.com/review/start'
 
-    github.register_hook(gh, url, 'mark', 'lint-test')
-
-    assert gh.repos.hooks.create.called is False, 'Create called'
+    github.register_hook(repo, url)
+    assert repo.create_hook.called is False, 'Create called'
 
 
 @patch('pygithub3.core.client.Client.get')

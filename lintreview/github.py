@@ -35,12 +35,12 @@ def get_lintrc(gh):
     return response.decoded
 
 
-def register_hook(gh, hook_url, user, repo):
+def register_hook(repo, hook_url):
     """
     Register a new hook with a user's repository.
     """
-    log.info('Registering webhook for %s on %s/%s', hook_url, user, repo)
-    hooks = gh.hooks()
+    log.info('Registering webhook for %s on %s', hook_url, repo.full_name)
+    hooks = repo.hooks()
     found = False
     for hook in hooks:
         if hook.name != 'web':
@@ -65,7 +65,7 @@ def register_hook(gh, hook_url, user, repo):
         'events': ['pull_request']
     }
     try:
-        gh.create_hook(**hook)
+        repo.create_hook(**hook)
     except:
         message = ("Unable to save webhook. You need to have administration"
                    "privileges over the repository to add webhooks.")
@@ -74,12 +74,12 @@ def register_hook(gh, hook_url, user, repo):
     log.info('Registered hook successfully')
 
 
-def unregister_hook(gh, hook_url, user, repo):
+def unregister_hook(repo, hook_url):
     """
     Remove a registered webhook.
     """
-    log.info('Removing webhook for %s on %s/%s', hook_url, user, repo)
-    hooks = gh.hooks()
+    log.info('Removing webhook for %s on %s', hook_url, repo.full_name)
+    hooks = repo.hooks()
     hook_id = False
     for hook in hooks:
         if hook.name != 'web':
@@ -94,7 +94,7 @@ def unregister_hook(gh, hook_url, user, repo):
         log.error(msg)
         raise Exception(msg)
     try:
-        gh.hook(hook_id).delete()
+        repo.hook(hook_id).delete()
     except:
         message = ("Unable to remove webhook. You will need admin "
                    "privileges over the repository to remove webhooks.")
