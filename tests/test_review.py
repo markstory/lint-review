@@ -8,9 +8,8 @@ from lintreview.review import Comment
 from lintreview.review import IssueComment
 from mock import patch, Mock, call
 from nose.tools import eq_
-from pygithub3 import Github
-from pygithub3.resources.base import Resource
 from github3.issues.comment import IssueComment as GhIssueComment
+from github3.pulls import PullFile
 from requests.models import Response
 from unittest import TestCase
 import json
@@ -349,7 +348,8 @@ class TestProblems(TestCase):
         eq_(1, len(problems))
 
     def test_add__with_diff_containing_block_offset(self):
-        res = Resource.loads(self.block_offset)
+        res = map(lambda f: PullFile(f),
+                  json.loads(self.block_offset))
         changes = DiffCollection(res)
 
         problems = Problems(changes=changes)
@@ -376,7 +376,8 @@ class TestProblems(TestCase):
         eq_(expected, result)
 
     def test_limit_to_changes__remove_problems(self):
-        res = Resource.loads(self.two_files_json)
+        res = map(lambda f: PullFile(f),
+                  json.loads(self.two_files_json))
         changes = DiffCollection(res)
 
         # Setup some fake problems.

@@ -1,26 +1,33 @@
 from . import load_fixture
 from lintreview.processor import Processor
 from lintreview.diff import DiffCollection
+from github3.pulls import PullFile
 from mock import patch
 from mock import Mock
 from nose.tools import eq_
 from nose.tools import raises
-from pygithub3 import Github
 from requests.models import Response
 from unittest import TestCase
+import json
 
 fixture_data = load_fixture('one_file_pull_request.json')
 
 
 class ProcessorTest(TestCase):
 
-    @patch('pygithub3.core.client.Client.get')
-    def test_load_changes(self, http):
-        gh = Github()
-        response = Response()
-        response._content = fixture_data
-        http.return_value = response
+    def get_mock_client(self, fixture):
+        gh = Mock()
+        pull_request = Mock()
 
+        pull_request.files.return_value = map(
+            lambda f: PullFile(f),
+            json.loads(fixture))
+
+        gh.pull_request.return_value = pull_request
+        return gh
+
+    def test_load_changes(self):
+        gh = self.get_mock_client(fixture_data)
         subject = Processor(gh, 1, '123abc', './tests')
         subject.load_changes()
 
@@ -29,26 +36,27 @@ class ProcessorTest(TestCase):
 
     @raises(RuntimeError)
     def test_run_tools__no_changes(self):
-        subject = Processor(None, 1, '123abc', './tests')
+        gh = self.get_mock_client(fixture_data)
+
+        subject = Processor(gh, 1, '123abc', './tests')
         subject.run_tools(None)
 
-    @patch('pygithub3.core.client.Client.get')
     @patch('lintreview.processor.tools')
-    def test_run_tools(self, tool_stub, http):
-        response = Response()
-        response._content = load_fixture('commits.json')
-        http.return_value = response
+    def test_run_tools(self, tool_stub):
+        gh = self.get_mock_client(load_fixture('commits.json'))
 
-        stub = Mock()
-        subject = Processor(http, 1, '123abc', './tests')
+        stub_config = Mock()
+        subject = Processor(gh, 1, '123abc', './tests')
         subject._changes = Mock()
-        subject.run_tools(stub)
+        subject.run_tools(stub_config)
         assert tool_stub.run.called, 'Should have ran'
         assert subject._changes.get_files.called, 'Should have been called'
-        assert stub.ignore_patterns.called
+        assert stub_config.ignore_patterns.called
 
     def test_publish(self):
-        subject = Processor(None, 1, '123abc', './tests', {'SUMMARY_THRESHOLD': 50})
+        gh = self.get_mock_client(load_fixture('commits.json'))
+
+        subject = Processor(gh, 1, '123abc', './tests', {'SUMMARY_THRESHOLD': 50})
         subject._problems = Mock()
         subject._review = Mock()
 
