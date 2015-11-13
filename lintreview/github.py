@@ -4,13 +4,15 @@ from functools import partial
 
 log = logging.getLogger(__name__)
 
+GITHUB_BASE_URL = 'https://api.github.com/'
+
 
 def get_client(config):
     """
     Factory for the Github client
     """
     login = github3.login
-    if 'GITHUB_URL' in config:
+    if config.get('GITHUB_URL', GITHUB_BASE_URL) != GITHUB_BASE_URL:
         login = partial(github3.enterprise_login, url=config['GITHUB_URL'])
     if 'GITHUB_OAUTH_TOKEN' in config:
         return login(username=config['GITHUB_USER'],
@@ -24,14 +26,12 @@ def get_repository(config, user, repo):
     return gh.repository(owner=user, repository=repo)
 
 
-def get_lintrc(gh):
+def get_lintrc(repo):
     """
     Download the .lintrc from a repo
-    Since pygithub3 doesn't support this,
-    some hackery will ensue.
     """
     log.info('Fetching lintrc file')
-    response = gh.file_contents('.lintrc')
+    response = repo.file_contents('.lintrc')
     return response.decoded
 
 
