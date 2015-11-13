@@ -1,9 +1,11 @@
 import lintreview.tools as tools
+import github3
 from lintreview.config import ReviewConfig
 from lintreview.review import Review
 from lintreview.review import Problems
-from nose.tools import eq_
-from nose.tools import raises
+from nose.tools import eq_, raises
+from mock import Mock
+
 
 sample_ini = """
 [tools]
@@ -13,6 +15,7 @@ linters = pep8, jshint
 config = ./jshint.json
 
 """
+
 
 simple_ini = """
 [tools]
@@ -27,13 +30,15 @@ linters = not there, bogus
 
 @raises(ImportError)
 def test_factory_raises_error_on_bad_linter():
+    gh = Mock(spec=github3.GitHub)
     config = ReviewConfig(bad_ini)
-    tools.factory(Review(None, None), config, '')
+    tools.factory(Review(gh, None), config, '')
 
 
 def test_factory_generates_tools():
+    gh = Mock(spec=github3.GitHub)
     config = ReviewConfig(sample_ini)
-    linters = tools.factory(Review(None, None), config, '')
+    linters = tools.factory(Review(gh, None), config, '')
     eq_(2, len(linters))
     assert isinstance(linters[0], tools.pep8.Pep8)
     assert isinstance(linters[1], tools.jshint.Jshint)
