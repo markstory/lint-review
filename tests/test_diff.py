@@ -1,7 +1,7 @@
-from . import load_fixture
+from . import load_fixture, create_pull_files
+from github3.pulls import PullFile
 from lintreview.diff import DiffCollection
 from lintreview.diff import Diff
-from pygithub3.resources.base import Resource
 from unittest import TestCase
 from nose.tools import eq_
 
@@ -21,10 +21,10 @@ class TestDiffCollection(TestCase):
     removed_files_json = load_fixture('diff_with_removed_files.json')
 
     def setUp(self):
-        self.one_file = Resource.loads(self.one_file_json)
-        self.two_files = Resource.loads(self.two_files_json)
-        self.renamed_files = Resource.loads(self.renamed_files_json)
-        self.removed_files = Resource.loads(self.renamed_files_json)
+        self.one_file = create_pull_files(self.one_file_json)
+        self.two_files = create_pull_files(self.two_files_json)
+        self.renamed_files = create_pull_files(self.renamed_files_json)
+        self.removed_files = create_pull_files(self.renamed_files_json)
 
     def test_create_one_element(self):
         changes = DiffCollection(self.one_file)
@@ -128,7 +128,7 @@ class TestDiff(TestCase):
     block_offset = load_fixture('pull_request_line_offset.json')
 
     def setUp(self):
-        res = Resource.loads(self.fixture_json)
+        res = create_pull_files(self.fixture_json)
         self.diff = Diff(res[0])
 
     def test_properties(self):
@@ -145,7 +145,7 @@ class TestDiff(TestCase):
         self.assertTrue(self.diff.has_line_changed(464))
 
     def test_has_line_changed__not_find_deletes(self):
-        res = Resource.loads(self.two_files_json)
+        res = create_pull_files(self.two_files_json)
         diff = Diff(res[0])
 
         self.assertTrue(diff.has_line_changed(117))
@@ -156,7 +156,7 @@ class TestDiff(TestCase):
         self.assertFalse(diff.has_line_changed(148))
 
     def test_has_line_changed__blocks_offset(self):
-        res = Resource.loads(self.block_offset)
+        res = create_pull_files(self.block_offset)
         diff = Diff(res[0])
 
         self.assertTrue(diff.has_line_changed(32))
