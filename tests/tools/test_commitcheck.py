@@ -1,9 +1,8 @@
-from tests import load_fixture
+from tests import load_fixture, create_commits
 from lintreview.review import Problems
 from lintreview.review import IssueComment
 from lintreview.tools.commitcheck import Commitcheck
 from nose.tools import eq_
-from pygithub3.resources.base import Resource
 from unittest import TestCase
 
 
@@ -12,7 +11,7 @@ class TestCommitCheck(TestCase):
     fixture = load_fixture('commits.json')
 
     def setUp(self):
-        self.fixture_data = Resource.loads(self.fixture)
+        self.fixture_data = create_commits(self.fixture)
         self.problems = Problems()
         self.tool = Commitcheck(self.problems)
 
