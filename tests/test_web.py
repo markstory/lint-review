@@ -1,5 +1,5 @@
 from lintreview import web
-from mock import patch
+from mock import patch, Mock
 from nose.tools import eq_
 from unittest import TestCase
 import json
@@ -78,9 +78,12 @@ class WebTest(TestCase):
         eq_(204, res.status_code)
         eq_('', res.data)
 
+    @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
     @patch('lintreview.web.process_pull_request')
-    def test_start_review_schedule_job(self, task, lintrc):
+    def test_start_review_schedule_job(self, task, lintrc, get_repo):
+        get_repo.return_value = Mock()
+
         opened = test_data.copy()
         opened['action'] = 'opened'
         data = json.dumps(opened)
@@ -95,9 +98,12 @@ linters = pep8"""
         eq_(204, res.status_code)
         eq_('', res.data)
 
+    @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
     @patch('lintreview.web.process_pull_request')
-    def test_start_review_schedule_job__on_reopend(self, task, lintrc):
+    def test_start_review_schedule_job__on_reopend(self, task, lintrc,
+                                                   get_repo):
+        get_repo.return_value = Mock()
         reopened = test_data.copy()
         reopened['action'] = 'reopened'
         data = json.dumps(reopened)
