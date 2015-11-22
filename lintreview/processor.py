@@ -33,9 +33,8 @@ class Processor(object):
 
     def load_changes(self):
         log.info('Loading pull request patches from github.')
-        files = self._client.pull_requests.list_files(self._number)
-        pull_request_patches = files.all()
-        self._changes = DiffCollection(pull_request_patches)
+        files = list(self._client.pull_request(self._number).files())
+        self._changes = DiffCollection(files)
         self._problems.set_changes(self._changes)
 
     def run_tools(self, review_config):
@@ -61,4 +60,4 @@ class Processor(object):
             self._config.get('SUMMARY_THRESHOLD'))
 
     def get_commits(self, number):
-        return self._client.pull_requests.list_commits(number).all()
+	 return self._client.pull_request(number).commits()

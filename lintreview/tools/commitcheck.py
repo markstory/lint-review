@@ -47,6 +47,6 @@ class Commitcheck(Tool):
         self.problems.add(IssueComment(body))
 
     def _check_commit(self, pattern, commit):
-        match = pattern.search(commit.commit['message'])
+        match = pattern.search(commit.commit.message)
         if not match:
             return commit.sha
