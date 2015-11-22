@@ -76,9 +76,8 @@ class IssueLabel(object):
 
 
 class Comment(IssueComment):
-    """
-    A line comment on the pull request.
-    """
+    """A line comment on the pull request."""
+
     def __init__(self, filename='', line=0, position=0, body=''):
         super(Comment, self).__init__(body)
         self.line = line
@@ -111,7 +110,6 @@ class Review(object):
         self._comments = Problems()
         self._number = number
         self._pr = self._gh.pull_request(self._number)
-        self._issue = self._gh.issue(self._number)
 
     def comments(self, filename):
         return self._comments.all(filename)
@@ -126,21 +124,22 @@ class Review(object):
         """
         log.info('Publishing review of %s to github.', self._number)
 
-        problem_count = len(problems)
         if not problems.has_changes():
             return self.publish_empty_comment()
-        if problem_count == 0:
-            return self.publish_ok_comment()
-
-        under_threshold = (summary_threshold is None or
-                           problem_count < summary_threshold)
 
         self.load_comments()
         self.remove_existing(problems)
+
+        problem_count = len(problems)
+        under_threshold = (summary_threshold is None or
+                           problem_count < summary_threshold)
+
         if under_threshold:
             self.publish_problems(problems, head_sha)
         else:
             self.publish_summary(problems)
+        self.publish_status(problem_count)
+        self.publish_ok_label()
 
     def load_comments(self):
         """
@@ -179,11 +178,6 @@ class Review(object):
         for comment in self._comments:
             problems.remove(comment.filename, comment.position, comment.body)
 
-    def remove_ok_label(self):
-        if config.get('ADD_OK_LABEL', False):
-            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
-            IssueLabel(label).remove(self._gh, self._number)
-
     def publish_problems(self, problems, head_commit):
         """
         Publish the issues contains in the problems
@@ -196,14 +190,36 @@ class Review(object):
         for error in problems:
             error.publish(self._gh, self._number, head_commit)
 
-    def publish_ok_comment(self):
+    def publish_status(self, problem_count):
+        """
+        Update the build status for the tip commit.
+        The build will be a success if there are 0 problems.
+        """
+        state = 'success'
+        description = 'No lint errors found.'
+        if problem_count > 0:
+            state = 'failure'
+            description = 'Lint errors found, see pull request comments.'
+        self._gh.create_status(
+            self._pr.head.sha,
+            state,
+            None,
+            description,
+            'lintreview')
+
+    def remove_ok_label(self):
+        if config.get('ADD_OK_LABEL', False):
+            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+            IssueLabel(label).remove(self._gh, self._number)
+
+    def publish_ok_label(self):
+        """
+        Optionally publish the OK_LABEL if it is enabled.
+        """
         if config.get('ADD_OK_LABEL', False):
             label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
             comment = IssueLabel(label)
-        else:
-            body = config.get('OK_COMMENT', ':+1: No lint errors found.')
-            comment = IssueComment(body)
-        comment.publish(self._gh, self._number)
+            comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
         self.remove_ok_label()

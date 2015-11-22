@@ -130,6 +130,28 @@ class TestReview(TestCase):
         )
         eq_(calls[1], expected)
 
+    def test_publish_status__ok(self):
+        review = Review(self.gh, 3)
+        review.publish_status(0)
+        assert self.gh.create_status.called, 'Create status not called'
+        self.gh.create_status.assert_called_with(
+            self.pr.head.sha,
+            'success',
+            None,
+            'No lint errors found.',
+            'lintreview')
+
+    def test_publish_status__has_errors(self):
+        review = Review(self.gh, 3)
+        review.publish_status(1)
+        assert self.gh.create_status.called, 'Create status not called'
+        self.gh.create_status.assert_called_with(
+            self.pr.head.sha,
+            'failure',
+            None,
+            'Lint errors found, see pull request comments.',
+            'lintreview')
+
     def test_publish_problems_add_ok_label(self):
         problems = Problems()
 
@@ -179,47 +201,6 @@ class TestReview(TestCase):
             body=errors[1][2]
         )
         eq_(calls[1], expected)
-
-    def test_publish_ok_comment(self):
-        problems = Problems(changes=[1])
-        review = Review(self.gh, 3)
-
-        sha = 'abc123'
-        review.publish(problems, sha)
-
-        assert not(self.pr.create_review_comment.called)
-        assert self.issue.create_comment.called
-
-        calls = self.issue.create_comment.call_args_list
-
-        expected = call(
-            config.get('OK_COMMENT', ':+1: No lint errors found.'))
-        eq_(calls[0], expected)
-
-    def test_publish_ok_comment_add_ok_label(self):
-        problems = Problems(changes=[1])
-        review = Review(self.gh, 3)
-        label = config.get('OK_LABEL', 'No lint errors')
-
-        label_obj = Mock()
-        label_obj.name = label
-        self.issue.labels.return_value = (label_obj,)
-
-        with add_ok_label(self.gh, 3, label, create=True):
-            sha = 'abc123'
-            review.publish(problems, sha)
-
-        assert not self.issue.create_comment.called
-        assert not self.issue.create_comment.called
-        assert self.issue.remove_label.called
-
-        calls = self.issue.remove_label.call_args_list
-
-        expected = call(label)
-        eq_(calls, [expected])
-
-        assert_add_to_issue(self.gh, 3, label, create=True)
-        assert not(self.issue.create_comment.called)
 
     def test_publish_empty_comment(self):
         problems = Problems(changes=[])
