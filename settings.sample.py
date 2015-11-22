@@ -87,10 +87,7 @@ SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 # This config file contains default settings for .lintrc
 # LINTRC_DEFAULTS = './lintrc_defaults.ini'
 
-OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
-                 ':+1: No lint errors found.')
-
-# Set to True to use a label instead of a comment for OK status.
+# Set to True to also apply a label when updating build statuses.
 # Cuts down on github notification noise.
 ADD_OK_LABEL = env('LINTREVIEW_ADD_OK_LABEL', False, bool)
 OK_LABEL = env('LINTREVIEW_OK_LABEL', 'No lint errors')
