@@ -60,4 +60,4 @@ class Processor(object):
             self._config.get('SUMMARY_THRESHOLD'))
 
     def get_commits(self, number):
-	 return self._repository.pull_request(number).commits()
+        return self._repository.pull_request(number).commits()
