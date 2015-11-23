@@ -139,7 +139,6 @@ class Review(object):
         else:
             self.publish_summary(problems)
         self.publish_status(problem_count)
-        self.publish_ok_label()
 
     def load_comments(self):
         """
@@ -206,6 +205,8 @@ class Review(object):
             None,
             description,
             'lintreview')
+        self.publish_ok_label()
+        self.publish_ok_comment()
 
     def remove_ok_label(self):
         if config.get('ADD_OK_LABEL', False):
@@ -219,6 +220,15 @@ class Review(object):
         if config.get('ADD_OK_LABEL', False):
             label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
             comment = IssueLabel(label)
+            comment.publish(self._gh, self._number)
+
+    def publish_ok_comment(self):
+        """
+        Optionally publish the OK_COMMENT if it is enabled.
+        """
+        comment = config.get('OK_COMMENT', False)
+        if comment:
+            comment = IssueComment(comment)
             comment.publish(self._gh, self._number)
 
     def publish_empty_comment(self):
