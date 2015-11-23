@@ -112,23 +112,11 @@ class TestReview(TestCase):
 
         assert self.pr.create_review_comment.called
         eq_(2, self.pr.create_review_comment.call_count)
-        calls = self.pr.create_review_comment.call_args_list
 
-        expected = call(
-            commit_id=sha,
-            path=errors[0][0],
-            position=errors[0][1],
-            body=errors[0][2]
-        )
-        eq_(calls[0], expected)
-
-        expected = call(
-            commit_id=sha,
-            path=errors[1][0],
-            position=errors[1][1],
-            body=errors[1][2]
-        )
-        eq_(calls[1], expected)
+        assert_review_comments_created(
+            self.pr.create_review_comment.call_args_list,
+            errors,
+            sha)
 
     def test_publish_status__ok_no_comment_or_label(self):
         from lintreview.review import config
@@ -203,23 +191,10 @@ class TestReview(TestCase):
         eq_(2, self.pr.create_review_comment.call_count)
 
         self.issue.remove_label.assert_called_with(label)
-
-        calls = self.pr.create_review_comment.call_args_list
-        expected = call(
-            commit_id=sha,
-            path=errors[0][0],
-            position=errors[0][1],
-            body=errors[0][2]
-        )
-        eq_(calls[0], expected, 'First review comment is wrong')
-
-        expected = call(
-            commit_id=sha,
-            path=errors[1][0],
-            position=errors[1][1],
-            body=errors[1][2]
-        )
-        eq_(calls[1], expected, 'Second review comment is wrong')
+        assert_review_comments_created(
+            self.pr.create_review_comment.call_args_list,
+            errors,
+            sha)
 
     def test_publish_empty_comment(self):
         problems = Problems(changes=[])
@@ -431,3 +406,17 @@ def add_ok_label(gh, pr_number, *labels, **kw):
     mock_config = {'ADD_OK_LABEL': True, 'OK_LABEL': IssueLabel.OK_LABEL}
     with patch.dict(config, mock_config):
         yield
+
+
+def assert_review_comments_created(call_args, errors, sha):
+    """
+    Check that the review comments match the error list.
+    """
+    eq_(len(call_args), len(errors), 'Errors and comment counts are off')
+    for i, err in enumerate(errors):
+        expected = call(
+            commit_id=sha,
+            path=err[0],
+            position=err[1],
+            body=err[2])
+        eq_(expected, call_args[i])
