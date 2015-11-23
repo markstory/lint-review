@@ -5,12 +5,11 @@ from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.review import IssueComment, IssueLabel
+from lintreview.review import IssueLabel
 from mock import patch, Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
-from requests.models import Response
 from unittest import TestCase
 import json
 
@@ -259,7 +258,6 @@ class TestReview(TestCase):
         )
         problems.add_many(errors)
         problems.set_changes([1])
-        sha = 'abc123'
 
         review = Review(self.gh, 3)
         review.publish_summary(problems)
@@ -400,8 +398,6 @@ def add_ok_label(gh, pr_number, *labels, **kw):
             def __init__(self, name):
                 self.name = name
         gh.issue().labels.return_value = [Label(n) for n in labels]
-
-    gh.label.return_value = False;
 
     mock_config = {'ADD_OK_LABEL': True, 'OK_LABEL': IssueLabel.OK_LABEL}
     with patch.dict(config, mock_config):

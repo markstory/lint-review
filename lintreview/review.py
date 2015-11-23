@@ -68,7 +68,7 @@ class IssueLabel(object):
             if not gh.label(self.label):
                 gh.create_label(
                     name=self.label,
-                    color="bfe5bf", # a nice light green
+                    color="bfe5bf",  # a nice light green
                 )
             gh.issue(pull_request_number).add_labels(self.label)
         except:
@@ -93,7 +93,8 @@ class Comment(IssueComment):
         }
         log.debug("Publishing line comment '%s'", comment)
         try:
-            gh.pull_request(pull_request_number).create_review_comment(**comment)
+            gh.pull_request(pull_request_number) \
+                .create_review_comment(**comment)
         except:
             log.warn("Failed to save comment '%s'", comment)
 
@@ -329,6 +330,7 @@ class Problems(object):
         in the DiffCollection
         """
         changes = self._changes
+
         def sieve(err):
             if err.filename is None:
                 return True

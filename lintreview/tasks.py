@@ -46,7 +46,6 @@ def process_pull_request(user, repo, number, lintrc):
                      target_branch)
             return
 
-
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo, number, config)
         git.clone_or_update(config, head_repo, target_path, pr_head,

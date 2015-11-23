@@ -4,9 +4,7 @@ from lintreview.diff import DiffCollection
 from github3.pulls import PullFile
 from mock import patch
 from mock import Mock
-from nose.tools import eq_
-from nose.tools import raises
-from requests.models import Response
+from nose.tools import eq_, raises
 from unittest import TestCase
 import json
 

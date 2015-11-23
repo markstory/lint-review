@@ -1,7 +1,7 @@
 import lintreview.github as github
 
 from . import load_fixture
-from mock import call, patch, Mock
+from mock import call, Mock
 from nose.tools import eq_
 import github3
 from github3 import GitHub
@@ -22,7 +22,7 @@ def test_get_client():
 
 def test_get_lintrc():
     repo = Mock(spec=github3.repos.repo.Repository)
-    lintrc = github.get_lintrc(repo)
+    github.get_lintrc(repo)
     repo.file_contents.assert_called_with('.lintrc')
 
 
@@ -51,8 +51,9 @@ def test_register_hook():
 def test_register_hook__already_exists():
     repo = Mock(spec=github3.repos.repo.Repository,
                 full_name='mark/lint-review')
-    repo.hooks.return_value = map(lambda f: github3.repos.hook.Hook(f),
-                                 json.loads(load_fixture('webhook_list.json')))
+    repo.hooks.return_value = map(
+        lambda f: github3.repos.hook.Hook(f),
+        json.loads(load_fixture('webhook_list.json')))
     url = 'http://example.com/review/start'
 
     github.register_hook(repo, url)

@@ -1,5 +1,4 @@
 from . import load_fixture, create_pull_files
-from github3.pulls import PullFile
 from lintreview.diff import DiffCollection
 from lintreview.diff import Diff
 from unittest import TestCase

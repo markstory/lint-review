@@ -1,6 +1,5 @@
 import lintreview.git as git
 import os
-import shutil
 from test_github import config
 from nose.tools import eq_
 from nose.tools import raises
@@ -34,6 +33,7 @@ def test_get_repo_path__int():
     expected = os.path.realpath(expected)
     eq_(res, expected)
 
+
 def test_get_repo_path__absoulte_dir():
     user = 'markstory'
     repo = 'asset_compress'
@@ -44,6 +44,7 @@ def test_get_repo_path__absoulte_dir():
         (settings['WORKSPACE'], user, repo, str(num)))
     expected = os.path.realpath(expected)
     eq_(res, expected)
+
 
 def test_exists__no_path():
     assert not git.exists(settings['WORKSPACE'] + '/herp/derp')
