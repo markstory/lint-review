@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @celery.task(ignore_result=True)
-def process_pull_request(user, repo, number, target_branch, lintrc):
+def process_pull_request(user, repo, number, lintrc):
     """
     Starts processing a pull request and running the various
     lint tools against it.
@@ -29,20 +29,22 @@ def process_pull_request(user, repo, number, target_branch, lintrc):
         log.info('No configured linters, skipping processing.')
         return
 
-    if target_branch in review_config.ignore_branches():
-        log.info('Pull request into ignored branch %s, skipping processing.' %
-                 target_branch)
-        return
-
     try:
-        log.info('Loading pull request data from github. user=%s ' +
-                 'repo=%s number=%s target_branch=%s', user, repo,
-                 number, target_branch)
+        log.info('Loading pull request data from github. user=%s '
+                 'repo=%s number=%s', user, repo, number)
         gh = github.get_repository(config, user, repo)
         pull_request = gh.pull_request(number)
-        head_repo = pull_request.as_dict()['head']['repo']['clone_url']
-        private_repo = pull_request.as_dict()['head']['repo']['private']
-        pr_head = pull_request.as_dict()['head']['sha']
+
+        pr_dict = pull_request.as_dict()
+        head_repo = pr_dict['head']['repo']['clone_url']
+        private_repo = pr_dict['head']['repo']['private']
+        pr_head = pr_dict['head']['sha']
+
+        target_branch = pr_dict['base']['ref']
+        if target_branch in review_config.ignore_branches():
+            log.info('Pull request into ignored branch %s, skipping processing.' %
+                     target_branch)
+            return
 
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo, number, config)

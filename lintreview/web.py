@@ -35,7 +35,6 @@ def start_review():
         head_repo_url = pull_request["head"]["repo"]["git_url"]
         user = pull_request["base"]["repo"]["owner"]["login"]
         repo = pull_request["base"]["repo"]["name"]
-        target_branch = pull_request["base"]["ref"]
     except Exception as e:
         log.error("Got an invalid JSON body. '%s'", e)
         return Response(status=403,
@@ -63,7 +62,7 @@ def start_review():
         return Response(status=204)
     try:
         log.info("Scheduling pull request for %s/%s %s", user, repo, number)
-        process_pull_request.delay(user, repo, number, target_branch, lintrc)
+        process_pull_request.delay(user, repo, number, lintrc)
     except:
         log.error('Could not publish job to celery. Make sure its running.')
         return Response(status=500)

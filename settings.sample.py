@@ -4,8 +4,8 @@ def env(key, default, cast=str):
     return cast(os.environ.get(key, default))
 
 
-# Webserver configuration #
-###########################
+# Webserver configuration
+#########################
 
 # gunicorn config
 bind = env('LINTREVIEW_GUNICORN_BIND', '127.0.0.1:5000')
@@ -25,8 +25,8 @@ SERVER_NAME = env('LINTREVIEW_SERVER_NAME', '127.0.0.1:5000')
 LOGGING_CONFIG = './logging.ini'
 
 
-# Celery worker configuration #
-###############################
+# Celery worker configuration
+#############################
 from kombu import Exchange, Queue
 
 # AMQP or other celery broker URL.
@@ -48,14 +48,21 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = True
 
 
-# General project configuration #
-#################################
+# General project configuration
+###############################
 
 # Path where project code should be
 # checked out when reviews are done
 # Repos will be checked out into $WORKSPACE/$user/$repo/$number
 # directories to prevent collisions.
 WORKSPACE = env('LINTREVIEW_WORKSPACE', '/tmp/workspace')
+
+# This config file contains default settings for .lintrc
+# LINTRC_DEFAULTS = './lintrc_defaults.ini'
+
+
+# Github Configuration
+######################
 
 # Use GITHUB_URL when working with github:e
 # When working with github:e don't forget to add the /api/v3/ path
@@ -84,13 +91,15 @@ SSL_CA_BUNDLE = None
 # prevent really noisy reviews from slowing down github.
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
-# This config file contains default settings for .lintrc
-# LINTRC_DEFAULTS = './lintrc_defaults.ini'
+# Status Configuration
+######################
 
-OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
-                 ':+1: No lint errors found.')
+# Uncomment this option to enable adding an issue comment
+# whenever a pull request passes all checks.
+# OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
+#                 ':+1: No lint errors found.')
 
-# Set to True to use a label instead of a comment for OK status.
-# Cuts down on github notification noise.
-ADD_OK_LABEL = env('LINTREVIEW_ADD_OK_LABEL', False, bool)
-OK_LABEL = env('LINTREVIEW_OK_LABEL', 'No lint errors')
+# Enable to apply a label when updating build status.
+# Pull requests that fail will have the label removed.
+# Customize the label name when label statuses are enabled.
+# OK_LABEL = env('LINTREVIEW_OK_LABEL', 'No lint errors')

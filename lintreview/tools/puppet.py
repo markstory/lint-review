@@ -32,7 +32,7 @@ class Puppet(Tool):
         if bundle_exists('puppet-lint'):
             command = ['bundle', 'exec', 'puppet-lint']
         command += ['--log-format',
-                   '%{path}:%{linenumber}:%{KIND}:%{message}']
+                    '%{path}:%{linenumber}:%{KIND}:%{message}']
         command += files
         output = run_command(
             command,

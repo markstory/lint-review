@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class Processor(object):
 
-    _client = None
+    _repository = None
     _number = None
     _head = None
     _target_path = None
@@ -19,13 +19,13 @@ class Processor(object):
     _review = None
     _config = None
 
-    def __init__(self, client, number, head, target_path, config=None):
-        self._client = client
+    def __init__(self, repository, number, head, target_path, config=None):
+        self._repository = repository
         self._number = number
         self._head = head
         self._target_path = target_path
         self._problems = Problems(target_path)
-        self._review = Review(client, number)
+        self._review = Review(repository, number)
 
         if config is None:
             config = {}
@@ -33,7 +33,7 @@ class Processor(object):
 
     def load_changes(self):
         log.info('Loading pull request patches from github.')
-        files = list(self._client.pull_request(self._number).files())
+        files = list(self._repository.pull_request(self._number).files())
         self._changes = DiffCollection(files)
         self._problems.set_changes(self._changes)
 
@@ -60,4 +60,4 @@ class Processor(object):
             self._config.get('SUMMARY_THRESHOLD'))
 
     def get_commits(self, number):
-	 return self._client.pull_request(number).commits()
+        return self._repository.pull_request(number).commits()

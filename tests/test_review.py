@@ -5,12 +5,11 @@ from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.review import IssueComment
+from lintreview.review import IssueLabel
 from mock import patch, Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
-from requests.models import Response
 from unittest import TestCase
 import json
 
@@ -112,25 +111,63 @@ class TestReview(TestCase):
 
         assert self.pr.create_review_comment.called
         eq_(2, self.pr.create_review_comment.call_count)
-        calls = self.pr.create_review_comment.call_args_list
 
-        expected = call(
-            commit_id=sha,
-            path=errors[0][0],
-            position=errors[0][1],
-            body=errors[0][2]
-        )
-        eq_(calls[0], expected)
+        assert_review_comments_created(
+            self.pr.create_review_comment.call_args_list,
+            errors,
+            sha)
 
-        expected = call(
-            commit_id=sha,
-            path=errors[1][0],
-            position=errors[1][1],
-            body=errors[1][2]
-        )
-        eq_(calls[1], expected)
+    def test_publish_status__ok_no_comment_or_label(self):
+        from lintreview.review import config
+        review = Review(self.gh, 3)
+        mock_config = {'OK_COMMENT': None, 'OK_LABEL': None}
+        with patch.dict(config, mock_config):
+            review.publish_status(0)
 
-    def test_publish_problems_add_ok_label(self):
+        assert self.gh.create_status.called, 'Create status not called'
+        assert not self.issue.create_comment.called, 'Comment not created'
+        assert not self.issue.add_labels.called, 'Label added created'
+
+    def test_publish_status__ok_with_comment_and_label(self):
+        from lintreview.review import config
+        review = Review(self.gh, 3)
+
+        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+        with patch.dict(config, mock_config):
+            review.publish_status(0)
+
+        assert self.gh.create_status.called, 'Create status not called'
+        self.gh.create_status.assert_called_with(
+            self.pr.head.sha,
+            'success',
+            None,
+            'No lint errors found.',
+            'lintreview')
+
+        assert self.issue.create_comment.called, 'Issue comment created'
+        self.issue.create_comment.assert_called_with('Great job!')
+
+        assert self.issue.add_labels.called, 'Label added created'
+        self.issue.add_labels.assert_called_with('No lint errors')
+
+    def test_publish_status__has_errors(self):
+        review = Review(self.gh, 3)
+
+        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+        with patch.dict(config, mock_config):
+            review.publish_status(1)
+        assert self.gh.create_status.called, 'Create status not called'
+
+        self.gh.create_status.assert_called_with(
+            self.pr.head.sha,
+            'failure',
+            None,
+            'Lint errors found, see pull request comments.',
+            'lintreview')
+        assert not self.issue.create_comment.called, 'Comment not created'
+        assert not self.issue.add_labels.called, 'Label added created'
+
+    def test_publish_problems_remove_ok_label(self):
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -142,84 +179,21 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(self.gh, 3)
-        label = config.get('OK_LABEL', 'No lint errors')
-
-        label_obj = Mock()
-        label_obj.name = label
-        self.issue.labels.return_value = (label_obj,)
+        label = 'No lint errors'
 
         with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
             review.publish_problems(problems, sha)
 
-        assert self.issue.remove_label.called
-        assert self.pr.create_review_comment.called
+        assert self.issue.remove_label.called, 'Label should be removed'
+        assert self.pr.create_review_comment.called, 'Comments should be added'
         eq_(2, self.pr.create_review_comment.call_count)
-        assert_add_to_issue(self.gh)
 
-        calls = self.issue.remove_label.call_args_list
-
-        expected = call(label)
-        eq_(calls, [expected])
-
-        calls = self.pr.create_review_comment.call_args_list
-
-        expected = call(
-            commit_id=sha,
-            path=errors[0][0],
-            position=errors[0][1],
-            body=errors[0][2]
-        )
-        eq_(calls[0], expected)
-
-        expected = call(
-            commit_id=sha,
-            path=errors[1][0],
-            position=errors[1][1],
-            body=errors[1][2]
-        )
-        eq_(calls[1], expected)
-
-    def test_publish_ok_comment(self):
-        problems = Problems(changes=[1])
-        review = Review(self.gh, 3)
-
-        sha = 'abc123'
-        review.publish(problems, sha)
-
-        assert not(self.pr.create_review_comment.called)
-        assert self.issue.create_comment.called
-
-        calls = self.issue.create_comment.call_args_list
-
-        expected = call(
-            config.get('OK_COMMENT', ':+1: No lint errors found.'))
-        eq_(calls[0], expected)
-
-    def test_publish_ok_comment_add_ok_label(self):
-        problems = Problems(changes=[1])
-        review = Review(self.gh, 3)
-        label = config.get('OK_LABEL', 'No lint errors')
-
-        label_obj = Mock()
-        label_obj.name = label
-        self.issue.labels.return_value = (label_obj,)
-
-        with add_ok_label(self.gh, 3, label, create=True):
-            sha = 'abc123'
-            review.publish(problems, sha)
-
-        assert not self.issue.create_comment.called
-        assert not self.issue.create_comment.called
-        assert self.issue.remove_label.called
-
-        calls = self.issue.remove_label.call_args_list
-
-        expected = call(label)
-        eq_(calls, [expected])
-
-        assert_add_to_issue(self.gh, 3, label, create=True)
-        assert not(self.issue.create_comment.called)
+        self.issue.remove_label.assert_called_with(label)
+        assert_review_comments_created(
+            self.pr.create_review_comment.call_args_list,
+            errors,
+            sha)
 
     def test_publish_empty_comment(self):
         problems = Problems(changes=[])
@@ -228,19 +202,16 @@ class TestReview(TestCase):
         sha = 'abc123'
         review.publish(problems, sha)
 
-        assert self.issue.create_comment.called
-
-        calls = self.issue.create_comment.call_args_list
+        assert self.issue.create_comment.called, 'Should create a comment'
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
-        expected = call(msg)
-        eq_(calls[0], expected)
+        self.issue.create_comment.assert_called_with(msg)
 
     def test_publish_empty_comment_add_ok_label(self):
         problems = Problems(changes=[])
         review = Review(self.gh, 3)
-        label = config.get('OK_LABEL', 'No lint errors')
+        label = 'No lint errors'
 
         with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
@@ -250,7 +221,6 @@ class TestReview(TestCase):
         assert self.issue.remove_label.called, 'label should be removed.'
         self.issue.remove_label.assert_called_with(label)
 
-        assert_add_to_issue(self.gh)
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
         self.issue.create_comment.assert_called_with(msg)
@@ -288,22 +258,19 @@ class TestReview(TestCase):
         )
         problems.add_many(errors)
         problems.set_changes([1])
-        sha = 'abc123'
 
         review = Review(self.gh, 3)
         review.publish_summary(problems)
 
         assert self.issue.create_comment.called
         eq_(1, self.issue.create_comment.call_count)
-        calls = self.issue.create_comment.call_args_list
 
         msg = """There are 2 errors:
 
 * Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
 * Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
 """
-        expected = call(msg)
-        eq_(calls[0], expected)
+        self.issue.create_comment.assert_called_with(msg)
 
 
 class TestProblems(TestCase):
@@ -432,30 +399,20 @@ def add_ok_label(gh, pr_number, *labels, **kw):
                 self.name = name
         gh.issue().labels.return_value = [Label(n) for n in labels]
 
-    gh.label.return_value = False;
-
-    eq_(config["ADD_OK_LABEL"], False)
-    config["ADD_OK_LABEL"] = True
-    try:
+    mock_config = {'OK_LABEL': 'No lint errors'}
+    with patch.dict(config, mock_config):
         yield
-    finally:
-        config["ADD_OK_LABEL"] = False
 
 
-def assert_add_to_issue(gh, *pr_number_and_labels, **kw):
-    if not pr_number_and_labels:
-        assert not gh.create_label.called
-    else:
-        import json
-        pr_number = pr_number_and_labels[0]
-        labels = list(pr_number_and_labels[1:])
-
-        if kw.get("create"):
-            expected = call(
-                name=labels[0],
-                color="bfe5bf",
-            )
-            eq_(gh.create_label.call_args_list, [expected])
-
-        assert gh.issue().add_labels.called, 'OK label should be added'
-        gh.issue().add_labels.assert_called_with(labels[0])
+def assert_review_comments_created(call_args, errors, sha):
+    """
+    Check that the review comments match the error list.
+    """
+    eq_(len(call_args), len(errors), 'Errors and comment counts are off')
+    for i, err in enumerate(errors):
+        expected = call(
+            commit_id=sha,
+            path=err[0],
+            position=err[1],
+            body=err[2])
+        eq_(expected, call_args[i])
