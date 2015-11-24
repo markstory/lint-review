@@ -43,8 +43,6 @@ class IssueComment(object):
 
 class IssueLabel(object):
 
-    OK_LABEL = 'No lint errors'
-
     def __init__(self, label):
         self.label = label
 
@@ -195,31 +193,31 @@ class Review(object):
         Update the build status for the tip commit.
         The build will be a success if there are 0 problems.
         """
-        state = 'success'
-        description = 'No lint errors found.'
-        if problem_count > 0:
-            state = 'failure'
-            description = 'Lint errors found, see pull request comments.'
+        state = 'failure'
+        description = 'Lint errors found, see pull request comments.'
+        if problem_count == 0:
+            self.publish_ok_label()
+            self.publish_ok_comment()
+            state = 'success'
+            description = 'No lint errors found.'
         self._gh.create_status(
             self._pr.head.sha,
             state,
             None,
             description,
             'lintreview')
-        self.publish_ok_label()
-        self.publish_ok_comment()
 
     def remove_ok_label(self):
-        if config.get('ADD_OK_LABEL', False):
-            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+        label = config.get('OK_LABEL', False)
+        if label:
             IssueLabel(label).remove(self._gh, self._number)
 
     def publish_ok_label(self):
         """
         Optionally publish the OK_LABEL if it is enabled.
         """
-        if config.get('ADD_OK_LABEL', False):
-            label = config.get('OK_LABEL', IssueLabel.OK_LABEL)
+        label = config.get('OK_LABEL', False)
+        if label:
             comment = IssueLabel(label)
             comment.publish(self._gh, self._number)
 

@@ -120,7 +120,7 @@ class TestReview(TestCase):
     def test_publish_status__ok_no_comment_or_label(self):
         from lintreview.review import config
         review = Review(self.gh, 3)
-        mock_config = {'OK_COMMENT': None, 'ADD_OK_LABEL': None}
+        mock_config = {'OK_COMMENT': None, 'OK_LABEL': None}
         with patch.dict(config, mock_config):
             review.publish_status(0)
 
@@ -132,7 +132,7 @@ class TestReview(TestCase):
         from lintreview.review import config
         review = Review(self.gh, 3)
 
-        mock_config = {'OK_COMMENT': 'Great job!', 'ADD_OK_LABEL': True}
+        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
         with patch.dict(config, mock_config):
             review.publish_status(0)
 
@@ -148,12 +148,12 @@ class TestReview(TestCase):
         self.issue.create_comment.assert_called_with('Great job!')
 
         assert self.issue.add_labels.called, 'Label added created'
-        self.issue.add_labels.assert_called_with(IssueLabel.OK_LABEL)
+        self.issue.add_labels.assert_called_with('No lint errors')
 
     def test_publish_status__has_errors(self):
         review = Review(self.gh, 3)
 
-        mock_config = {'OK_COMMENT': 'Great job!', 'ADD_OK_LABEL': True}
+        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
         with patch.dict(config, mock_config):
             review.publish_status(1)
         assert self.gh.create_status.called, 'Create status not called'
@@ -179,7 +179,7 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(self.gh, 3)
-        label = IssueLabel.OK_LABEL
+        label = 'No lint errors'
 
         with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
@@ -211,7 +211,7 @@ class TestReview(TestCase):
     def test_publish_empty_comment_add_ok_label(self):
         problems = Problems(changes=[])
         review = Review(self.gh, 3)
-        label = config.get('OK_LABEL', 'No lint errors')
+        label = 'No lint errors'
 
         with add_ok_label(self.gh, 3, label):
             sha = 'abc123'
@@ -399,7 +399,7 @@ def add_ok_label(gh, pr_number, *labels, **kw):
                 self.name = name
         gh.issue().labels.return_value = [Label(n) for n in labels]
 
-    mock_config = {'ADD_OK_LABEL': True, 'OK_LABEL': IssueLabel.OK_LABEL}
+    mock_config = {'OK_LABEL': 'No lint errors'}
     with patch.dict(config, mock_config):
         yield
 

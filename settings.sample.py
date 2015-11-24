@@ -99,9 +99,7 @@ SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 # OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
 #                 ':+1: No lint errors found.')
 
-# Set to True to apply a label when updating build status.
+# Enable to apply a label when updating build status.
 # Pull requests that fail will have the label removed.
-# ADD_OK_LABEL = env('LINTREVIEW_ADD_OK_LABEL', False, bool)
-
 # Customize the label name when label statuses are enabled.
 # OK_LABEL = env('LINTREVIEW_OK_LABEL', 'No lint errors')
