@@ -218,8 +218,8 @@ class Review(object):
         """
         label = config.get('OK_LABEL', False)
         if label:
-            comment = IssueLabel(label)
-            comment.publish(self._gh, self._number)
+            issue_label = IssueLabel(label)
+            issue_label.publish(self._gh, self._number)
 
     def publish_ok_comment(self):
         """
