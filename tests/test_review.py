@@ -5,8 +5,7 @@ from lintreview.diff import DiffCollection
 from lintreview.review import Review
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.review import IssueLabel
-from mock import patch, Mock, call
+from mock import Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
@@ -118,23 +117,18 @@ class TestReview(TestCase):
             sha)
 
     def test_publish_status__ok_no_comment_or_label(self):
-        from lintreview.review import config
-        review = Review(self.gh, 3)
-        mock_config = {'OK_COMMENT': None, 'OK_LABEL': None}
-        with patch.dict(config, mock_config):
-            review.publish_status(0)
+        config = {'OK_COMMENT': None, 'OK_LABEL': None}
+        review = Review(self.gh, 3, config)
+        review.publish_status(0)
 
         assert self.gh.create_status.called, 'Create status not called'
         assert not self.issue.create_comment.called, 'Comment not created'
         assert not self.issue.add_labels.called, 'Label added created'
 
     def test_publish_status__ok_with_comment_and_label(self):
-        from lintreview.review import config
-        review = Review(self.gh, 3)
-
-        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
-        with patch.dict(config, mock_config):
-            review.publish_status(0)
+        config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+        review = Review(self.gh, 3, config)
+        review.publish_status(0)
 
         assert self.gh.create_status.called, 'Create status not called'
         self.gh.create_status.assert_called_with(
@@ -151,11 +145,10 @@ class TestReview(TestCase):
         self.issue.add_labels.assert_called_with('No lint errors')
 
     def test_publish_status__has_errors(self):
-        review = Review(self.gh, 3)
+        config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+        review = Review(self.gh, 3, config)
+        review.publish_status(1)
 
-        mock_config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
-        with patch.dict(config, mock_config):
-            review.publish_status(1)
         assert self.gh.create_status.called, 'Create status not called'
 
         self.gh.create_status.assert_called_with(
@@ -181,7 +174,7 @@ class TestReview(TestCase):
         review = Review(self.gh, 3)
         label = 'No lint errors'
 
-        with add_ok_label(self.gh, 3, label):
+        with add_ok_label(self.gh, 3, review, label):
             sha = 'abc123'
             review.publish_problems(problems, sha)
 
@@ -213,7 +206,7 @@ class TestReview(TestCase):
         review = Review(self.gh, 3)
         label = 'No lint errors'
 
-        with add_ok_label(self.gh, 3, label):
+        with add_ok_label(self.gh, 3, review, label):
             sha = 'abc123'
             review.publish(problems, sha)
 
@@ -390,18 +383,15 @@ class TestProblems(TestCase):
 
 
 @contextmanager
-def add_ok_label(gh, pr_number, *labels, **kw):
-    from lintreview.review import config
-
+def add_ok_label(gh, pr_number, review, *labels, **kw):
     if labels:
         class Label(object):
             def __init__(self, name):
                 self.name = name
         gh.issue().labels.return_value = [Label(n) for n in labels]
 
-    mock_config = {'OK_LABEL': 'No lint errors'}
-    with patch.dict(config, mock_config):
-        yield
+    review.config = {'OK_LABEL': 'No lint errors'}
+    yield
 
 
 def assert_review_comments_created(call_args, errors, sha):
