@@ -1,8 +1,5 @@
 import logging
-from lintreview.config import load_config
 
-
-config = load_config()
 log = logging.getLogger(__name__)
 
 
@@ -104,11 +101,13 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, gh, number):
+    def __init__(self, gh, number, config=None):
+        config = config if config is not None else {}
         self._gh = gh
         self._comments = Problems()
         self._number = number
         self._pr = self._gh.pull_request(self._number)
+        self.config = config
 
     def comments(self, filename):
         return self._comments.all(filename)
@@ -208,7 +207,7 @@ class Review(object):
             'lintreview')
 
     def remove_ok_label(self):
-        label = config.get('OK_LABEL', False)
+        label = self.config.get('OK_LABEL', False)
         if label:
             IssueLabel(label).remove(self._gh, self._number)
 
@@ -216,7 +215,7 @@ class Review(object):
         """
         Optionally publish the OK_LABEL if it is enabled.
         """
-        label = config.get('OK_LABEL', False)
+        label = self.config.get('OK_LABEL', False)
         if label:
             issue_label = IssueLabel(label)
             issue_label.publish(self._gh, self._number)
@@ -225,7 +224,7 @@ class Review(object):
         """
         Optionally publish the OK_COMMENT if it is enabled.
         """
-        comment = config.get('OK_COMMENT', False)
+        comment = self.config.get('OK_COMMENT', False)
         if comment:
             comment = IssueComment(comment)
             comment.publish(self._gh, self._number)

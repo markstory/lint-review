@@ -20,16 +20,15 @@ class Processor(object):
     _config = None
 
     def __init__(self, repository, number, head, target_path, config=None):
+        config = config if config is not None else {}
+        self._config = config
         self._repository = repository
         self._number = number
         self._head = head
         self._target_path = target_path
         self._problems = Problems(target_path)
-        self._review = Review(repository, number)
+        self._review = Review(repository, number, config)
 
-        if config is None:
-            config = {}
-        self._config = config
 
     def load_changes(self):
         log.info('Loading pull request patches from github.')
