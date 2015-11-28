@@ -1,2 +1,2 @@
 [tools]
-linters = pep8, flake8
+linters = flake8
