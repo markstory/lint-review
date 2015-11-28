@@ -93,6 +93,8 @@ SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
 # Status Configuration
 ######################
+# Customize the build status integration name. Defaults to lintreview.
+# APP_NAME = 'lintreview'
 
 # Uncomment this option to enable adding an issue comment
 # whenever a pull request passes all checks.
