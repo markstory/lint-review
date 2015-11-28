@@ -102,7 +102,7 @@ class Review(object):
     """
 
     def __init__(self, gh, number, config=None):
-        config = config if config is not None else {}
+        config = config if config else {}
         self._gh = gh
         self._comments = Problems()
         self._number = number
