@@ -145,7 +145,11 @@ class TestReview(TestCase):
         self.issue.add_labels.assert_called_with('No lint errors')
 
     def test_publish_status__has_errors(self):
-        config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+        config = {
+            'OK_COMMENT': 'Great job!',
+            'OK_LABEL': 'No lint errors',
+            'APP_NAME': 'custom-name'
+        }
         review = Review(self.gh, 3, config)
         review.publish_status(1)
 
@@ -156,7 +160,7 @@ class TestReview(TestCase):
             'failure',
             None,
             'Lint errors found, see pull request comments.',
-            'lintreview')
+            config['APP_NAME'])
         assert not self.issue.create_comment.called, 'Comment not created'
         assert not self.issue.add_labels.called, 'Label added created'
 

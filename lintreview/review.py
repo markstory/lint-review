@@ -204,7 +204,7 @@ class Review(object):
             state,
             None,
             description,
-            'lintreview')
+            self.config.get('APP_NAME', 'lintreview'))
 
     def remove_ok_label(self):
         label = self.config.get('OK_LABEL', False)
