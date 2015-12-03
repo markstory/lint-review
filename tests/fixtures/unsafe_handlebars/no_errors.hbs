@@ -1,0 +1,17 @@
+<h1>Welcome {{name}}</h1>
+<p>This is a perfectly acceptable handlebar file</p>
+{{#if isTheBull}}
+  <p><strong>I see Justin Bull wishes to be immortalized in a shoddy fixture file</strong></p>
+{{else}}
+  <p>Well that's disappointing. Here's the weather:</p>
+  <ul>
+    {{#each day in weatherForecast}}
+      <li>{{day.day}}: {{day.temperature}}°C @ {{day.humidity}}% humidity</li>
+    {{/each}}
+  </ul>
+{{/if}}
+
+{{!-- Comment story bro --}}
+{{! Comment story bro }}
+
+Woot!
