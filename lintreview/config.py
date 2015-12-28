@@ -42,44 +42,132 @@ def get_lintrc_defaults(config):
             return f.read()
 
 
+def build_review_config(ini_config, app_config=None):
+    """
+    Build a new ReviewConfig object using the ini config file
+    and the defaults if they exist in the app_config
+    """
+    config = ReviewConfig()
+    if app_config:
+        defaults = get_lintrc_defaults(app_config)
+        if defaults:
+            config.load_ini(defaults)
+    config.load_ini(ini_config)
+    return config
+
+
+def comma_value(values):
+    return map(lambda x: x.strip(), values.split(','))
+
+
+def newline_value(values):
+    return map(lambda x: x.strip(), values.split('\n'))
+
+
 class ReviewConfig(object):
     """
     Provides a domain level API to a repositories
     .lintrc file. Allows reading tool names and tool configuration
     """
+    def __init__(self, data=None):
+        self._data = {}
+        if data:
+            self._data = data
 
-    def __init__(self, lintrc, lintrc_defaults=None):
-        self._config = ConfigParser()
-        if lintrc_defaults:
-            self._config.readfp(StringIO(lintrc_defaults))
-        self._config.readfp(StringIO(lintrc))
+    def update(self, data):
+        """
+        Does a shallow merge of configuration settings.
+        This allows repos to control entire tool config by only
+        defining the keys they want. If we did a recursive merge, the
+        user config file would have to 'undo' our default file changes.
+
+        The one exception is that if the new data has
+        empty config, and the current data has non-empty config, the
+        non-empty config will be retained.
+        """
+        for key, value in data.iteritems():
+            if key == 'linters' and 'linters' in self._data:
+                self._update_linter_config(value)
+            else:
+                self._data[key] = value
+
+    def _update_linter_config(self, linter_config):
+        """
+        Update linter config.
+
+        Because linter config is a nested structure, it needs to be
+        updated in a somewhat recursive way.
+        """
+        for linter, tool_config in linter_config.iteritems():
+            if self._config_update(linter, tool_config):
+                self._data['linters'][linter] = tool_config
+
+    def _config_update(self, linter, tool_config):
+        if linter not in self.linters():
+            return True
+        existing = self.linter_config(linter)
+        if tool_config == {} and existing != {}:
+            return False
+        return True
 
     def linters(self):
         try:
-            values = self._config.get('tools', 'linters')
-            return map(lambda x: x.strip(), values.split(','))
+            return self._data['linters'].keys()
         except:
             return []
 
     def linter_config(self, tool):
-        tool_name = 'tool_' + tool
         try:
-            config = self._config.items(tool_name)
-            return dict(config)
+            return self._data['linters'][tool]
         except:
             return []
 
     def ignore_patterns(self):
         try:
-            value = self._config.get('files', 'ignore')
-            patterns = map(lambda x: x.strip(), value.split("\n"))
-            return patterns
+            return self._data['files']['ignore']
         except:
             return []
 
     def ignore_branches(self):
         try:
-            values = self._config.get('branches', 'ignore')
-            return map(lambda x: x.strip(), values.split(','))
+            return self._data['branches']['ignore']
         except:
             return []
+
+    def load_ini(self, ini_config):
+        """
+        Read the provided ini contents arguments and merge
+        the data in the ini config into the config object.
+
+        ini_config is assumed to be a string of the ini file contents.
+        """
+        parser = ConfigParser()
+        parser.readfp(StringIO(ini_config))
+        data = {
+            'linters': {},
+            'files': {},
+            'branches': {},
+        }
+        if parser.has_section('files'):
+            ignore = parser.get('files', 'ignore')
+            data['files']['ignore'] = newline_value(ignore)
+        if parser.has_section('branches'):
+            ignore = parser.get('branches', 'ignore')
+            data['branches']['ignore'] = comma_value(ignore)
+
+        linters = []
+        if parser.has_section('tools'):
+            linters = comma_value(parser.get('tools', 'linters'))
+        # Setup empty config sections
+        for linter in linters:
+            data['linters'][linter] = {}
+        for section in parser.sections():
+            if not section.startswith('tool_'):
+                continue
+            # Strip off tool_
+            linter = section[5:]
+            tool_config = dict(parser.items(section))
+            # Replace config if its missing or new config has data.
+            if linter not in data['linters'] or len(tool_config.keys()):
+                data['linters'][linter] = tool_config
+        self.update(data)
