@@ -57,27 +57,23 @@ def test_build_review_config():
 class ReviewConfigTest(TestCase):
 
     def test_linter_listing_bad(self):
-        config = ReviewConfig()
-        config.load_ini(bad_ini)
+        config = build_review_config(bad_ini)
         res = config.linters()
         eq_(res, [])
 
     def test_linter_listing(self):
-        config = ReviewConfig()
-        config.load_ini(sample_ini)
+        config = build_review_config(sample_ini)
         res = config.linters()
         expected = ['phpcs', 'pep8', 'jshint']
         eq_(sorted(res), sorted(expected))
 
     def test_linter_config_bad(self):
-        config = ReviewConfig()
-        config.load_ini(bad_ini)
+        config = build_review_config(bad_ini)
         res = config.linter_config('phpcs')
         eq_(res, [])
 
     def test_linter_config(self):
-        config = ReviewConfig()
-        config.load_ini(sample_ini)
+        config = build_review_config(sample_ini)
         res = config.linter_config('phpcs')
         expected = {
             'standard': 'test/CodeStandards',
@@ -89,8 +85,7 @@ class ReviewConfigTest(TestCase):
         eq_(res, [])
 
     def test_ignore_patterns(self):
-        config = ReviewConfig()
-        config.load_ini(sample_ini)
+        config = build_review_config(sample_ini)
         res = config.ignore_patterns()
         expected = ['test/CodeStandards/test/**', 'vendor/**']
         eq_(res, expected)

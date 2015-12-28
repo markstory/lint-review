@@ -166,8 +166,5 @@ class ReviewConfig(object):
                 continue
             # Strip off tool_
             linter = section[5:]
-            tool_config = dict(parser.items(section))
-            # Replace config if its missing or new config has data.
-            if linter not in data['linters'] or len(tool_config.keys()):
-                data['linters'][linter] = tool_config
+            data['linters'][linter] = dict(parser.items(section))
         self.update(data)
