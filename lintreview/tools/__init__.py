@@ -16,7 +16,7 @@ class Tool(object):
         self.problems = problems
         self.base_path = base_path
         self.options = {}
-        if options:
+        if isinstance(options, dict):
             self.options = options
 
     def check_dependencies(self):

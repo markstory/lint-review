@@ -46,6 +46,22 @@ def test_factory_generates_tools():
     assert isinstance(linters[1], tools.jshint.Jshint)
 
 
+def test_tool_constructor__config():
+    problems = Problems()
+    config = {'good': 'value'}
+    tool = tools.Tool(problems, config)
+    eq_(tool.options, config)
+
+    tool = tools.Tool(problems, 'derp')
+    eq_(tool.options, {})
+
+    tool = tools.Tool(problems, 2)
+    eq_(tool.options, {})
+
+    tool = tools.Tool(problems, None)
+    eq_(tool.options, {})
+
+
 def test_run():
     config = build_review_config(simple_ini)
     problems = Problems()

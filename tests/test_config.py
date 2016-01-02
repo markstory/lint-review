@@ -70,7 +70,7 @@ class ReviewConfigTest(TestCase):
     def test_linter_config_bad(self):
         config = build_review_config(bad_ini)
         res = config.linter_config('phpcs')
-        eq_(res, [])
+        eq_(res, {})
 
     def test_linter_config(self):
         config = build_review_config(sample_ini)
@@ -82,7 +82,7 @@ class ReviewConfigTest(TestCase):
         eq_(res, expected)
 
         res = config.linter_config('not there')
-        eq_(res, [])
+        eq_(res, {})
 
     def test_ignore_patterns(self):
         config = build_review_config(sample_ini)

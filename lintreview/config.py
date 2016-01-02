@@ -120,7 +120,7 @@ class ReviewConfig(object):
         try:
             return self._data['linters'][tool]
         except:
-            return []
+            return {}
 
     def ignore_patterns(self):
         try:
