@@ -16,10 +16,10 @@ class IssueComment(object):
     def __init__(self, body=''):
         self.body = body
 
-    def publish(self, gh, pull_request_number, head_commit=None):
+    def publish(self, repo, pull_request):
         log.debug("Publishing issue comment '%s'", self.body)
         try:
-            gh.issue(pull_request_number).create_comment(self.body)
+            pull_request.create_comment(self.body)
         except:
             log.warn("Failed to save comment '%s'", self.body)
 
@@ -43,29 +43,18 @@ class IssueLabel(object):
     def __init__(self, label):
         self.label = label
 
-    def remove(self, gh, pull_request_number):
+    def remove(self, pull_request):
         try:
-            issue = gh.issue(pull_request_number)
-            labels = issue.labels()
-            if not any(self.label == label.name for label in labels):
-                return
-            log.debug("Removing issue label '%s'", self.label)
-            issue.remove_label(self.label)
+            pull_request.remove_label(self.label)
         except:
             log.warn("Failed to remove label '%s'", self.label)
 
-    def publish(self, gh, pull_request_number):
-        # remove+add to show latest activity
-        self.remove(gh, pull_request_number)
+    def publish(self, repo, pull_request):
+        self.remove(pull_request)
         log.debug("Publishing issue label '%s'", self.label)
         try:
-            # create label if it doesn't exist yet
-            if not gh.label(self.label):
-                gh.create_label(
-                    name=self.label,
-                    color="bfe5bf",  # a nice light green
-                )
-            gh.issue(pull_request_number).add_labels(self.label)
+            repo.ensure_label(self.label)
+            pull_request.add_label(self.label)
         except:
             log.warn("Failed to add label '%s'", self.label)
 
@@ -79,17 +68,16 @@ class Comment(IssueComment):
         self.filename = filename
         self.position = position
 
-    def publish(self, gh, pull_request_number, head_commit):
+    def publish(self, repo, pull_request):
         comment = {
-            'commit_id': head_commit,
+            'commit_id': pull_request.head,
             'path': self.filename,
             'position': self.position,
             'body': self.body,
         }
         log.debug("Publishing line comment '%s'", comment)
         try:
-            gh.pull_request(pull_request_number) \
-                .create_review_comment(**comment)
+            pull_request.create_review_comment(**comment)
         except:
             log.warn("Failed to save comment '%s'", comment)
 
@@ -101,12 +89,11 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, repo, number, config=None):
+    def __init__(self, repo, pull_request, config=None):
         config = config if config else {}
         self._repo = repo
         self._comments = Problems()
-        self._number = number
-        self._pr = self._repo.pull_request(self._number)
+        self._pr = pull_request
         self.config = config
 
     def comments(self, filename):
@@ -120,7 +107,7 @@ class Review(object):
         to new problems. Once the new unique problems
         are distilled new comments are published.
         """
-        log.info('Publishing review of %s to github.', self._number)
+        log.info('Publishing review of %s to github.', self._pr.number)
 
         if not problems.has_changes():
             return self.publish_empty_comment()
@@ -145,7 +132,7 @@ class Review(object):
         Results in a structure that is similar to the one used
         for problems
         """
-        log.debug("Loading comments for pull request '%s'", self._number)
+        log.debug("Loading comments for pull request '%s'", self._pr.number)
         comments = list(self._pr.review_comments())
 
         for comment in comments:
@@ -182,10 +169,10 @@ class Review(object):
         for the comments on a given file.
         """
         log.debug("Publishing (%s) new comments for '%s'",
-                  len(problems), self._number)
+                  len(problems), self._pr.number)
         self.remove_ok_label()
         for error in problems:
-            error.publish(self._repo, self._number, head_commit)
+            error.publish(self._repo, self._pr)
 
     def publish_status(self, problem_count):
         """
@@ -200,16 +187,14 @@ class Review(object):
             state = 'success'
             description = 'No lint errors found.'
         self._repo.create_status(
-            self._pr.head.sha,
+            self._pr.head,
             state,
-            None,
-            description,
-            self.config.get('APP_NAME', 'lintreview'))
+            description)
 
     def remove_ok_label(self):
         label = self.config.get('OK_LABEL', False)
         if label:
-            IssueLabel(label).remove(self._repo, self._number)
+            IssueLabel(label).remove(self._pr)
 
     def publish_ok_label(self):
         """
@@ -218,7 +203,7 @@ class Review(object):
         label = self.config.get('OK_LABEL', False)
         if label:
             issue_label = IssueLabel(label)
-            issue_label.publish(self._repo, self._number)
+            issue_label.publish(self._repo, self._pr)
 
     def publish_ok_comment(self):
         """
@@ -227,14 +212,14 @@ class Review(object):
         comment = self.config.get('OK_COMMENT', False)
         if comment:
             comment = IssueComment(comment)
-            comment.publish(self._repo, self._number)
+            comment.publish(self._repo, self._pr)
 
     def publish_empty_comment(self):
         self.remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         comment = IssueComment(body)
-        comment.publish(self._repo, self._number)
+        comment.publish(self._repo, self._pr)
 
     def publish_summary(self, problems):
         self.remove_ok_label()
@@ -243,7 +228,7 @@ class Review(object):
             body += "* {0.filename}, line {0.line} - {0.body}\n".format(
                 problem)
         comment = IssueComment(body)
-        comment.publish(self._repo, self._number)
+        comment.publish(self._repo, self._pr)
 
 
 class Problems(object):
