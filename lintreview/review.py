@@ -101,12 +101,12 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, gh, number, config=None):
+    def __init__(self, repo, number, config=None):
         config = config if config else {}
-        self._gh = gh
+        self._repo = repo
         self._comments = Problems()
         self._number = number
-        self._pr = self._gh.pull_request(self._number)
+        self._pr = self._repo.pull_request(self._number)
         self.config = config
 
     def comments(self, filename):
@@ -185,7 +185,7 @@ class Review(object):
                   len(problems), self._number)
         self.remove_ok_label()
         for error in problems:
-            error.publish(self._gh, self._number, head_commit)
+            error.publish(self._repo, self._number, head_commit)
 
     def publish_status(self, problem_count):
         """
@@ -199,7 +199,7 @@ class Review(object):
             self.publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
-        self._gh.create_status(
+        self._repo.create_status(
             self._pr.head.sha,
             state,
             None,
@@ -209,7 +209,7 @@ class Review(object):
     def remove_ok_label(self):
         label = self.config.get('OK_LABEL', False)
         if label:
-            IssueLabel(label).remove(self._gh, self._number)
+            IssueLabel(label).remove(self._repo, self._number)
 
     def publish_ok_label(self):
         """
@@ -218,7 +218,7 @@ class Review(object):
         label = self.config.get('OK_LABEL', False)
         if label:
             issue_label = IssueLabel(label)
-            issue_label.publish(self._gh, self._number)
+            issue_label.publish(self._repo, self._number)
 
     def publish_ok_comment(self):
         """
@@ -227,14 +227,14 @@ class Review(object):
         comment = self.config.get('OK_COMMENT', False)
         if comment:
             comment = IssueComment(comment)
-            comment.publish(self._gh, self._number)
+            comment.publish(self._repo, self._number)
 
     def publish_empty_comment(self):
         self.remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         comment = IssueComment(body)
-        comment.publish(self._gh, self._number)
+        comment.publish(self._repo, self._number)
 
     def publish_summary(self, problems):
         self.remove_ok_label()
@@ -243,7 +243,7 @@ class Review(object):
             body += "* {0.filename}, line {0.line} - {0.body}\n".format(
                 problem)
         comment = IssueComment(body)
-        comment.publish(self._gh, self._number)
+        comment.publish(self._repo, self._number)
 
 
 class Problems(object):
