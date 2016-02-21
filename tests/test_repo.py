@@ -51,6 +51,10 @@ class TestGithubPullRequest(TestCase):
         pull = GithubPullRequest(self.model)
         assert False == pull.is_private
 
+    def test_number(self):
+        pull = GithubPullRequest(self.model)
+        assert 1 == pull.number
+
     def test_head(self):
         pull = GithubPullRequest(self.model)
         expected = '53cb70abadcb3237dcb2aa2b1f24dcf7bcc7d68e'

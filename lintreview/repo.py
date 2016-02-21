@@ -36,6 +36,10 @@ class GithubPullRequest(object):
         self.pull = pull_request
 
     @property
+    def number(self):
+        return self.pull.number
+
+    @property
     def is_private(self):
         data = self.pull.as_dict()
         return data['head']['repo']['private']
