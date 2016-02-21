@@ -15,12 +15,12 @@ log = logging.getLogger(__name__)
 
 
 @celery.task(ignore_result=True)
-def process_pull_request(user, repo, number, lintrc):
+def process_pull_request(user, repo_name, number, lintrc):
     """
     Starts processing a pull request and running the various
     lint tools against it.
     """
-    log.info('Starting to process lint for %s/%s/%s', user, repo, number)
+    log.info('Starting to process lint for %s/%s/%s', user, repo_name, number)
     log.debug("lintrc contents '%s'", lintrc)
     review_config = build_review_config(lintrc, config)
 
@@ -30,8 +30,8 @@ def process_pull_request(user, repo, number, lintrc):
 
     try:
         log.info('Loading pull request data from github. user=%s '
-                 'repo=%s number=%s', user, repo, number)
-        repo = GithubRepository(config, user, repo)
+                 'repo=%s number=%s', user, repo_name, number)
+        repo = GithubRepository(config, user, repo_name)
         pull_request = repo.pull_request(number)
 
         head_repo = pull_request.clone_url
@@ -46,7 +46,7 @@ def process_pull_request(user, repo, number, lintrc):
             return
 
         # Clone/Update repository
-        target_path = git.get_repo_path(user, repo, number, config)
+        target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, head_repo, target_path, pr_head,
                             private_repo)
 
