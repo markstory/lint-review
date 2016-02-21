@@ -1,5 +1,9 @@
 import lintreview.github as github
 import lintreview.git as git
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class GithubRepository(object):
     """Abstracting wrapper for the
@@ -15,6 +19,8 @@ class GithubRepository(object):
         self.repo_name = repo_name
 
     def repository(self):
+        """Get the underlying repository model
+        """
         self.repo = github.get_repository(
             self.config,
             self.user,
@@ -22,9 +28,32 @@ class GithubRepository(object):
         return self.repo
 
     def pull_request(self, number):
+        """Get a pull request by number.
+        """
         pull = self.repository().pull_request(number)
         return GithubPullRequest(pull)
 
+    def ensure_label(self, label):
+        """Create label if it doesn't exist yet
+        """
+        repo = self.repository()
+        if not repo.label(label):
+            repo.create_label(
+                name=label,
+                color="bfe5bf",  # a nice light green
+            )
+
+    def create_status(self, sha, state, description):
+        """Create a commit status
+        """
+        context = self.config.get('APP_NAME', 'lintreview')
+        repo = self.repository()
+        repo.create_status(
+            sha,
+            state,
+            None,
+            description,
+            context)
 
 class GithubPullRequest(object):
     """Abstract the underlying github models.
@@ -64,3 +93,21 @@ class GithubPullRequest(object):
 
     def files(self):
         return list(self.pull.files())
+
+    def remove_label(self, label_name):
+        issue = self.pull.issue()
+        labels = issue.labels()
+        if not any(label_name == label.name for label in labels):
+            return
+        log.debug("Removing issue label '%s'", label_name)
+        issue.remove_label(label_name)
+
+    def add_label(self, label_name):
+        issue = self.pull.issue()
+        issue.add_labels(label_name)
+
+    def create_comment(self, body):
+        self.pull.create_comment(body)
+
+    def create_review_comment(self, body, commit_id, path, position):
+        self.pull.create_review_comment(body, commit_id, path, position)
