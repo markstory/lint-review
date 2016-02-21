@@ -91,6 +91,9 @@ class GithubPullRequest(object):
     def commits(self):
         return self.pull.commits()
 
+    def review_comments(self):
+        return self.pull.review_comments()
+
     def files(self):
         return list(self.pull.files())
 

@@ -9,7 +9,7 @@ from lintreview.config import load_config
 from lintreview.repo import GithubRepository
 from lintreview.repo import GithubPullRequest
 from mock import Mock, patch, sentinel
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 from unittest import TestCase
 
 config = load_config()
@@ -25,7 +25,7 @@ class TestGithubRepository(TestCase):
         github_mock.get_repository.return_value = self.repo_model
         repo = GithubRepository(config, 'markstory', 'lint-test')
 
-        assert self.repo_model == repo.repository()
+        eq_(self.repo_model,repo.repository())
         github_mock.get_repository.assert_called_with(
             config,
             'markstory',
@@ -37,7 +37,7 @@ class TestGithubRepository(TestCase):
         repo = GithubRepository(config, 'markstory', 'lint-test')
         repo.repository = lambda: self.repo_model
         pull = repo.pull_request(1)
-        assert(isinstance(pull, GithubPullRequest),
+        ok_(isinstance(pull, GithubPullRequest),
                'Should be wrapped object')
 
     def test_ensure_label__missing(self):
@@ -60,7 +60,7 @@ class TestGithubRepository(TestCase):
         repo = GithubRepository(config, 'markstory', 'lint-test')
         repo.repository = lambda: self.repo_model
         repo.ensure_label('A label')
-        assert model.create_label.called is False
+        eq_(False, model.create_label.called)
 
     def test_create_status(self):
         model = self.repo_model
@@ -126,6 +126,14 @@ class TestGithubPullRequest(TestCase):
         pull = GithubPullRequest(self.model)
         pull.add_label('No lint errors')
         mock_issue.add_labels.assert_called_with('No lint errors')
+
+    def test_create_comment(self):
+        self.model.review_comments = Mock()
+        pull = GithubPullRequest(self.model)
+
+        pull.review_comments(text)
+        ok_(self.model.review_comments.called,
+               'Method should delegate')
 
     def test_create_comment(self):
         self.model.create_comment = Mock()
