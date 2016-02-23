@@ -2,9 +2,8 @@ from . import load_fixture
 from contextlib import contextmanager
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
-from lintreview.review import Review
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Review, Problems, Comment
+from lintreview.repo import GithubRepository, GithubPullRequest
 from mock import Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
@@ -18,19 +17,12 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        pr = Mock()
-        issue = Mock()
-        gh = Mock()
+        repo = Mock(spec=GithubRepository)
+        pr = Mock(spec=GithubPullRequest, head='abc123', number=2)
+        repo.pull_request.return_value = pr
 
-        gh.pull_request.return_value = pr
-        gh.issue.return_value = issue
-
-        self.gh, self.pr, self.issue = gh, pr, issue
-        self.review = Review(self.gh, 2)
-
-    def test_ensure_correct_pull_request_loaded(self):
-        # Test the setup setup.
-        self.gh.pull_request.assert_called_with(2)
+        self.repo, self.pr = repo, pr
+        self.review = Review(repo, pr)
 
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
@@ -38,7 +30,7 @@ class TestReview(TestCase):
             lambda f: GhIssueComment(f),
             json.loads(fixture_data))
 
-        review = Review(self.gh, 2)
+        review = Review(self.repo, self.pr)
         review.load_comments()
 
         eq_(0, len(review.comments("View/Helper/AssetCompressHelper.php")))
@@ -48,7 +40,7 @@ class TestReview(TestCase):
         self.pr.review_comments.return_value = map(
             lambda f: GhIssueComment(f),
             json.loads(fixture_data))
-        review = Review(self.gh, 2)
+        review = Review(self.repo, self.pr)
         review.load_comments()
 
         filename = "Routing/Filter/AssetCompressor.php"
@@ -72,7 +64,7 @@ class TestReview(TestCase):
             lambda f: GhIssueComment(f),
             json.loads(fixture_data))
         problems = Problems()
-        review = Review(self.gh, 2)
+        review = Review(self.repo, self.pr)
         filename_1 = "Routing/Filter/AssetCompressor.php"
         filename_2 = "View/Helper/AssetCompressHelper.php"
 
@@ -105,7 +97,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         sha = 'abc123'
 
-        review = Review(self.gh, 3)
+        review = Review(self.repo, self.pr)
         review.publish_problems(problems, sha)
 
         assert self.pr.create_review_comment.called
@@ -118,31 +110,29 @@ class TestReview(TestCase):
 
     def test_publish_status__ok_no_comment_or_label(self):
         config = {'OK_COMMENT': None, 'OK_LABEL': None}
-        review = Review(self.gh, 3, config)
+        review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
-        assert self.gh.create_status.called, 'Create status not called'
-        assert not self.issue.create_comment.called, 'Comment not created'
-        assert not self.issue.add_labels.called, 'Label added created'
+        assert self.repo.create_status.called, 'Create status not called'
+        assert not self.pr.create_comment.called, 'Comment not created'
+        assert not self.pr.add_label.called, 'Label added created'
 
     def test_publish_status__ok_with_comment_and_label(self):
         config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
-        review = Review(self.gh, 3, config)
+        review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
-        assert self.gh.create_status.called, 'Create status not called'
-        self.gh.create_status.assert_called_with(
-            self.pr.head.sha,
+        assert self.repo.create_status.called, 'Create status not called'
+        self.repo.create_status.assert_called_with(
+            self.pr.head,
             'success',
-            None,
-            'No lint errors found.',
-            'lintreview')
+            'No lint errors found.')
 
-        assert self.issue.create_comment.called, 'Issue comment created'
-        self.issue.create_comment.assert_called_with('Great job!')
+        assert self.pr.create_comment.called, 'Issue comment created'
+        self.pr.create_comment.assert_called_with('Great job!')
 
-        assert self.issue.add_labels.called, 'Label added created'
-        self.issue.add_labels.assert_called_with('No lint errors')
+        assert self.pr.add_label.called, 'Label added created'
+        self.pr.add_label.assert_called_with('No lint errors')
 
     def test_publish_status__has_errors(self):
         config = {
@@ -150,19 +140,17 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        review = Review(self.gh, 3, config)
+        review = Review(self.repo, self.pr, config)
         review.publish_status(1)
 
-        assert self.gh.create_status.called, 'Create status not called'
+        assert self.repo.create_status.called, 'Create status not called'
 
-        self.gh.create_status.assert_called_with(
-            self.pr.head.sha,
+        self.repo.create_status.assert_called_with(
+            self.pr.head,
             'failure',
-            None,
-            'Lint errors found, see pull request comments.',
-            config['APP_NAME'])
-        assert not self.issue.create_comment.called, 'Comment not created'
-        assert not self.issue.add_labels.called, 'Label added created'
+            'Lint errors found, see pull request comments.')
+        assert not self.pr.create_comment.called, 'Comment not created'
+        assert not self.pr.add_label.called, 'Label added created'
 
     def test_publish_problems_remove_ok_label(self):
         problems = Problems()
@@ -174,19 +162,17 @@ class TestReview(TestCase):
         )
         problems.add_many(errors)
         sha = 'abc123'
+        config = {'OK_LABEL': 'No lint'}
 
-        review = Review(self.gh, 3)
-        label = 'No lint errors'
+        review = Review(self.repo, self.pr, config)
+        sha = 'abc123'
+        review.publish_problems(problems, sha)
 
-        with add_ok_label(self.gh, 3, review, label):
-            sha = 'abc123'
-            review.publish_problems(problems, sha)
-
-        assert self.issue.remove_label.called, 'Label should be removed'
+        assert self.pr.remove_label.called, 'Label should be removed'
         assert self.pr.create_review_comment.called, 'Comments should be added'
         eq_(2, self.pr.create_review_comment.call_count)
 
-        self.issue.remove_label.assert_called_with(label)
+        self.pr.remove_label.assert_called_with(config['OK_LABEL'])
         assert_review_comments_created(
             self.pr.create_review_comment.call_args_list,
             errors,
@@ -194,33 +180,32 @@ class TestReview(TestCase):
 
     def test_publish_empty_comment(self):
         problems = Problems(changes=[])
-        review = Review(self.gh, 3)
+        review = Review(self.repo, self.pr)
 
         sha = 'abc123'
         review.publish(problems, sha)
 
-        assert self.issue.create_comment.called, 'Should create a comment'
+        assert self.pr.create_comment.called, 'Should create a comment'
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
-        self.issue.create_comment.assert_called_with(msg)
+        self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_empty_comment_add_ok_label(self):
         problems = Problems(changes=[])
-        review = Review(self.gh, 3)
-        label = 'No lint errors'
+        config = {'OK_LABEL': 'No lint'}
+        review = Review(self.repo, self.pr, config)
 
-        with add_ok_label(self.gh, 3, review, label):
-            sha = 'abc123'
-            review.publish(problems, sha)
+        sha = 'abc123'
+        review.publish(problems, sha)
 
-        assert self.issue.create_comment.called, 'ok comment should be added.'
-        assert self.issue.remove_label.called, 'label should be removed.'
-        self.issue.remove_label.assert_called_with(label)
+        assert self.pr.create_comment.called, 'ok comment should be added.'
+        assert self.pr.remove_label.called, 'label should be removed.'
+        self.pr.remove_label.assert_called_with(config['OK_LABEL'])
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
-        self.issue.create_comment.assert_called_with(msg)
+        self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
@@ -239,7 +224,7 @@ class TestReview(TestCase):
         problems.set_changes([1])
         sha = 'abc123'
 
-        review = Review(self.gh, 3)
+        review = Review(self.repo, self.pr)
         review.publish_summary = Mock()
         review.publish(problems, sha, 1)
 
@@ -256,18 +241,18 @@ class TestReview(TestCase):
         problems.add_many(errors)
         problems.set_changes([1])
 
-        review = Review(self.gh, 3)
+        review = Review(self.repo, self.pr)
         review.publish_summary(problems)
 
-        assert self.issue.create_comment.called
-        eq_(1, self.issue.create_comment.call_count)
+        assert self.pr.create_comment.called
+        eq_(1, self.pr.create_comment.call_count)
 
         msg = """There are 2 errors:
 
 * Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
 * Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
 """
-        self.issue.create_comment.assert_called_with(msg)
+        self.pr.create_comment.assert_called_with(msg)
 
 
 class TestProblems(TestCase):
@@ -384,18 +369,6 @@ class TestProblems(TestCase):
 
         problems = Problems(changes=[1])
         assert problems.has_changes()
-
-
-@contextmanager
-def add_ok_label(gh, pr_number, review, *labels, **kw):
-    if labels:
-        class Label(object):
-            def __init__(self, name):
-                self.name = name
-        gh.issue().labels.return_value = [Label(n) for n in labels]
-
-    review.config = {'OK_LABEL': 'No lint errors'}
-    yield
 
 
 def assert_review_comments_created(call_args, errors, sha):

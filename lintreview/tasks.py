@@ -4,6 +4,7 @@ import logging
 
 from celery import Celery
 from lintreview.config import load_config, build_review_config
+from lintreview.repo import GithubRepository
 from lintreview.processor import Processor
 
 config = load_config()
@@ -14,12 +15,12 @@ log = logging.getLogger(__name__)
 
 
 @celery.task(ignore_result=True)
-def process_pull_request(user, repo, number, lintrc):
+def process_pull_request(user, repo_name, number, lintrc):
     """
     Starts processing a pull request and running the various
     lint tools against it.
     """
-    log.info('Starting to process lint for %s/%s/%s', user, repo, number)
+    log.info('Starting to process lint for %s/%s/%s', user, repo_name, number)
     log.debug("lintrc contents '%s'", lintrc)
     review_config = build_review_config(lintrc, config)
 
@@ -29,27 +30,27 @@ def process_pull_request(user, repo, number, lintrc):
 
     try:
         log.info('Loading pull request data from github. user=%s '
-                 'repo=%s number=%s', user, repo, number)
-        gh = github.get_repository(config, user, repo)
-        pull_request = gh.pull_request(number)
+                 'repo=%s number=%s', user, repo_name, number)
+        repo = GithubRepository(config, user, repo_name)
+        pull_request = repo.pull_request(number)
 
-        pr_dict = pull_request.as_dict()
-        head_repo = pr_dict['head']['repo']['clone_url']
-        private_repo = pr_dict['head']['repo']['private']
-        pr_head = pr_dict['head']['sha']
+        head_repo = pull_request.clone_url
 
-        target_branch = pr_dict['base']['ref']
+        private_repo = pull_request.is_private
+        pr_head = pull_request.head
+        target_branch = pull_request.target_branch
+
         if target_branch in review_config.ignore_branches():
             log.info('Pull request into ignored branch %s, skipping processing.' %
                      target_branch)
             return
 
         # Clone/Update repository
-        target_path = git.get_repo_path(user, repo, number, config)
+        target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, head_repo, target_path, pr_head,
                             private_repo)
 
-        processor = Processor(gh, number, pr_head,
+        processor = Processor(repo, pull_request,
                               target_path, config)
         processor.load_changes()
         processor.run_tools(review_config)
