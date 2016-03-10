@@ -8,7 +8,7 @@ from mock import Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
-from unittest import TestCase
+from unittest import TestCase, skipIf
 import json
 
 config = load_config()
@@ -267,6 +267,8 @@ class TestProblems(TestCase):
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
+        for item in self.problems:
+            print item
         eq_(1, len(self.problems))
 
         self.problems.add('file.py', 11, 'Not good')
@@ -281,6 +283,24 @@ class TestProblems(TestCase):
 
         self.problems.add('file.py', 10, 'Not good')
         eq_(1, len(self.problems))
+
+    def test_add__same_line_combines(self):
+        self.problems.add('file.py', 10, 'Tabs bad')
+        self.problems.add('file.py', 10, 'Spaces are good')
+        eq_(1, len(self.problems))
+
+        result = self.problems.all()
+        expected = 'Tabs bad\nSpaces are good'
+        eq_(expected, result[0].body)
+
+    def test_add__same_line_ignores_duplicates(self):
+        self.problems.add('file.py', 10, 'Tabs bad')
+        self.problems.add('file.py', 10, 'Tabs bad')
+        eq_(1, len(self.problems))
+
+        result = self.problems.all()
+        expected = 'Tabs bad'
+        eq_(expected, result[0].body)
 
     def test_add__with_base_path(self):
         problems = Problems('/some/path/')

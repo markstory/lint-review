@@ -23,6 +23,13 @@ class IssueComment(object):
         except:
             log.warn("Failed to save comment '%s'", self.body)
 
+    def key(self):
+        return (self.filename, self.line)
+
+    def append_body(self, text):
+        if text not in self.body:
+            self.body += "\n" + text
+
     def __eq__(self, other):
         """
         Overload eq to make testing much simpler.
@@ -67,6 +74,8 @@ class Comment(IssueComment):
         self.line = line
         self.filename = filename
         self.position = position
+
+    # TODO Add __hash__ and make Problems a hashmap?
 
     def publish(self, repo, pull_request):
         comment = {
@@ -242,7 +251,7 @@ class Problems(object):
     _base = None
 
     def __init__(self, base=None, changes=None):
-        self._items = []
+        self._items = {}
         self._changes = changes
         if base:
             self._base = base.rstrip('/') + '/'
@@ -272,9 +281,9 @@ class Problems(object):
     def all(self, filename=None):
         if filename:
             return [error
-                    for error in self._items
+                    for error in self
                     if error.filename == filename]
-        return self._items
+        return self._items.values()
 
     def add(self, filename, line=None, body=None, position=None):
         """
@@ -284,20 +293,26 @@ class Problems(object):
         and the line numbers diff offset will be fetched from there.
         """
         if isinstance(filename, IssueComment):
-            self._items.append(filename)
+            self._items[filename.key()] = filename
             return
 
         filename = self._trim_filename(filename)
         if not position:
             position = self.line_to_position(filename, line)
+
+        # TODO update comment text when a comment already exists.
+        # Consider a merge method?
         error = Comment(
             filename=filename,
             line=line,
             position=position,
             body=body)
-        if error not in self._items:
+        key = error.key()
+        if key not in self._items:
             log.debug("Adding error '%s'", error)
-            self._items.append(error)
+            self._items[key] = error
+        else:
+            self._items[key].append_body(error.body)
 
     def add_many(self, problems):
         """
@@ -319,7 +334,12 @@ class Problems(object):
             if changes.has_line_changed(err.filename, err.line):
                 return True
             return False
-        self._items = [error for error in self._items if sieve(error)]
+
+        items = {}
+        for error in self:
+            if sieve(error):
+                items[error.key()] = error
+        self._items = items
 
     def remove(self, filename, position, body):
         """
@@ -339,8 +359,5 @@ class Problems(object):
         return len(self._items)
 
     def __iter__(self):
-        i = 0
-        length = len(self._items)
-        while i < length:
-            yield self._items[i]
-            i += 1
+        for item in self._items.values():
+            yield item
