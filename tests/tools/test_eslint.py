@@ -42,14 +42,19 @@ class TestEslint(TestCase):
     def test_process_files_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(5, len(problems))
+        eq_(2, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, 'foo is defined but never used (no-unused-vars)')
+        msg = ("foo is defined but never used (no-unused-vars)\n"
+               '"bar" is not defined. (no-undef)\n'
+               'Missing semicolon. (semi)')
+        expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[0])
 
-        expected = Comment(fname, 4, 4, '"alert" is not defined. (no-undef)')
-        eq_(expected, problems[4])
+        msg = ('Unexpected alert. (no-alert)\n'
+               '"alert" is not defined. (no-undef)')
+        expected = Comment(fname, 4, 4, msg)
+        eq_(expected, problems[1])
 
     @needs_eslint
     def test_process_files_with_config(self):
@@ -61,4 +66,4 @@ class TestEslint(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(4, len(problems), 'Config file should lower error count.')
+        eq_(2, len(problems), 'Config file should lower error count.')

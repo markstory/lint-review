@@ -30,14 +30,17 @@ class TestFlake8(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        eq_(6, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
-        eq_(expected, problems[1])
+        msg = ("F401 'os' imported but unused\n"
+               "F401 're' imported but unused\n"
+               "E401 multiple imports on one line")
+        expected = Comment(fname, 2, 2, msg)
+        eq_(expected, problems[0])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
-        eq_(expected, problems[7])
+        eq_(expected, problems[5])
 
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
@@ -45,14 +48,17 @@ class TestFlake8(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        eq_(6, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 2, 2, "F401 're' imported but unused")
-        eq_(expected, problems[1])
+        msg = ("F401 'os' imported but unused\n"
+               "F401 're' imported but unused\n"
+               "E401 multiple imports on one line")
+        expected = Comment(fname, 2, 2, msg)
+        eq_(expected, problems[0])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
-        eq_(expected, problems[7])
+        eq_(expected, problems[5])
 
     def test_config_options_and_process_file(self):
         options = {
@@ -61,7 +67,7 @@ class TestFlake8(TestCase):
         self.tool = Flake8(self.problems, options)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(6, len(problems))
+        eq_(5, len(problems))
         for p in problems:
             self.assertFalse('F4' in p.body)
             self.assertFalse('W603' in p.body)
