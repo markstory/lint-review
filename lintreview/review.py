@@ -24,7 +24,7 @@ class IssueComment(object):
             log.warn("Failed to save comment '%s'", self.body)
 
     def key(self):
-        return (self.filename, self.line)
+        return (self.filename, self.position)
 
     def append_body(self, text):
         if text not in self.body:
@@ -34,7 +34,9 @@ class IssueComment(object):
         """
         Overload eq to make testing much simpler.
         """
-        return self.__dict__ == other.__dict__
+        return (self.filename == other.filename and
+                self.position == other.position and
+                self.body == other.body)
 
     def __repr__(self):
         return "%s(filename=%s, line=%s, position=%s, body=%s)" % (
@@ -169,7 +171,7 @@ class Review(object):
         the comment there, and not a human.
         """
         for comment in self._comments:
-            problems.remove(comment.filename, comment.position, comment.body)
+            problems.remove(comment)
 
     def publish_problems(self, problems, head_commit):
         """
@@ -341,15 +343,14 @@ class Problems(object):
                 items[error.key()] = error
         self._items = items
 
-    def remove(self, filename, position, body):
+    def remove(self, comment):
         """
         Remove a problem from the list based on the filename
         position and comment.
         """
         found = False
-        for i, item in enumerate(self._items):
-            if (item.filename == filename and
-                    item.position == position and item.body == body):
+        for i, item in self._items.items():
+            if item == comment:
                 found = i
                 break
         if found is not False:
