@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 
 log = logging.getLogger(__name__)
@@ -252,7 +253,7 @@ class Problems(object):
     _base = None
 
     def __init__(self, base=None, changes=None):
-        self._items = {}
+        self._items = OrderedDict()
         self._changes = changes
         if base:
             self._base = base.rstrip('/') + '/'
