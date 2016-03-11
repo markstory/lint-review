@@ -9,6 +9,7 @@ class IssueComment(object):
     pull request/issue comment.
     """
     filename = None
+    # TODO remove line it is not really needed
     line = 0
     position = 0
     body = None
@@ -76,8 +77,6 @@ class Comment(IssueComment):
         self.line = line
         self.filename = filename
         self.position = position
-
-    # TODO Add __hash__ and make Problems a hashmap?
 
     def publish(self, repo, pull_request):
         comment = {
@@ -302,8 +301,6 @@ class Problems(object):
         if not position:
             position = self.line_to_position(filename, line)
 
-        # TODO update comment text when a comment already exists.
-        # Consider a merge method?
         error = Comment(
             filename=filename,
             line=line,
@@ -311,9 +308,10 @@ class Problems(object):
             body=body)
         key = error.key()
         if key not in self._items:
-            log.debug("Adding error '%s'", error)
+            log.debug("Adding new line comment '%s'", error)
             self._items[key] = error
         else:
+            log.debug("Updating existing line comment with '%s'", error)
             self._items[key].append_body(error.body)
 
     def add_many(self, problems):

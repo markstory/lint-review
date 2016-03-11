@@ -78,7 +78,10 @@ class TestReview(TestCase):
 
         res = problems.all(filename_1)
         eq_(1, len(res))
-        expected = Comment(filename_1, 87, 87, 'Something different')
+        expected = Comment(filename_1,
+                           87,
+                           87,
+                           'A pithy remark\nSomething different')
         eq_(res[0], expected)
 
         res = problems.all(filename_2)
