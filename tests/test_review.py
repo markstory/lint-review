@@ -8,7 +8,7 @@ from mock import Mock, call
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
-from unittest import TestCase, skipIf
+from unittest import TestCase
 import json
 
 config = load_config()
