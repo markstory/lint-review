@@ -40,16 +40,19 @@ class TestRubocop(TestCase):
         self.tool.process_files([linty_filename])
 
         problems = self.problems.all(linty_filename)
-        expected = Comment(linty_filename, 4, 4,
-                           'C: Trailing whitespace detected.')
-        eq_(expected, problems[5])
+        expected = Comment(
+            linty_filename,
+            4,
+            4,
+            'C: Trailing whitespace detected.')
+        eq_(expected, problems[1])
 
     @needs_rubocop
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
         linty_filename = abspath(self.fixtures[1])
-        eq_(6, len(self.problems.all(linty_filename)))
+        eq_(2, len(self.problems.all(linty_filename)))
 
         freshly_laundered_filename = abspath(self.fixtures[0])
         eq_([], self.problems.all(freshly_laundered_filename))
@@ -64,6 +67,9 @@ class TestRubocop(TestCase):
         self.tool.process_files([linty_filename])
 
         problems = self.problems.all(linty_filename)
-        expected = Comment(linty_filename, 3, 3,
-                           'C: Metrics/LineLength: Line is too long. [82/80]')
-        eq_(expected, problems[4])
+        expected = Comment(
+            linty_filename,
+            4,
+            4,
+            'C: Style/TrailingWhitespace: Trailing whitespace detected.')
+        eq_(expected, problems[1])
