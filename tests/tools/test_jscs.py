@@ -43,7 +43,7 @@ class TestJcs(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(9, len(problems))
+        eq_(8, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(
@@ -51,7 +51,7 @@ class TestJcs(TestCase):
         eq_(expected, problems[0])
 
         expected = Comment(fname, 7, 7, 'Expected indentation of 4 characters')
-        eq_(expected, problems[7])
+        eq_(expected, problems[6])
 
     @needs_jscs
     def test_process_files_two_files(self):
@@ -60,7 +60,7 @@ class TestJcs(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(9, len(problems))
+        eq_(8, len(problems))
 
     @needs_jscs
     def test_process_files_with_config(self):

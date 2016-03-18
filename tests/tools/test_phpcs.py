@@ -78,7 +78,7 @@ class Testphpcs(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(8, len(problems), 'Changing standards changes error counts')
+        eq_(3, len(problems), 'Changing standards changes error counts')
 
     def test_create_command__with_path_based_standard(self):
         command = 'vendor/bin/phpcs'

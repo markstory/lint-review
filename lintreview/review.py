@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 
 log = logging.getLogger(__name__)
@@ -9,6 +10,7 @@ class IssueComment(object):
     pull request/issue comment.
     """
     filename = None
+    # TODO remove line it is not really needed
     line = 0
     position = 0
     body = None
@@ -23,11 +25,20 @@ class IssueComment(object):
         except:
             log.warn("Failed to save comment '%s'", self.body)
 
+    def key(self):
+        return (self.filename, self.position)
+
+    def append_body(self, text):
+        if text not in self.body:
+            self.body += "\n" + text
+
     def __eq__(self, other):
         """
         Overload eq to make testing much simpler.
         """
-        return self.__dict__ == other.__dict__
+        return (self.filename == other.filename and
+                self.position == other.position and
+                self.body == other.body)
 
     def __repr__(self):
         return "%s(filename=%s, line=%s, position=%s, body=%s)" % (
@@ -160,7 +171,7 @@ class Review(object):
         the comment there, and not a human.
         """
         for comment in self._comments:
-            problems.remove(comment.filename, comment.position, comment.body)
+            problems.remove(comment)
 
     def publish_problems(self, problems, head_commit):
         """
@@ -242,7 +253,7 @@ class Problems(object):
     _base = None
 
     def __init__(self, base=None, changes=None):
-        self._items = []
+        self._items = OrderedDict()
         self._changes = changes
         if base:
             self._base = base.rstrip('/') + '/'
@@ -272,9 +283,9 @@ class Problems(object):
     def all(self, filename=None):
         if filename:
             return [error
-                    for error in self._items
+                    for error in self
                     if error.filename == filename]
-        return self._items
+        return self._items.values()
 
     def add(self, filename, line=None, body=None, position=None):
         """
@@ -284,20 +295,25 @@ class Problems(object):
         and the line numbers diff offset will be fetched from there.
         """
         if isinstance(filename, IssueComment):
-            self._items.append(filename)
+            self._items[filename.key()] = filename
             return
 
         filename = self._trim_filename(filename)
         if not position:
             position = self.line_to_position(filename, line)
+
         error = Comment(
             filename=filename,
             line=line,
             position=position,
             body=body)
-        if error not in self._items:
-            log.debug("Adding error '%s'", error)
-            self._items.append(error)
+        key = error.key()
+        if key not in self._items:
+            log.debug("Adding new line comment '%s'", error)
+            self._items[key] = error
+        else:
+            log.debug("Updating existing line comment with '%s'", error)
+            self._items[key].append_body(error.body)
 
     def add_many(self, problems):
         """
@@ -319,17 +335,21 @@ class Problems(object):
             if changes.has_line_changed(err.filename, err.line):
                 return True
             return False
-        self._items = [error for error in self._items if sieve(error)]
 
-    def remove(self, filename, position, body):
+        items = {}
+        for error in self:
+            if sieve(error):
+                items[error.key()] = error
+        self._items = items
+
+    def remove(self, comment):
         """
         Remove a problem from the list based on the filename
         position and comment.
         """
         found = False
-        for i, item in enumerate(self._items):
-            if (item.filename == filename and
-                    item.position == position and item.body == body):
+        for i, item in self._items.items():
+            if item == comment:
                 found = i
                 break
         if found is not False:
@@ -339,8 +359,5 @@ class Problems(object):
         return len(self._items)
 
     def __iter__(self):
-        i = 0
-        length = len(self._items)
-        while i < length:
-            yield self._items[i]
-            i += 1
+        for item in self._items.values():
+            yield item

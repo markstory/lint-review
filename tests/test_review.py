@@ -78,7 +78,10 @@ class TestReview(TestCase):
 
         res = problems.all(filename_1)
         eq_(1, len(res))
-        expected = Comment(filename_1, 87, 87, 'Something different')
+        expected = Comment(filename_1,
+                           87,
+                           87,
+                           'A pithy remark\nSomething different')
         eq_(res[0], expected)
 
         res = problems.all(filename_2)
@@ -267,6 +270,8 @@ class TestProblems(TestCase):
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
+        for item in self.problems:
+            print item
         eq_(1, len(self.problems))
 
         self.problems.add('file.py', 11, 'Not good')
@@ -281,6 +286,24 @@ class TestProblems(TestCase):
 
         self.problems.add('file.py', 10, 'Not good')
         eq_(1, len(self.problems))
+
+    def test_add__same_line_combines(self):
+        self.problems.add('file.py', 10, 'Tabs bad')
+        self.problems.add('file.py', 10, 'Spaces are good')
+        eq_(1, len(self.problems))
+
+        result = self.problems.all()
+        expected = 'Tabs bad\nSpaces are good'
+        eq_(expected, result[0].body)
+
+    def test_add__same_line_ignores_duplicates(self):
+        self.problems.add('file.py', 10, 'Tabs bad')
+        self.problems.add('file.py', 10, 'Tabs bad')
+        eq_(1, len(self.problems))
+
+        result = self.problems.all()
+        expected = 'Tabs bad'
+        eq_(expected, result[0].body)
 
     def test_add__with_base_path(self):
         problems = Problems('/some/path/')

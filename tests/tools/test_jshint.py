@@ -44,7 +44,7 @@ class TestJshint(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(5, len(problems))
+        eq_(4, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(fname, 1, 1,'Missing name in function declaration.')
@@ -57,7 +57,7 @@ class TestJshint(TestCase):
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[2]])
         problems = self.problems.all(self.fixtures[2])
-        eq_(7, len(problems))
+        eq_(6, len(problems))
 
         fname = self.fixtures[2]
         expected = Comment(fname, 9, 9, "Missing semicolon.")
@@ -73,7 +73,7 @@ class TestJshint(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(5, len(problems))
+        eq_(4, len(problems))
 
     @needs_jshint
     def test_process_files_with_config(self):
@@ -85,7 +85,7 @@ class TestJshint(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(4, len(problems), 'Config file should lower error count.')
+        eq_(3, len(problems), 'Config file should lower error count.')
 
     def test_create_command__with_path_based_standard(self):
         config = {
