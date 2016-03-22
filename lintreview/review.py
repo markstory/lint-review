@@ -197,10 +197,13 @@ class Review(object):
             self.publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
-        self._repo.create_status(
-            self._pr.head,
-            state,
-            description)
+        status = self.config.get('PULLREQUEST_STATUS', True)
+        if status:
+            self._repo.create_status(
+                self._pr.head,
+                state,
+                description
+            )
 
     def remove_ok_label(self):
         label = self.config.get('OK_LABEL', False)

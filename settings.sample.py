@@ -95,6 +95,9 @@ SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 # Customize the build status integration name. Defaults to lintreview.
 # APP_NAME = 'lintreview'
 
+# Publish result to a pull requests status
+PULLREQUEST_STATUS = env('LINTREVIEW_PULLREQUEST_STATUS', True, bool)
+
 # Uncomment this option to enable adding an issue comment
 # whenever a pull request passes all checks.
 # OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
