@@ -111,17 +111,25 @@ class TestReview(TestCase):
             errors,
             sha)
 
-    def test_publish_status__ok_no_comment_or_label(self):
-        config = {'OK_COMMENT': None, 'OK_LABEL': None}
+    def test_publish_status__ok_no_comment_label_or_status(self):
+        config = {
+            'OK_COMMENT': None,
+            'OK_LABEL': None,
+            'PULLREQUEST_STATUS': False,
+        }
         review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
-        assert self.repo.create_status.called, 'Create status not called'
+        assert not self.repo.create_status.called, 'Create status called'
         assert not self.pr.create_comment.called, 'Comment not created'
         assert not self.pr.add_label.called, 'Label added created'
 
-    def test_publish_status__ok_with_comment_and_label(self):
-        config = {'OK_COMMENT': 'Great job!', 'OK_LABEL': 'No lint errors'}
+    def test_publish_status__ok_with_comment_label_and_status(self):
+        config = {
+            'OK_COMMENT': 'Great job!',
+            'OK_LABEL': 'No lint errors',
+            'PULLREQUEST_STATUS': True,
+        }
         review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
