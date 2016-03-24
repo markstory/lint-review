@@ -33,8 +33,11 @@ def start_review():
         number = pull_request["number"]
         base_repo_url = pull_request["base"]["repo"]["git_url"]
         head_repo_url = pull_request["head"]["repo"]["git_url"]
+        head_repo_ref = pull_request["head"]["ref"]
         user = pull_request["base"]["repo"]["owner"]["login"]
+        head_user = pull_request["head"]["repo"]["owner"]["login"]
         repo = pull_request["base"]["repo"]["name"]
+        head_repo = pull_request["head"]["repo"]["name"]
     except Exception as e:
         log.error("Got an invalid JSON body. '%s'", e)
         return Response(status=403,
@@ -51,9 +54,9 @@ def start_review():
     if action == "closed":
         return close_review(user, repo, pull_request)
 
-    gh = get_repository(app.config, user, repo)
+    gh = get_repository(app.config, head_user, head_repo)
     try:
-        lintrc = get_lintrc(gh)
+        lintrc = get_lintrc(gh, head_repo_ref)
         log.debug("lintrc file contents '%s'", lintrc)
     except Exception as e:
         log.warn("Cannot download .lintrc file for '%s', "
