@@ -1,6 +1,7 @@
 # Lint Review
 
 [![Build Status](https://api.travis-ci.org/markstory/lint-review.svg?branch=master)](https://travis-ci.org/markstory/lint-review)
+[![codecov.io](https://codecov.io/github/markstory/lint-review/coverage.svg?branch=master)](https://codecov.io/github/markstory/lint-review?branch=master)
 [![Docker Repository on Quay.io](https://quay.io/repository/freshbooks/lint-review/status "Docker Repository on Quay.io")](https://quay.io/repository/freshbooks/lint-review)
 
 Lint Review helps automate a tedious part of code review - enforcing coding

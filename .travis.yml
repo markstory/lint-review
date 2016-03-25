@@ -1,9 +1,11 @@
 language: python
 
-python:
- - "2.7"
+python: "2.7"
 
-install: "pip install ."
+install:
+  - pip install .
+  - pip install codecov
+  - pip install coverage
 
 before_script:
   - npm install
@@ -13,7 +15,11 @@ before_script:
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
 
-script: "nosetests"
+script:
+  - "nosetests --with-coverage"
+
+after_success:
+  - codecov
 
 sudo: false
 
