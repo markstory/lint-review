@@ -26,12 +26,12 @@ def get_repository(config, user, repo):
     return gh.repository(owner=user, repository=repo)
 
 
-def get_lintrc(repo):
+def get_lintrc(repo, ref):
     """
     Download the .lintrc from a repo
     """
     log.info('Fetching lintrc file')
-    response = repo.file_contents('.lintrc')
+    response = repo.file_contents('.lintrc', ref)
     return response.decoded
 
 

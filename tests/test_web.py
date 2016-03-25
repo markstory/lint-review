@@ -9,8 +9,13 @@ test_data = {
     'pull_request': {
         'number': '3',
         'head': {
+            'ref': 'master',
             'repo': {
-                'git_url': 'testing',
+                'git_url': 'git://github.com/other/testing',
+                'name': 'testing',
+                'owner': {
+                    'login': 'other',
+                },
             },
         },
         'base': {
