@@ -144,7 +144,7 @@ def run_command(
     """
     Execute subprocesses.
     """
-    log.debug('Running %s', ' '.join(command))
+    log.info('Running %s', ' '.join(command))
 
     env = os.environ.copy()
 
