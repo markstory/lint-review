@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 from lintreview.tools import Tool
@@ -42,4 +43,7 @@ class Eslint(Tool):
         output = run_command(
             command,
             ignore_error=True)
-        self._process_checkstyle(output)
+        filename_converter = functools.partial(
+            self._relativize_filename,
+            files)
+        self._process_checkstyle(output, filename_converter)

@@ -81,6 +81,9 @@ class Tool(object):
         Convert each of the files in `files` to an
         absolute path to locate the filename
         """
+        if name in files:
+            return name  # looks like it was already relative
+
         for f in files:
             abs_path = os.path.realpath(f)
             if abs_path == name:
