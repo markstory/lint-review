@@ -5,7 +5,7 @@
   "dependencies": {
     "jscs": "1.13.x",
     "jshint": "2.6.x",
-    "eslint": "0.21.x",
+    "eslint": "2.4.x",
     "csslint": "0.10.x"
   }
 }

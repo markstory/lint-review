@@ -20,7 +20,10 @@ class TestEslint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Eslint(self.problems)
+        options = {
+            'config': 'tests/fixtures/eslint/recommended_config.json'
+        }
+        self.tool = Eslint(self.problems, options)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -44,16 +47,21 @@ class TestEslint(TestCase):
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(2, len(problems))
 
-        msg = ("foo is defined but never used (no-unused-vars)\n"
-               '"bar" is not defined. (no-undef)\n'
-               'Missing semicolon. (semi)')
+        msg = ("'foo' is defined but never used (no-unused-vars)\n"
+               "'bar' is not defined. (no-undef)")
         expected = Comment(FILE_WITH_ERRORS, 2, 2, msg)
         eq_(expected, problems[0])
 
-        msg = ('Unexpected alert. (no-alert)\n'
-               '"alert" is not defined. (no-undef)')
+        msg = ("'alert' is not defined. (no-undef)")
         expected = Comment(FILE_WITH_ERRORS, 4, 4, msg)
         eq_(expected, problems[1])
+
+    @needs_eslint
+    def test_process_files_with_no_config(self):
+        tool = Eslint(self.problems, options={})
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all(FILE_WITH_ERRORS)
+        eq_(0, len(problems), 'With no config file there should be no errors.')
 
     @needs_eslint
     def test_process_files_with_config(self):
@@ -65,4 +73,8 @@ class TestEslint(TestCase):
 
         problems = self.problems.all(FILE_WITH_ERRORS)
 
-        eq_(2, len(problems), 'Config file should lower error count.')
+        msg = ("'foo' is defined but never used (no-unused-vars)\n"
+               "'bar' is not defined. (no-undef)\n"
+               "Missing semicolon. (semi)")
+        expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
+        eq_(expected, problems)
