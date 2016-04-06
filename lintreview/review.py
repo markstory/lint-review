@@ -42,7 +42,7 @@ class IssueComment(object):
 
     def __repr__(self):
         return "%s(filename=%s, line=%s, position=%s, body=%s)" % (
-            str(self.__class__),
+            str(self.__class__.__name__),
             self.filename,
             self.line,
             self.position,

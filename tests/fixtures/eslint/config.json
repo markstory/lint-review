@@ -1,5 +1,9 @@
 {
+    "extends": "eslint:recommended",
     "env": {
         "browser": true
+    },
+    "rules": {
+        "semi": ["error"]
     }
 }
