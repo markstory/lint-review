@@ -339,7 +339,7 @@ class Problems(object):
                 return True
             return False
 
-        items = {}
+        items = OrderedDict()
         for error in self:
             if sieve(error):
                 items[error.key()] = error
