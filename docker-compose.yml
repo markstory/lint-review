@@ -10,7 +10,7 @@ services:
     build: .
   web:
     image: lintreview_image
-    command: bash -c 'gunicorn -c /code/settings.py lintreview.web:app'
+    command: 'gunicorn -c /code/settings.py lintreview.web:app'
     env_file: lintreview-env
     ports:
      - "5000:5000"
