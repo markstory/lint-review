@@ -1,6 +1,5 @@
 FROM python:2.7
-ENV REFRESHED_AT 2015-10-31
-ENV LINTREVIEW_SETTINGS /code/settings.sample.py
+ENV REFRESHED_AT 2016-04-19
 RUN apt-get upgrade -y && apt-get update && \
     apt-get install -y php-pear ruby npm && \
     apt-get install -y ruby1.9.1 ruby-dev build-essential && \
@@ -12,3 +11,4 @@ WORKDIR /code
 ADD . /code
 RUN pip install -r requirements.txt && pip install .
 RUN gem install bundler && bundle install --system
+RUN cp /code/settings.sample.py /code/settings.py

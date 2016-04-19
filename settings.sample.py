@@ -34,10 +34,8 @@ from kombu import Exchange, Queue
 BROKER_URL = 'amqp://'+''.join([
     env('LINTREVIEW_MQ_USER', 'guest'), ':',
     env('LINTREVIEW_MQ_PASS', 'guest'), '@',
-    env('LINTREVIEW_MQ_HOST',
-    env('BROKER_PORT_5672_TCP_ADDR', '127.0.0.1')), ':',
-    env('LINTREVIEW_MQ_PORT',
-    env('BROKER_PORT_5672_TCP_PORT', '5672')), '/',
+    env('LINTREVIEW_MQ_HOST', 'broker'), ':',
+    env('LINTREVIEW_MQ_PORT', '5672'), '/',
     env('LINTREVIEW_MQ_VIRTUAL_HOST', '/')
 ])
 
