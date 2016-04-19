@@ -1,22 +1,37 @@
-broker:
-  image: rabbitmq:3-management
-  ports:
-    - "15672:15672"
-image:
-  build: .
-web:
-  image: lintreview_image
-  command: bash -c 'gunicorn -c /code/settings.py lintreview.web:app'
-  environment:
-    LINTREVIEW_GUNICORN_BIND: '0.0.0.0:5000'
-  ports:
-   - "5000:5000"
-  links:
-   - "broker:broker"
-worker:
-  image: lintreview_image
-  environment:
-    - C_FORCE_ROOT=true
-  command: celery -A lintreview.tasks worker
-  links:
-   - "broker:broker"
+version: '2'
+services:
+  broker:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+    networks:
+      - back-tier
+  image:
+    build: .
+  web:
+    image: lintreview_image
+    command: bash -c 'gunicorn -c /code/settings.py lintreview.web:app'
+    env_file: lintreview-env
+    ports:
+     - "5000:5000"
+    links:
+     - broker
+    networks:
+      - front-tier
+      - back-tier
+  worker:
+    image: lintreview_image
+    environment:
+      - C_FORCE_ROOT=true
+    command: celery -A lintreview.tasks worker
+    env_file: lintreview-env
+    links:
+     - broker
+    networks:
+      - back-tier
+
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
