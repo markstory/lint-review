@@ -308,3 +308,13 @@ You'll need to install Foodcritic:
 
 * `path` If your cookbooks aren't stored in the root, use this to set the path
   that foodcritic runs against. Example: `path = cookbooks`
+
+### Yet Another Markup Language:
+
+#### yamllint 
+
+Uses the [yamllint](http://pypi.python.org/pypi/yamllint) module to check yaml and yml files.
+
+*Options*
+
+* None currently supported (pull requests welcome)

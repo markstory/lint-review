@@ -1,0 +1,6 @@
+#no space
+object1: {    key1: 4, key2: 8   }
+object3  :
+  - a
+  - b # not enough spaces
+

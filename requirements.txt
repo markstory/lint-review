@@ -7,3 +7,4 @@ celery==3.1.23
 mock==1.0.1
 gunicorn==0.17.2
 argparse>=1.2.0,<=1.3.0
+yamllint==1.2.1
