@@ -6,9 +6,8 @@ services:
       - "15672:15672"
     networks:
       - back-tier
-  image:
-    build: .
   web:
+    build: .
     image: lintreview_image
     command: 'gunicorn -c /code/settings.py lintreview.web:app'
     env_file: lintreview-env
