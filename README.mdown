@@ -279,17 +279,6 @@ You'll need to install it to use it:
 `.rubocop.yml` files will be respected, as described
 [here](https://github.com/bbatsov/rubocop#configuration).
 
-### Yaml
-
-#### yamllint
-
-Uses the [yamllint](https://pypi.python.org/pypi/yamllint) package to lint YAML files.
-This tool is installed by default.
-
-*Options*
-
-* No options are supported at this point in time.
-
 ### Puppet:
 
 #### puppet-lint
@@ -322,7 +311,7 @@ You'll need to install Foodcritic:
 
 ### Yet Another Markup Language:
 
-#### yamllint 
+#### yamllint
 
 Uses the [yamllint](http://pypi.python.org/pypi/yamllint) module to check yaml and yml files.
 
