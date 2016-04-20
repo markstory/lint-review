@@ -256,7 +256,7 @@ you can use this linter you'll need to install nodejs and the csslint npm packag
     cd path/to/lintreview
     npm install csslint
 
-Both warnings and errors will be turned into code review comments. If you don't want 
+Both warnings and errors will be turned into code review comments. If you don't want
 code review comments for specific rules, you should ignore them.
 
 *Options*
@@ -278,6 +278,17 @@ You'll need to install it to use it:
 
 `.rubocop.yml` files will be respected, as described
 [here](https://github.com/bbatsov/rubocop#configuration).
+
+### Yaml
+
+#### yamllint
+
+Uses the [yamllint](https://pypi.python.org/pypi/yamllint) package to lint YAML files.
+This tool is installed by default.
+
+*Options*
+
+* No options are supported at this point in time.
 
 ### Puppet:
 
