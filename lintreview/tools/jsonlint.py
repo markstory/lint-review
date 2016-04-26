@@ -7,7 +7,7 @@ from lintreview.utils import in_path
 log = logging.getLogger(__name__)
 
 
-class JSONlint(Tool):
+class Jsonlint(Tool):
 
     name = 'jsonlint'
 
