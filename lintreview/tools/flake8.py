@@ -13,6 +13,7 @@ class Flake8(Tool):
 
     # see: http://flake8.readthedocs.org/en/latest/config.html
     PYFLAKE_OPTIONS = [
+        'config',
         'exclude',
         'filename',
         'format',

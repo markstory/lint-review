@@ -14,7 +14,7 @@ class TestFlake8(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Flake8(self.problems)
+        self.tool = Flake8(self.problems, options={'config': ''})
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -62,7 +62,8 @@ class TestFlake8(TestCase):
 
     def test_config_options_and_process_file(self):
         options = {
-            'ignore': 'F4,W603'
+            'ignore': 'F4,W603',
+            'config': ''
         }
         self.tool = Flake8(self.problems, options)
         self.tool.process_files([self.fixtures[1]])
