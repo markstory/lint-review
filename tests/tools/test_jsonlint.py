@@ -1,11 +1,11 @@
 from lintreview.review import Problems
 from lintreview.review import Comment
-from lintreview.tools.jsonlint import JSONlint
+from lintreview.tools.jsonlint import Jsonlint
 from unittest import TestCase
 from nose.tools import eq_
 
 
-class TestJSONlint(TestCase):
+class TestJsonlint(TestCase):
 
     fixtures = [
         'tests/fixtures/jsonlint/no_errors.json',
@@ -15,7 +15,7 @@ class TestJSONlint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = JSONlint(self.problems)
+        self.tool = Jsonlint(self.problems)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
