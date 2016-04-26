@@ -15,11 +15,11 @@ class Flake8(Tool):
     PYFLAKE_OPTIONS = [
         'exclude',
         'filename',
-        'select',
-        'ignore',
-        'max-line-length',
         'format',
+        'ignore',
         'max-complexity',
+        'max-line-length',
+        'select',
         'snippet',
     ]
 
