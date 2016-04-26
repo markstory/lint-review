@@ -40,13 +40,14 @@ class Flake8(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
+        log.debug('Processing %s files with %s', len(files), self.name)
         command = ['flake8']
-        for option in self.PYFLAKE_OPTIONS:
-            if self.options.get(option):
+        for option in self.options:
+            if option in self.PYFLAKE_OPTIONS:
                 command.extend(
-                    ['--%(option)s' % {'option': option},
-                     self.options.get(option)])
+                    ['--%s' % option, self.options.get(option)])
+            else:
+                log.warning('Set non-existent flake8 option: %s', option)
 
         command += files
         output = run_command(command, split=True, ignore_error=True)
