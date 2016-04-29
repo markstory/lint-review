@@ -1,0 +1,16 @@
+[Unit]
+Description=Lint Review Worker
+After=rabbitmq.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=240
+Type=simple
+ExecStart=/usr/local/bin/celery -A lintreview.tasks worker
+WorkingDirectory=/home/ubuntu
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target
