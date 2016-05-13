@@ -1,0 +1,16 @@
+#########################
+## Sample Sass Lint File
+#########################
+# Linter Options
+options:
+  # Don't merge default rules
+  merge-default-rules: false
+  # Set the formatter to 'html'
+  formatter: 'checkstyle'
+  # Output file instead of logging results
+# Rule Configuration
+rules:
+  extends-before-mixins: 2
+  extends-before-declarations: 2
+  placeholder-in-extend: 2
+  mixins-before-declarations: 0
