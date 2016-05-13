@@ -47,7 +47,9 @@ class TestSasslint(TestCase):
         eq_(1, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 4, 4, "Mixins should come before declarations (mixins-before-declarations)")
+        error = ("Mixins should come before declarations"
+                 " (mixins-before-declarations)")
+        expected = Comment(fname, 4, 4, error)
         eq_(expected, problems[0])
 
     @needs_sasslint
