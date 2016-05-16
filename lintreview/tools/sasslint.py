@@ -35,10 +35,11 @@ class Sasslint(Tool):
         cmd = 'sass-lint'
         if npm_exists('sass-lint'):
             cmd = os.path.join(
-                os.getcwd(), 'node_modules', '.bin', 'sass-lint')
-        command = [cmd, '-f', 'checkstyle']
-
-        command += ['-v']
+                os.getcwd(),
+                'node_modules',
+                '.bin',
+                'sass-lint')
+        command = [cmd, '-f', 'checkstyle', '-v']
         command += files
         if self.options.get('ignore'):
             command += ['--ignore ', self.options.get('ignore')]
