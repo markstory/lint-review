@@ -1,0 +1,9 @@
+.container {
+  padding: 100px;
+  width: 100px;
+  @include foo(green);
+}
+
+@mixin foo($color) {
+  color: $color;
+}

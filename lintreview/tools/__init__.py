@@ -98,6 +98,9 @@ class Tool(object):
         Errors and warnings in the XML file will
         be added to the problems object.
         """
+        if not xml:
+            # Some tools return "" if no errors are found
+            return
         try:
             tree = ElementTree.fromstring(xml)
         except:
