@@ -1,5 +1,5 @@
 FROM python:2.7
-ENV REFRESHED_AT 2016-04-19
+ENV REFRESHED_AT 2016-05-21
 RUN apt-get upgrade -y && apt-get update && \
     apt-get install -y php-pear ruby npm && \
     apt-get install -y ruby1.9.1 ruby-dev build-essential && \
