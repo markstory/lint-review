@@ -342,4 +342,4 @@ Uses the [yamllint](http://pypi.python.org/pypi/yamllint) module to check yaml a
 
 *Options*
 
-* None currently supported (pull requests welcome)
+* `config` Provide a path to the yaml config file for yamlhint.
