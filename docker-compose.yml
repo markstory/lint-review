@@ -7,8 +7,7 @@ services:
     networks:
       - back-tier
   web:
-    build: .
-    image: lintreview_image
+    image: markstory/lint-review
     command: 'gunicorn -c /code/settings.py lintreview.web:app'
     env_file: lintreview-env
     ports:
@@ -19,7 +18,7 @@ services:
       - front-tier
       - back-tier
   worker:
-    image: lintreview_image
+    image: markstory/lint-review
     environment:
       - C_FORCE_ROOT=true
     command: celery -A lintreview.tasks worker
