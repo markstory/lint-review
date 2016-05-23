@@ -63,3 +63,15 @@ class TestYamllint(TestCase):
                "[error] too many spaces inside braces (braces)")
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[1])
+
+    def test_process_files_with_config(self):
+        config = {
+            'config': 'tests/fixtures/yamllint/config.yaml'
+        }
+        tool = Yamllint(self.problems, config)
+        tool.process_files([self.fixtures[0]])
+
+        problems = self.problems.all(self.fixtures[0])
+
+        eq_(2, len(problems),
+            'Config file should cause errors on no_errors.yml')

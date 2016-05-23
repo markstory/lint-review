@@ -32,6 +32,9 @@ class Yamllint(Tool):
         log.debug('Processing %s files with %s', files, self.name)
 
         command = ['yamllint', '--format=parsable']
+        # Add config file if its present
+        if self.options.get('config'):
+            command += ['-c', self.apply_base(self.options['config'])]
         command += files
 
         output = run_command(command, split=True, ignore_error=True)
