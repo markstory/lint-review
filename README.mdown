@@ -59,7 +59,6 @@ To use docker, you'll need to install both docker, docker-compose and possibly d
 depending on your operating system. Once you have the docker installed, you can boot up lint-review
 into docker using:
 
-    docker-compose build
     docker-compose up -d broker worker web
 
 Edit docker-composer.yml and customise your configuration by setting keys under environment for the
