@@ -1,9 +1,15 @@
 FROM python:2.7
 ENV REFRESHED_AT 2016-05-21
-RUN apt-get upgrade -y && apt-get update && \
-    apt-get install -y php-pear ruby npm && \
-    apt-get install -y ruby1.9.1 ruby-dev build-essential && \
-    apt-get -y autoremove && apt-get -y clean
+RUN apt-get update && apt-get install -y \
+    php-pear \
+    ruby \
+    npm \
+    ruby1.9.1 \
+    ruby-dev \
+    build-essential && \
+    apt-get -y autoremove && \
+    apt-get -y clean  && \
+    rm -rf /var/lib/apt/lists/*
 RUN pear install PHP_CodeSniffer
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 WORKDIR /code
