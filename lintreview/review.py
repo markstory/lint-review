@@ -124,17 +124,18 @@ class Review(object):
             return self.publish_empty_comment()
 
         self.load_comments()
+        total_problem_count = len(problems)
         self.remove_existing(problems)
 
-        problem_count = len(problems)
+        new_problem_count = len(problems)
         under_threshold = (summary_threshold is None or
-                           problem_count < summary_threshold)
+                           new_problem_count < summary_threshold)
 
         if under_threshold:
             self.publish_problems(problems, head_sha)
         else:
             self.publish_summary(problems)
-        self.publish_status(problem_count)
+        self.publish_status(total_problem_count)
 
     def load_comments(self):
         """
