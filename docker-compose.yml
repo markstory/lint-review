@@ -21,7 +21,7 @@ services:
     image: markstory/lint-review
     environment:
       - C_FORCE_ROOT=true
-    command: celery -A lintreview.tasks worker
+    command: celery -A lintreview.tasks worker -l info
     env_file: lintreview-env
     links:
      - broker
