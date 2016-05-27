@@ -98,10 +98,11 @@ PULLREQUEST_STATUS = env('LINTREVIEW_PULLREQUEST_STATUS', True, bool)
 
 # Uncomment this option to enable adding an issue comment
 # whenever a pull request passes all checks.
-# OK_COMMENT = env('LINTREVIEW_OK_COMMENT',
-#                 ':+1: No lint errors found.')
+# eg: OK_COMMENT = ':+1: No lint errors found.'
+OK_COMMENT = env('LINTREVIEW_OK_COMMENT', '')
 
 # Enable to apply a label when updating build status.
 # Pull requests that fail will have the label removed.
 # Customize the label name when label statuses are enabled.
-# OK_LABEL = env('LINTREVIEW_OK_LABEL', 'No lint errors')
+# eg: OK_LABEL = 'No lint errors'
+OK_LABEL = env('LINTREVIEW_OK_LABEL', '')
