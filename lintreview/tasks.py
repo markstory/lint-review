@@ -45,14 +45,14 @@ def process_pull_request(user, repo_name, number, lintrc):
                      target_branch)
             return
 
+        status = config.get('PULLREQUEST_STATUS', True)
+        if status:
+            repo.create_status(pr_head, 'pending', 'Lintreview processing...')
+
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, head_repo, target_path, pr_head,
                             private_repo)
-
-        status = config.get('PULLREQUEST_STATUS', True)
-        if status:
-            repo.create_status(pr_head, 'pending', 'Lintreview processing...')
 
         processor = Processor(repo, pull_request,
                               target_path, config)
