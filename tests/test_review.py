@@ -218,6 +218,29 @@ class TestReview(TestCase):
                'It may be too large, or contain no reviewable changes.')
         self.pr.create_comment.assert_called_with(msg)
 
+    def test_publish_empty_comment_with_comment_status(self):
+        config = {
+            'PULLREQUEST_STATUS': True,
+        }
+
+        problems = Problems(changes=[])
+        review = Review(self.repo, self.pr, config)
+
+        sha = 'abc123'
+        review.publish(problems, sha)
+
+        assert self.pr.create_comment.called, 'Should create a comment'
+
+        msg = ('Could not review pull request. '
+               'It may be too large, or contain no reviewable changes.')
+
+        self.repo.create_status.assert_called_with(
+            self.pr.head,
+            'error',
+            msg)
+
+        self.pr.create_comment.assert_called_with(msg)
+
     def test_publish_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = map(

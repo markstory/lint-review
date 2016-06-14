@@ -198,8 +198,7 @@ class Review(object):
             self.publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
-        status = self.config.get('PULLREQUEST_STATUS', True)
-        if status:
+        if self.config.get('PULLREQUEST_STATUS', True):
             self._repo.create_status(
                 self._pr.head,
                 state,
@@ -235,6 +234,13 @@ class Review(object):
                 'It may be too large, or contain no reviewable changes.')
         comment = IssueComment(body)
         comment.publish(self._repo, self._pr)
+
+        if self.config.get('PULLREQUEST_STATUS', True):
+            self._repo.create_status(
+                self._pr.head,
+                'error',
+                body
+            )
 
     def publish_summary(self, problems):
         self.remove_ok_label()
