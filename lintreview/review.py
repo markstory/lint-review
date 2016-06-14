@@ -198,8 +198,7 @@ class Review(object):
             self.publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
-        status = self.config.get('PULLREQUEST_STATUS', True)
-        if status:
+        if self.config.get('PULLREQUEST_STATUS', True):
             self._repo.create_status(
                 self._pr.head,
                 state,
@@ -236,8 +235,7 @@ class Review(object):
         comment = IssueComment(body)
         comment.publish(self._repo, self._pr)
 
-        status = self.config.get('PULLREQUEST_STATUS', True)
-        if status:
+        if self.config.get('PULLREQUEST_STATUS', True):
             self._repo.create_status(
                 self._pr.head,
                 'error',
