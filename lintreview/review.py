@@ -236,6 +236,14 @@ class Review(object):
         comment = IssueComment(body)
         comment.publish(self._repo, self._pr)
 
+        status = self.config.get('PULLREQUEST_STATUS', True)
+        if status:
+            self._repo.create_status(
+                self._pr.head,
+                'error',
+                body
+            )
+
     def publish_summary(self, problems):
         self.remove_ok_label()
         body = "There are {0} errors:\n\n".format(len(problems))
