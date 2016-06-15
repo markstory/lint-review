@@ -54,6 +54,6 @@ class Phpcs(Tool):
         command += ['--standard=' + standard]
         command += ['--extensions=' + extension]
         if self.options.get('tab_width'):
-            command += ['--tab-width=' + self.options['tab_width']]
+            command += ['--tab-width=' + str(self.options['tab_width'])]
         command += files
         return command

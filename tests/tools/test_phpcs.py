@@ -85,7 +85,8 @@ class Testphpcs(TestCase):
         if phpcs_missing:
             command = 'phpcs'
         config = {
-            'standard': 'test/CodeStandards'
+            'standard': 'test/CodeStandards',
+            'tab_width': 4,
         }
         tool = Phpcs(self.problems, config, '/some/path')
         result = tool.create_command(['some/file.php'])
@@ -94,6 +95,7 @@ class Testphpcs(TestCase):
             '--report=checkstyle',
             '--standard=/some/path/test/CodeStandards',
             '--extensions=php',
+            '--tab-width=4',
             'some/file.php'
         ]
         eq_(result, expected)
