@@ -99,7 +99,7 @@ tool:
 
     source env/bin/activate
     lintreview register mark awesome-stuff
-    
+
 Or, if you're using Docker:
 
     docker-compose run web lintreview register mark awesome-stuff
