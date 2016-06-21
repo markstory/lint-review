@@ -99,7 +99,7 @@ tool:
 
     source env/bin/activate
     lintreview register mark awesome-stuff
-    
+
 Or, if you're using Docker:
 
     docker-compose run web lintreview register mark awesome-stuff
@@ -343,3 +343,14 @@ Uses the [yamllint](http://pypi.python.org/pypi/yamllint) module to check yaml a
 *Options*
 
 * `config` Provide a path to the yaml config file for yamlhint.
+
+### Shell
+
+#### Shellcheck
+
+Uses [shellcheck](https://github.com/koalaman/shellcheck) to lint shell scripts.
+
+*Options*
+
+* `shell` Select which shell to use. Options are: bash, sh, ksh or zsh. Default: `sh`
+* `exclude` String of checks to ignore. Example: SC2154,SC2069

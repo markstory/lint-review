@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     ruby1.9.1 \
     ruby-dev \
+    shellcheck \
     build-essential && \
     apt-get -y autoremove && \
     apt-get -y clean  && \
