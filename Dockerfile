@@ -11,9 +11,10 @@ RUN apt-get update && apt-get install -y \
     apt-get -y autoremove && \
     apt-get -y clean  && \
     rm -rf /var/lib/apt/lists/*
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+
 WORKDIR /code
 RUN pear install PHP_CodeSniffer
-RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN gem install bundler
 
 ADD package.json /code/
