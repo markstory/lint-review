@@ -1,7 +1,11 @@
 import os
 
-def env(key, default, cast=str):
-    return cast(os.environ.get(key, default))
+
+def env(key, default=None, cast=str):
+    value = os.environ.get(key, default)
+    if value is None:
+        return None
+    return cast(value)
 
 
 # Webserver configuration
@@ -19,7 +23,7 @@ loglevel = env('LINTREVIEW_GUNICORN_LOGLEVEL', 'debug')
 # Basic flask config
 DEBUG = env('LINTREVIEW_FLASK_DEBUG', True, bool)
 TESTING = env('LINTREVIEW_TESTING', True, bool)
-SERVER_NAME = env('LINTREVIEW_SERVER_NAME', '127.0.0.1:5000')
+SERVER_NAME = env('LINTREVIEW_SERVER_NAME', None)
 
 # Config file for logging
 LOGGING_CONFIG = './logging.ini'
