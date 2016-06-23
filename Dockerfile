@@ -16,9 +16,6 @@ RUN pear install PHP_CodeSniffer
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN gem install bundler
 
-ADD composer.json composer.lock /code/
-RUN composer install
-
 ADD package.json /code/
 RUN npm install
 
