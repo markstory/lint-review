@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /code
 RUN pear install PHP_CodeSniffer
 RUN ln -s /usr/bin/nodejs /usr/bin/node
-RUN gem install bundler && bundle install --system
+RUN gem install bundler
 
 ADD composer.json composer.lock /code/
 RUN composer install
@@ -22,6 +22,7 @@ RUN composer install
 ADD package.json /code/
 RUN npm install
 
+ENV BUNDLE_SILENCE_ROOT_WARNING 1
 ADD Gemfile Gemfile.lock /code/
 RUN bundler install --system
 
