@@ -41,6 +41,7 @@ BROKER_URL = 'amqp://'+''.join([
 
 # Use json for serializing messages.
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
 
 # Show dates and times in UTC
 CELERY_ENABLE_UTC = True
