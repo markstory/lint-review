@@ -33,8 +33,8 @@ class TestFlake8(TestCase):
         eq_(6, len(problems))
 
         fname = self.fixtures[1]
-        msg = ("F401 'os' imported but unused\n"
-               "F401 're' imported but unused\n"
+        msg = ("F401 're' imported but unused\n"
+               "F401 'os' imported but unused\n"
                "E401 multiple imports on one line")
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[0])
@@ -51,8 +51,8 @@ class TestFlake8(TestCase):
         eq_(6, len(problems))
 
         fname = self.fixtures[1]
-        msg = ("F401 'os' imported but unused\n"
-               "F401 're' imported but unused\n"
+        msg = ("F401 're' imported but unused\n"
+               "F401 'os' imported but unused\n"
                "E401 multiple imports on one line")
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[0])
