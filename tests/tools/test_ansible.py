@@ -34,10 +34,16 @@ class TestAnsible(TestCase):
         eq_(11, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 9, 9, '[EANSIBLE0012] Commands should not change things if nothing needs doing')
+        expected = Comment(
+            fname, 9, 9,
+            '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
+        )
         eq_(expected, problems[0])
 
-        expected = Comment(fname, 27, 27, "[EANSIBLE0006] git used in place of git module")
+        expected = Comment(
+            fname, 27, 27,
+            "[EANSIBLE0006] git used in place of git module"  # noqa
+        )
         eq_(expected, problems[3])
 
     def test_process_files_two_files(self):
@@ -47,10 +53,16 @@ class TestAnsible(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
         eq_(11, len(problems))
-        expected = Comment(self.fixtures[1], 9, 9, '[EANSIBLE0012] Commands should not change things if nothing needs doing')
+        expected = Comment(
+            self.fixtures[1], 9, 9,
+            '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
+        )
         eq_(expected, problems[0])
 
-        expected = Comment(self.fixtures[1], 18, 18, "[EANSIBLE0004] Git checkouts must contain explicit version")
+        expected = Comment(
+            self.fixtures[1], 18, 18,
+            "[EANSIBLE0004] Git checkouts must contain explicit version"
+        )
         eq_(expected, problems[5])
 
     def test_config_options_and_process_file(self):
