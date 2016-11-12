@@ -42,7 +42,7 @@ class TestAnsible(TestCase):
 
         expected = Comment(
             fname, 27, 27,
-            "[EANSIBLE0006] git used in place of git module"  # noqa
+            '[EANSIBLE0006] git used in place of git module'  # noqa
         )
         eq_(expected, problems[3])
 
@@ -61,7 +61,7 @@ class TestAnsible(TestCase):
 
         expected = Comment(
             self.fixtures[1], 18, 18,
-            "[EANSIBLE0004] Git checkouts must contain explicit version"
+            '[EANSIBLE0004] Git checkouts must contain explicit version'
         )
         eq_(expected, problems[5])
 
