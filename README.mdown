@@ -35,7 +35,7 @@ or by using docker. If you are not using docker, it is recommended that you use
     source env/bin/activate
     pip install .
 
-In addtion to installing the dependencies for lint-review you will also need to
+In addition to installing the dependencies for lint-review you will also need to
 install the various lint tools you want to use. Lint-review requires that lint
 tools be installed relative to the source code. `pep8` and `flake8` will be
 installed as dependencies for lint-review, but any other tools will need to be
