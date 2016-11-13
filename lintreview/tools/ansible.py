@@ -38,6 +38,8 @@ class Ansible(Tool):
             log.debug('No ansible-lint errors found.')
             return False
 
+        output.sort()
+
         for line in output:
             filename, line, error = self._parse_line(line)
             self.problems.add(filename, line, error)

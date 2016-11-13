@@ -35,14 +35,14 @@ class TestAnsible(TestCase):
 
         fname = self.fixtures[1]
         expected = Comment(
-            fname, 9, 9,
+            fname, 12, 12,
             '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
         )
         eq_(expected, problems[0])
 
         expected = Comment(
-            fname, 27, 27,
-            '[EANSIBLE0006] git used in place of git module'  # noqa
+            fname, 18, 18,
+            '[EANSIBLE0004] Git checkouts must contain explicit version'  # noqa
         )
         eq_(expected, problems[3])
 
@@ -54,14 +54,14 @@ class TestAnsible(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(11, len(problems))
         expected = Comment(
-            self.fixtures[1], 9, 9,
+            self.fixtures[1], 12, 12,
             '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
         )
         eq_(expected, problems[0])
 
         expected = Comment(
-            self.fixtures[1], 18, 18,
-            '[EANSIBLE0004] Git checkouts must contain explicit version'
+            self.fixtures[1], 27, 27,
+            '[EANSIBLE0006] git used in place of git module'
         )
         eq_(expected, problems[5])
 
