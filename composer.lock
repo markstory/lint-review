@@ -5,25 +5,30 @@
         "This file is @generated automatically"
     ],
     "hash": "5d0140497cb678d72a333d7274c880f2",
+    "content-hash": "cfa67b76f5372d4b68de116b1dec9269",
     "packages": [
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "2.3.3",
+            "version": "2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "c1a26c729508f73560c1a4f767f60b8ab6b4a666"
+                "reference": "9b324f3a1132459a7274a0ace2e1b766ba80930f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/c1a26c729508f73560c1a4f767f60b8ab6b4a666",
-                "reference": "c1a26c729508f73560c1a4f767f60b8ab6b4a666",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/9b324f3a1132459a7274a0ace2e1b766ba80930f",
+                "reference": "9b324f3a1132459a7274a0ace2e1b766ba80930f",
                 "shasum": ""
             },
             "require": {
+                "ext-simplexml": "*",
                 "ext-tokenizer": "*",
                 "ext-xmlwriter": "*",
                 "php": ">=5.1.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
             },
             "bin": [
                 "scripts/phpcs",
@@ -32,7 +37,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.0.x-dev"
+                    "dev-master": "2.x-dev"
                 }
             },
             "autoload": {
@@ -78,7 +83,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2015-06-24 03:16:23"
+            "time": "2016-11-30 04:02:31"
         }
     ],
     "packages-dev": [],
