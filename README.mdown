@@ -56,11 +56,11 @@ Once the dependencies are installed you should configure the repositories you wa
 
 ## Using AWS
 
-To use aws, you can use [packer](http://packer.io) to generate an Amazon Machine Image to run the application
+To use aws, you can use [packer](https://packer.io) to generate an Amazon Machine Image to run the application
 
-Once you have your AWS credentials loaded you can run
+Once you have your AWS credentials loaded you can run:
 
-`packer build packer.json`
+    packer build packer.json
 
 Which will generate an AMI with the application and lint checkers installed.
 This can then be configured using cloud-init by writing the configuration to /etc/environment
