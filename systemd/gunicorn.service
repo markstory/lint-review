@@ -1,0 +1,16 @@
+[Unit]
+Description=Lint Review Web Service
+After=rabbitmq.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=240
+Type=simple
+ExecStart=/usr/local/bin/gunicorn -c /home/ubuntu/settings.py lintreview.web:app
+WorkingDirectory=/home/ubuntu
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

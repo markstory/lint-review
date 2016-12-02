@@ -23,7 +23,8 @@ loglevel = env('LINTREVIEW_GUNICORN_LOGLEVEL', 'debug')
 # Basic flask config
 DEBUG = env('LINTREVIEW_FLASK_DEBUG', True, bool)
 TESTING = env('LINTREVIEW_TESTING', True, bool)
-SERVER_NAME = env('LINTREVIEW_SERVER_NAME', None)
+if os.environ.get('LINTREVIEW_SERVER_NAME') is not None:
+    SERVER_NAME = env('LINTREVIEW_SERVER_NAME')
 
 # Config file for logging
 LOGGING_CONFIG = './logging.ini'
@@ -76,7 +77,8 @@ GITHUB_URL = env('GITHUB_URL', 'https://api.github.com/')
 # Set the GITHUB_PASSWORD environment variable first.
 # example: $ export GITHUB_PASSWORD=mygithubpassword
 GITHUB_USER = env('GITHUB_USERNAME', 'octocat')
-GITHUB_PASSWORD = env('GITHUB_PASSWORD', '')
+if os.environ.get('GITHUB_PASSWORD') is not None:
+    GITHUB_PASSWORD = env('GITHUB_PASSWORD')
 
 # You can also use an Oauth token for github, if you do
 # uncomment this line. Using a token will take precedence

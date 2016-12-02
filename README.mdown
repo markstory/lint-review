@@ -54,6 +54,17 @@ php composer.phar install
 
 Once the dependencies are installed you should configure the repositories you want to review.
 
+## Using AWS
+
+To use aws, you can use [packer](http://packer.io) to generate an Amazon Machine Image to run the application
+
+Once you have your AWS credentials loaded you can run
+
+`packer build packer.json`
+
+Which will generate an AMI with the application and lint checkers installed.
+This can then be configured using cloud-init by writing the configuration to /etc/environment
+
 ## Using Docker
 
 To use docker, you'll need to install both docker, docker-compose and possibly docker toolbox
