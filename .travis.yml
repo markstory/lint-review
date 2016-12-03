@@ -18,9 +18,9 @@ before_script:
   - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 5
   - npm install
 
-  # Remove gemfile so we can use system ruby.
-  - ruby --version
-  - rm Gemfile.lock
+  # Use ruby2
+  - rvm list
+  - rvm use 2.0.0
   - bundle install --path ./bundle
 
   # Sample config file
