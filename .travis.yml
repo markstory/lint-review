@@ -19,6 +19,7 @@ before_script:
   - npm install
 
   # Remove gemfile so we can use system ruby.
+  - ruby --version
   - rm Gemfile.lock
   - bundle install --path ./bundle
 
