@@ -13,11 +13,23 @@ addons:
       - debian-sid
     packages:
       - shellcheck
+      - php5
 
 before_script:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 5 
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 5
   - npm install
+
+  # Remove gemfile so we can use system ruby.
+  - rm Gemfile.lock
   - bundle install --path ./bundle
+
+  # Get composer & install deps
+  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  - php composer-setup.php
+  - php -r "unlink('composer-setup.php');"
+  - php composer install
+
+  # Sample config file
   - cp settings.sample.py settings.py
 
 env:
