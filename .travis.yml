@@ -19,7 +19,7 @@ before_script:
   - npm install
 
   # Use ruby2
-  - rvm list
+  - rvm install 2.0.0
   - rvm use 2.0.0
   - bundle install --path ./bundle
 
