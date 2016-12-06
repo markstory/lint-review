@@ -5,6 +5,7 @@
   "dependencies": {
     "jscs": "1.13.x",
     "jshint": "2.6.x",
+    "jscs-ember-deprecations": "2.3.0",
     "eslint": "2.4.x",
     "sass-lint": "1.7.x",
     "csslint": "0.10.x"
