@@ -83,7 +83,7 @@
         "DEBIAN_FRONTEND=noninteractive apt-get install -y npm",
         "pip2 install lintreview",
         "npm set progress=false",
-        "npm install -g",
+        "npm install",
         "gem install bundler",
         "echo '127.0.0.1 broker' > /etc/hosts",
         "echo 'LINTREVIEW_GUNICORN_BIND=\"0.0.0.0:5000\"' >> /etc/environment",
