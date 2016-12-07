@@ -1,10 +1,8 @@
 import functools
 import logging
 import os
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+from lintreview.tools import Tool, run_command
+from lintreview.utils import in_path, npm_exists
 
 log = logging.getLogger(__name__)
 
@@ -36,9 +34,11 @@ class Eslint(Tool):
         if npm_exists('eslint'):
             cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'eslint')
         command = [cmd, '--format', 'checkstyle']
-        # Add config file if it's present
+
+        # Add config file or default to recommended linters
         if self.options.get('config'):
             command += ['--config', self.apply_base(self.options['config'])]
+
         command += files
         output = run_command(
             command,

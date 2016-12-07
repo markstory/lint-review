@@ -47,7 +47,7 @@ class TestEslint(TestCase):
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(2, len(problems))
 
-        msg = ("'foo' is defined but never used (no-unused-vars)\n"
+        msg = ("'foo' is assigned a value but never used. (no-unused-vars)\n"
                "'bar' is not defined. (no-undef)")
         expected = Comment(FILE_WITH_ERRORS, 2, 2, msg)
         eq_(expected, problems[0])
@@ -57,11 +57,11 @@ class TestEslint(TestCase):
         eq_(expected, problems[1])
 
     @needs_eslint
-    def test_process_files_with_no_config(self):
+    def test_process_files_uses_default_config(self):
         tool = Eslint(self.problems, options={})
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
-        eq_(0, len(problems), 'With no config file there should be no errors.')
+        eq_(2, len(problems), 'With no config file there should be no errors.')
 
     @needs_eslint
     def test_process_files_with_config(self):
@@ -73,7 +73,7 @@ class TestEslint(TestCase):
 
         problems = self.problems.all(FILE_WITH_ERRORS)
 
-        msg = ("'foo' is defined but never used (no-unused-vars)\n"
+        msg = ("'foo' is assigned a value but never used. (no-unused-vars)\n"
                "'bar' is not defined. (no-undef)\n"
                "Missing semicolon. (semi)")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]

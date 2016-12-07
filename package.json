@@ -9,5 +9,8 @@
     "eslint": "3.x",
     "sass-lint": "1.x",
     "csslint": "0.10.x"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended"
   }
 }
