@@ -1,6 +1,7 @@
 import functools
 import logging
 import os
+from lintreview.review import IssueComment
 from lintreview.tools import Tool, run_command
 from lintreview.utils import in_path, npm_exists
 
@@ -43,6 +44,13 @@ class Eslint(Tool):
         output = run_command(
             command,
             ignore_error=True)
+
+        if output.startswith('Cannot read config file'):
+            msg = u'Your eslint config file is missing or invalid. ' \
+                   u'Please ensure that `{}` exists and is valid.'
+            msg = msg.format(self.options['config'])
+            return self.problems.add(IssueComment(msg))
+
         filename_converter = functools.partial(
             self._relativize_filename,
             files)

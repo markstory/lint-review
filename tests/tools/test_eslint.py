@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest import skipIf
 
 from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Comment, IssueComment
 from lintreview.tools.eslint import Eslint
 from lintreview.utils import in_path
 from lintreview.utils import npm_exists
@@ -55,6 +55,17 @@ class TestEslint(TestCase):
         msg = ("'alert' is not defined. (no-undef)")
         expected = Comment(FILE_WITH_ERRORS, 4, 4, msg)
         eq_(expected, problems[1])
+
+    @needs_eslint
+    def test_process_files_invalid_config(self):
+        tool = Eslint(self.problems, options={'config': 'invalid-file'})
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Invalid config returns 1 error')
+        msg = ('Your eslint config file is missing or invalid. '
+               'Please ensure that `invalid-file` exists and is valid.')
+        expected = [IssueComment(msg)]
+        eq_(expected, problems)
 
     @needs_eslint
     def test_process_files_uses_default_config(self):
