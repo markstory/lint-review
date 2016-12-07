@@ -85,6 +85,7 @@
         "npm set progress=false",
         "npm install",
         "gem install bundler",
+        "ln -s /usr/bin/nodejs /usr/bin/node",
         "echo '127.0.0.1 broker' > /etc/hosts",
         "echo 'LINTREVIEW_GUNICORN_BIND=\"0.0.0.0:5000\"' >> /etc/environment",
         "echo 'LINTREVIEW_SETTINGS=\"/home/ubuntu/settings.py\"' >> /etc/environment",

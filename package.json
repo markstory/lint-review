@@ -3,10 +3,14 @@
   "version": "0.1.14",
   "private": true,
   "dependencies": {
-    "jscs": "1.13.x",
-    "jshint": "2.6.x",
-    "eslint": "2.4.x",
-    "sass-lint": "1.7.x",
+    "jscs": "1.x",
+    "jshint": "2.x",
+    "jscs-ember-deprecations": "2.3.0",
+    "eslint": "3.x",
+    "sass-lint": "1.x",
     "csslint": "0.10.x"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended"
   }
 }
