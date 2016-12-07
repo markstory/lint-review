@@ -30,7 +30,7 @@ env:
   - LINTREVIEW_SETTINGS="./settings.py"
 
 script:
-  - "nosetests --with-coverage"
+  - nosetests --with-coverage --cover-package lintreview
 
 after_success:
   - codecov
