@@ -50,7 +50,8 @@ def go_bin_path(name):
     """
     gopath = os.environ.get('GOPATH')
     if not gopath:
-        log.warn('GOPATH is not defined in environment, cannot locate go tools')
+        log.warn('GOPATH is not defined in environment, '
+                 'cannot locate go tools')
         return ''
     for dirname in gopath.split(os.pathsep):
         if os.path.exists(os.path.join(dirname, 'bin', name)):

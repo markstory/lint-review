@@ -1,6 +1,6 @@
 from lintreview.review import Problems, Comment
 from lintreview.tools.golint import Golint
-from lintreview.utils import in_path, go_bin_path
+from lintreview.utils import go_bin_path
 from unittest import TestCase, skipIf
 from nose.tools import eq_
 from mock import patch
@@ -55,7 +55,8 @@ class Testphpcs(TestCase):
             fname,
             14,
             14,
-            "if block ends with a return statement, so drop this else and outdent its block")
+            "if block ends with a return statement, "
+            "so drop this else and outdent its block")
         eq_(expected, problems[1])
 
     @needs_golint
@@ -78,7 +79,8 @@ class Testphpcs(TestCase):
         tool.process_files([self.fixtures[1]])
 
         mock_command.assert_called_with(
-            [   go_bin_path('golint'),
+            [
+                go_bin_path('golint'),
                 '-min_confidence', '1.0',
                 self.fixtures[1]
             ],
