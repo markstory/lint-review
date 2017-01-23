@@ -2,12 +2,12 @@ language: python
 
 python: "2.7"
 
-env:
-  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="./gocode"
-
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install shellcheck golang
+  - sudo apt-get install golang
+  - sudo add-apt-repository debian-sid
+  - sudo apt-get -qq update
+  - sudo apt-get install shellcheck
 
 install:
   - pip install .
@@ -33,6 +33,9 @@ before_script:
 
   # Sample config file
   - cp settings.sample.py settings.py
+
+env:
+  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="./gocode"
 
 script:
   - nosetests --with-coverage --cover-package lintreview
