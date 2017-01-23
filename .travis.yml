@@ -2,13 +2,6 @@ language: python
 
 python: "2.7"
 
-addons:
-  apt:
-    sources:
-      - debian-sid    # Grab ShellCheck from the Debian repo
-    packages:
-      - shellcheck
-
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install golang
