@@ -13,9 +13,15 @@ addons:
       - debian-sid
     packages:
       - shellcheck
+      - golang
 
 before_script:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 5
+  # install node and npm tools
+  - rm -rf ~/.nvm
+  - git clone https://github.com/creationix/nvm.git ~/.nvm
+  - (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`)
+  - source ~/.nvm/nvm.sh
+  - nvm install 5
   - npm install
 
   # Use ruby2
@@ -23,11 +29,15 @@ before_script:
   - rvm use 2.0.0
   - bundle install --path ./bundle
 
+  # Install golint
+  - go get -u github.com/golang/lint/golint
+
   # Sample config file
   - cp settings.sample.py settings.py
 
 env:
   - LINTREVIEW_SETTINGS="./settings.py"
+  - GOPATH="./gocode"
 
 script:
   - nosetests --with-coverage --cover-package lintreview
