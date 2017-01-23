@@ -5,8 +5,6 @@ python: "2.7"
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install golang
-  - sudo add-apt-repository debian-sid
-  - sudo apt-get -qq update
   - sudo apt-get install shellcheck
 
 install:
