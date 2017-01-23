@@ -11,6 +11,7 @@ addons:
   apt:
     sources:
       - debian-sid
+      - precise
     packages:
       - shellcheck
       - golang
