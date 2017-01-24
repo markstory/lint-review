@@ -12,6 +12,10 @@ install:
   - pip install coverage
 
 before_script:
+  # Install golint
+  - go version
+  - go get -u github.com/golang/lint/golint
+
   # install node and npm tools
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
@@ -24,10 +28,6 @@ before_script:
   - rvm install 2.0.0
   - rvm use 2.0.0
   - bundle install --path ./bundle
-
-  - export GOPATH="${TRAVIS_BUILD_DIR}/gocode"
-  # Install golint
-  - go get -u github.com/golang/lint/golint
 
   # Sample config file
   - cp settings.sample.py settings.py
