@@ -32,7 +32,7 @@ before_script:
   - cp settings.sample.py settings.py
 
 env:
-  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="./gocode"
+  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
 
 script:
   - nosetests --with-coverage --cover-package lintreview
