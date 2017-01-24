@@ -25,6 +25,7 @@ before_script:
   - rvm use 2.0.0
   - bundle install --path ./bundle
 
+  - export GOPATH="${TRAVIS_BUILD_DIR}/gocode"
   # Install golint
   - go get -u github.com/golang/lint/golint
 
