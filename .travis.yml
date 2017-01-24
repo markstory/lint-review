@@ -1,6 +1,11 @@
 language: python
 
+dist: 'trusty'
+
 python: "2.7"
+
+env:
+  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
 
 before_install:
   - sudo apt-get -qq update
@@ -31,9 +36,6 @@ before_script:
 
   # Sample config file
   - cp settings.sample.py settings.py
-
-env:
-  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
 
 script:
   - nosetests --with-coverage --cover-package lintreview
