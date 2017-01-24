@@ -382,3 +382,13 @@ Uses [ansible-lint](https://github.com/willthames/ansible-lint) to lint Ansible 
 *Options*
 
 * `ignore` Set which ansible-lint error codes you wish to ignore.
+
+### Go lang
+
+#### Golint
+
+Uses [go-lint](https://github.com/golang/lint) to lint go code.
+
+*Options*
+
+* `min_confidence` Set the confidence level of a problem before it is reported.

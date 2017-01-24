@@ -1,21 +1,32 @@
 language: python
 
+dist: 'trusty'
+
 python: "2.7"
+
+env:
+  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install golang
 
 install:
   - pip install .
   - pip install codecov
   - pip install coverage
 
-addons:
-  apt:
-    sources:
-      - debian-sid
-    packages:
-      - shellcheck
-
 before_script:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 5
+  # Install golint
+  - go version
+  - go get -u github.com/golang/lint/golint
+
+  # install node and npm tools
+  - rm -rf ~/.nvm
+  - git clone https://github.com/creationix/nvm.git ~/.nvm
+  - (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`)
+  - source ~/.nvm/nvm.sh
+  - nvm install 5
   - npm install
 
   # Use ruby2
@@ -26,16 +37,11 @@ before_script:
   # Sample config file
   - cp settings.sample.py settings.py
 
-env:
-  - LINTREVIEW_SETTINGS="./settings.py"
-
 script:
   - nosetests --with-coverage --cover-package lintreview
 
 after_success:
   - codecov
-
-sudo: false
 
 notifications:
   email:

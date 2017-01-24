@@ -1,5 +1,8 @@
 import os
 import subprocess
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def in_path(name):
@@ -37,6 +40,23 @@ def composer_exists(name):
     cwd = os.getcwd()
     path = os.path.join(cwd, 'vendor', 'bin', name)
     return os.path.exists(path)
+
+
+def go_bin_path(name):
+    """
+    Get the path to a go binary. Handles traversing the GOPATH
+
+    @return str
+    """
+    gopath = os.environ.get('GOPATH')
+    if not gopath:
+        log.warn('GOPATH is not defined in environment, '
+                 'cannot locate go tools')
+        return ''
+    for dirname in gopath.split(os.pathsep):
+        if os.path.exists(os.path.join(dirname, 'bin', name)):
+            return os.path.join(dirname, 'bin', name)
+    return ''
 
 
 def bundle_exists(name):
