@@ -1,8 +1,8 @@
 import logging
 import os
 import functools
-from lintreview.tools import Tool
-from lintreview.tools import run_command
+from lintreview.review import IssueComment
+from lintreview.tools import Tool, run_command
 from lintreview.utils import in_path, go_bin_path
 
 log = logging.getLogger(__name__)
@@ -52,12 +52,15 @@ class Golint(Tool):
         output = run_command(
             command,
             ignore_error=True,
-            split=True,
-            include_errors=False)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_quickfix(self.problems, output, filename_converter)
+            split=True)
+        # Look for multi-package error message
+        if len(output) == 1 and 'is in package' in output[0]:
+            self.add_review_issue(output[0], files)
+        else:
+            filename_converter = functools.partial(
+                self._relativize_filename,
+                files)
+            process_quickfix(self.problems, output, filename_converter)
 
     def create_command(self, files):
         command = ['golint']
@@ -67,3 +70,18 @@ class Golint(Tool):
             command += ['-min_confidence', self.options.get('min_confidence')]
         command += files
         return command
+
+    def add_review_issue(self, output, files):
+        """
+        Add an issue comment when the diff contains files
+        from multiple packages.
+
+        In the future it might be good to have a map of packages
+        to glob patterns to allow multi-package projects to be reviewed
+        """
+        filename = output.split(' ')[0]
+        relative = self._relativize_filename(files, filename)
+        message = u"Could not complete review - %s" % (
+            output.replace(filename, relative),
+        )
+        self.problems.add(IssueComment(message.strip()))
