@@ -8,13 +8,14 @@ from mock import patch
 golint_missing = not(go_bin_path('golint'))
 
 
-class Testphpcs(TestCase):
+class TestGolint(TestCase):
 
     needs_golint = skipIf(golint_missing, 'Needs phpcs')
 
     fixtures = [
         'tests/fixtures/golint/no_errors.go',
         'tests/fixtures/golint/has_errors.go',
+        'tests/fixtures/golint/http.go',
     ]
 
     def setUp(self):
@@ -61,12 +62,21 @@ class Testphpcs(TestCase):
 
     @needs_golint
     def test_process_files_two_files(self):
-        self.tool.process_files(self.fixtures)
+        self.tool.process_files([self.fixtures[0], self.fixtures[1]])
 
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         eq_(2, len(problems))
+
+    @needs_golint
+    def test_process_files_in_different_packages(self):
+        self.tool.process_files([self.fixtures[0], self.fixtures[2]])
+
+        problems = self.problems.all()
+        eq_(1, len(problems))
+        assert 'Could not complete review - tests/fixture' in problems[0].body
+        assert 'is in package' in problems[0].body
 
     @needs_golint
     @patch('lintreview.tools.golint.run_command')
@@ -85,5 +95,4 @@ class Testphpcs(TestCase):
                 self.fixtures[1]
             ],
             ignore_error=True,
-            split=True,
-            include_errors=False)
+            split=True)
