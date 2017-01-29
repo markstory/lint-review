@@ -71,12 +71,12 @@ class TestGolint(TestCase):
 
     @needs_golint
     def test_process_files_in_different_packages(self):
-        self.tool.process_files([self.fixtures[0], self.fixtures[2]])
+        self.tool.process_files([self.fixtures[1], self.fixtures[2]])
 
         problems = self.problems.all()
-        eq_(1, len(problems))
-        assert 'Could not complete review - tests/fixture' in problems[0].body
-        assert 'is in package' in problems[0].body
+        eq_(3, len(problems))
+        eq_(2, len(self.problems.all(self.fixtures[1])))
+        eq_(1, len(self.problems.all(self.fixtures[2])))
 
     @needs_golint
     @patch('lintreview.tools.golint.run_command')

@@ -6,5 +6,10 @@ import (
 )
 
 func main() {
-	fmt.Printf("Hello World")
+	if true {
+		fmt.Printf("Hello World")
+		return true;
+	} else {
+		return false
+	}
 }
