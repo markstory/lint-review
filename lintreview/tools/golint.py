@@ -57,6 +57,9 @@ class Golint(Tool):
             files)
         # Look for multi-package error message, and re-run tools
         if len(output) == 1 and 'is in package' in output[0]:
+            log.info('Re-running golint on individual files'
+                     'as diff contains files from multiple packages: %s',
+                     output[0])
             self.run_individual_files(files, filename_converter)
         else:
             process_quickfix(self.problems, output, filename_converter)
