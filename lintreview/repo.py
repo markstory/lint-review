@@ -18,6 +18,10 @@ class GithubRepository(object):
         self.user = user
         self.repo_name = repo_name
 
+    @property
+    def full_name(self):
+        return u"%s/%s" % (self.user, self.repo_name)
+
     def repository(self):
         """Get the underlying repository model
         """

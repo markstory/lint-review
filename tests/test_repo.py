@@ -2,7 +2,6 @@ import json
 
 from . import load_fixture
 from contextlib import contextmanager
-from github3.issues.comment import IssueComment as GhIssueComment
 from github3.repos.repo import Repository
 from github3.pulls import PullRequest
 from lintreview.config import load_config
@@ -25,11 +24,15 @@ class TestGithubRepository(TestCase):
         github_mock.get_repository.return_value = self.repo_model
         repo = GithubRepository(config, 'markstory', 'lint-test')
 
-        eq_(self.repo_model,repo.repository())
+        eq_(self.repo_model, repo.repository())
         github_mock.get_repository.assert_called_with(
             config,
             'markstory',
             'lint-test')
+
+    def test_full_name(self):
+        repo = GithubRepository(config, 'markstory', 'lint-test')
+        eq_('markstory/lint-test', repo.full_name)
 
     def test_pull_request(self):
         model = self.repo_model
@@ -38,7 +41,7 @@ class TestGithubRepository(TestCase):
         repo.repository = lambda: self.repo_model
         pull = repo.pull_request(1)
         ok_(isinstance(pull, GithubPullRequest),
-               'Should be wrapped object')
+            'Should be wrapped object')
 
     def test_ensure_label__missing(self):
         model = self.repo_model
@@ -85,7 +88,7 @@ class TestGithubPullRequest(TestCase):
 
     def test_is_private(self):
         pull = GithubPullRequest(self.model)
-        assert False == pull.is_private
+        assert False is pull.is_private
 
     def test_number(self):
         pull = GithubPullRequest(self.model)
@@ -128,14 +131,6 @@ class TestGithubPullRequest(TestCase):
         mock_issue.add_labels.assert_called_with('No lint errors')
 
     def test_create_comment(self):
-        self.model.review_comments = Mock()
-        pull = GithubPullRequest(self.model)
-
-        pull.review_comments(text)
-        ok_(self.model.review_comments.called,
-               'Method should delegate')
-
-    def test_create_comment(self):
         self.model.create_comment = Mock()
         pull = GithubPullRequest(self.model)
 
@@ -159,6 +154,7 @@ class TestGithubPullRequest(TestCase):
             comment['commit_id'],
             comment['path'],
             comment['position'])
+
 
 @contextmanager
 def add_ok_label(pull_request, *labels, **kw):
