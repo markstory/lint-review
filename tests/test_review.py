@@ -1,5 +1,4 @@
 from . import load_fixture
-from contextlib import contextmanager
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review, Problems, Comment
@@ -17,7 +16,8 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        repo = Mock(spec=GithubRepository)
+        repo = Mock(spec=GithubRepository,
+                    full_name='markstory/lint-review')
         pr = Mock(spec=GithubPullRequest, head='abc123', number=2)
         repo.pull_request.return_value = pr
 

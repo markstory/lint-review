@@ -118,7 +118,9 @@ class Review(object):
         to new problems. Once the new unique problems
         are distilled new comments are published.
         """
-        log.info('Publishing review of %s to github.', self._pr.number)
+        log.info('Publishing review of %s/pull/%s',
+                 self._repo.full_name,
+                 self._pr.number)
 
         if not problems.has_changes():
             return self.publish_empty_comment()
@@ -180,8 +182,10 @@ class Review(object):
         parameter. changes is used to fetch the commit sha
         for the comments on a given file.
         """
-        log.debug("Publishing (%s) new comments for '%s'",
-                  len(problems), self._pr.number)
+        log.info("Publishing (%s) new comments for %s/pull/%s",
+                 len(problems),
+                 self._repo.full_name,
+                 self._pr.number)
         self.remove_ok_label()
         for error in problems:
             error.publish(self._repo, self._pr)
