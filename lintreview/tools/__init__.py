@@ -37,7 +37,7 @@ class Tool(object):
             if self.match_file(f):
                 matching_files.append(f)
         if len(matching_files):
-            log.info('Running %s for %s', self.name, matching_files)
+            log.info('Running %s on %d files', self.name, len(matching_files))
             self.process_files(matching_files)
             self.post_process(files)
         else:
@@ -206,7 +206,7 @@ def run(config, problems, files, commits, base_path):
     log.debug('Generating tool list from repository configuration')
     lint_tools = factory(problems, config, base_path)
 
-    log.info('Running lint tools on %s', files)
+    log.info('Running lint tools on %d', len(files))
     for tool in lint_tools:
         log.debug('Runnning %s', tool)
         tool.execute(files)
