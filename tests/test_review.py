@@ -16,9 +16,11 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        repo = Mock(spec=GithubRepository,
-                    full_name='markstory/lint-review')
-        pr = Mock(spec=GithubPullRequest, head='abc123', number=2)
+        repo = Mock(spec=GithubRepository)
+        pr = Mock(spec=GithubPullRequest,
+                  head='abc123',
+                  display_name='markstory/lint-review#1',
+                  number=2)
         repo.pull_request.return_value = pr
 
         self.repo, self.pr = repo, pr

@@ -30,10 +30,6 @@ class TestGithubRepository(TestCase):
             'markstory',
             'lint-test')
 
-    def test_full_name(self):
-        repo = GithubRepository(config, 'markstory', 'lint-test')
-        eq_('markstory/lint-test', repo.full_name)
-
     def test_pull_request(self):
         model = self.repo_model
         model.pull_request = Mock(return_value=sentinel.pull_request)
@@ -89,6 +85,10 @@ class TestGithubPullRequest(TestCase):
     def test_is_private(self):
         pull = GithubPullRequest(self.model)
         assert False is pull.is_private
+
+    def test_display_name(self):
+        pull = GithubPullRequest(self.model)
+        assert 'markstory/lint-test#1' == pull.display_name
 
     def test_number(self):
         pull = GithubPullRequest(self.model)

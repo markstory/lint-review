@@ -1,5 +1,4 @@
 import lintreview.github as github
-import lintreview.git as git
 import logging
 
 log = logging.getLogger(__name__)
@@ -17,10 +16,6 @@ class GithubRepository(object):
         self.config = config
         self.user = user
         self.repo_name = repo_name
-
-    @property
-    def full_name(self):
-        return u"%s/%s" % (self.user, self.repo_name)
 
     def repository(self):
         """Get the underlying repository model
@@ -59,6 +54,7 @@ class GithubRepository(object):
             description,
             context)
 
+
 class GithubPullRequest(object):
     """Abstract the underlying github models.
     This makes other code simpler, and enables
@@ -67,6 +63,12 @@ class GithubPullRequest(object):
 
     def __init__(self, pull_request):
         self.pull = pull_request
+
+    @property
+    def display_name(self):
+        data = self.pull.as_dict()
+        return u'%s#%s' % (data['head']['repo']['full_name'],
+                           data['number'])
 
     @property
     def number(self):
