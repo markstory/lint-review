@@ -80,10 +80,10 @@ class TestGolint(TestCase):
 
     @needs_golint
     @patch('lintreview.tools.golint.run_command')
-    def test_process_files_with_config(self, mock_command):
+    def test_process_files_with_config__mocked(self, mock_command):
         mock_command.return_value = []
         config = {
-            'min_confidence': '1.0'
+            'min_confidence': 0.95
         }
         tool = Golint(self.problems, config)
         tool.process_files([self.fixtures[1]])
@@ -91,8 +91,17 @@ class TestGolint(TestCase):
         mock_command.assert_called_with(
             [
                 go_bin_path('golint'),
-                '-min_confidence', '1.0',
+                '-min_confidence', 0.95,
                 self.fixtures[1]
             ],
             ignore_error=True,
             split=True)
+
+    @needs_golint
+    def test_process_files_with_config(self):
+        config = {
+            'min_confidence': 0.95
+        }
+        tool = Golint(self.problems, config)
+        tool.process_files([self.fixtures[1]])
+        eq_(2, len(self.problems))
