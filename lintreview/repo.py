@@ -90,6 +90,11 @@ class GithubPullRequest(object):
         return data['head']['repo']['clone_url']
 
     @property
+    def base_repo_url(self):
+        data = self.pull.as_dict()
+        return data['base']['repo']['clone_url']
+
+    @property
     def target_branch(self):
         data = self.pull.as_dict()
         return data['base']['ref']

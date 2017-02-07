@@ -101,8 +101,13 @@ class TestGithubPullRequest(TestCase):
 
     def test_clone_url(self):
         pull = GithubPullRequest(self.model)
-        expected = 'https://github.com/markstory/lint-test.git'
+        expected = 'https://github.com/contributor/lint-test.git'
         assert expected == pull.clone_url
+
+    def test_base_repo_url(self):
+        pull = GithubPullRequest(self.model)
+        expected = 'https://github.com/markstory/lint-test.git'
+        assert expected == pull.base_repo_url
 
     def test_target_branch(self):
         pull = GithubPullRequest(self.model)
