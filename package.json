@@ -8,7 +8,8 @@
     "jscs-ember-deprecations": "2.3.0",
     "eslint": "3.x",
     "sass-lint": "1.x",
-    "csslint": "0.10.x"
+    "csslint": "0.10.x",
+    "standard": "^8.6.0"
   },
   "eslintConfig": {
     "extends": "eslint:recommended"
