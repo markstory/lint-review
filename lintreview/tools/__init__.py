@@ -212,3 +212,18 @@ def run(config, problems, files, commits, base_path):
         log.debug('Runnning %s', tool)
         tool.execute(files)
         tool.execute_commits(commits)
+
+
+def process_quickfix(problems, output, filename_converter):
+    """
+    Process vim quickfix style results.
+
+    Each element in `output` should be formatted like::
+
+        <filename>:<line>:<col>:[ ]<message>
+    """
+    for line in output:
+        parts = line.split(':', 3)
+        message = parts[-1].strip()
+        filename = filename_converter(parts[0].strip())
+        problems.add(filename, int(parts[1]), message)
