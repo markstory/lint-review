@@ -1,25 +1,10 @@
 import logging
 import os
 import functools
-from lintreview.tools import Tool, run_command
+from lintreview.tools import Tool, run_command, process_quickfix
 from lintreview.utils import in_path, go_bin_path
 
 log = logging.getLogger(__name__)
-
-
-def process_quickfix(problems, output, filename_converter):
-    """
-    Process vim quickfix style results.
-
-    Each element in `output` should be formatted like::
-
-        <filename>:<line>:<col>:[ ]<message>
-    """
-    for line in output:
-        parts = line.split(':', 3)
-        message = parts[-1].strip()
-        filename = filename_converter(parts[0])
-        problems.add(filename, int(parts[1]), message)
 
 
 class Golint(Tool):
