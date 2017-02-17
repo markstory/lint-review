@@ -1,7 +1,6 @@
 import os
 import logging
-from lintreview.tools import Tool
-from lintreview.tools import run_command
+from lintreview.tools import Tool, run_command, process_quickfix
 from lintreview.utils import in_path
 
 log = logging.getLogger(__name__)
@@ -38,15 +37,4 @@ class Pep8(Tool):
             log.debug('No pep8 errors found.')
             return False
 
-        for line in output:
-            filename, line, error = self._parse_line(line)
-            self.problems.add(filename, line, error)
-
-    def _parse_line(self, line):
-        """
-        pep8 only generates results as stdout.
-        Parse the output for real data.
-        """
-        parts = line.split(':', 3)
-        message = parts[3].strip()
-        return (parts[0], int(parts[1]), message)
+        process_quickfix(self.problems, output, lambda name: name)
