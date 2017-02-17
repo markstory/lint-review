@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = "lintreview"
-VERSION = "1.17.8"
+VERSION = "1.18.0"
 
 requirements = open('./requirements.txt', 'r')
 
