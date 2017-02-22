@@ -6,7 +6,7 @@ from lintreview.review import Comment, IssueComment
 from lintreview.tools.eslint import Eslint
 from lintreview.utils import in_path
 from lintreview.utils import npm_exists
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 eslint_missing = not(in_path('eslint') or npm_exists('eslint'))
 
@@ -73,6 +73,20 @@ class TestEslint(TestCase):
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(2, len(problems), 'With no config file there should be no errors.')
+
+    @needs_eslint
+    def test_process_files__invalid_config(self):
+        options = {'config': 'tests/fixtures/eslint/invalid.json'}
+        tool = Eslint(self.problems, options)
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Invalid config should report an error')
+        error = problems[0]
+        ok_('Your eslint configuration output the following error'
+            in error.body)
+        ok_("Cannot find module 'eslint-config-invalid-rules'"
+            in error.body)
+        ok_("Referenced from" in error.body)
 
     @needs_eslint
     def test_process_files_with_config(self):

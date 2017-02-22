@@ -98,29 +98,7 @@ class Tool(object):
         Errors and warnings in the XML file will
         be added to the problems object.
         """
-        if not xml:
-            # Some tools return "" if no errors are found
-            return
-        try:
-            tree = ElementTree.fromstring(xml)
-        except:
-            log.debug('Checkstyle XML - %s', xml)
-            log.error("Unable to parse checkstyleXML from %s.", self.name)
-            raise
-
-        for f in tree.findall('file'):
-            filename = f.get('name')
-            if filename_converter:
-                filename = filename_converter(filename)
-            for err in f.findall('error'):
-                line = err.get('line')
-                message = err.get('message')
-                if ',' in line:
-                    lines = [int(x) for x in line.split(',')]
-                else:
-                    lines = [int(line)]
-                add = lambda x: self.problems.add(filename, x, message)
-                map(add, lines)
+        process_checkstyle(self.problems, xml, filename_converter)
 
     def apply_base(self, value):
         """
@@ -227,3 +205,32 @@ def process_quickfix(problems, output, filename_converter):
         message = parts[-1].strip()
         filename = filename_converter(parts[0].strip())
         problems.add(filename, int(parts[1]), message)
+
+
+def process_checkstyle(problems, xml, filename_converter):
+    """
+    Process a checkstyle XML file.
+
+    If the output is not XML or is malformed XML an error will be raised.
+    """
+    if not xml:
+        # Some tools return "" if no errors are found
+        return
+    try:
+        tree = ElementTree.fromstring(xml)
+    except:
+        log.error("Unable to parse XML %s", xml)
+        raise
+
+    for f in tree.findall('file'):
+        filename = f.get('name')
+        if filename_converter:
+            filename = filename_converter(filename)
+        for err in f.findall('error'):
+            line = err.get('line')
+            message = err.get('message')
+            if ',' in line:
+                lines = [int(x) for x in line.split(',')]
+            else:
+                lines = [int(line)]
+            map(lambda x: problems.add(filename, x, message), lines)
