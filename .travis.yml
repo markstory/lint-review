@@ -12,6 +12,7 @@ before_install:
   - sudo apt-get install golang
 
 install:
+  - pip install -r requirements-dev.txt
   - pip install .
   - pip install codecov
   - pip install coverage

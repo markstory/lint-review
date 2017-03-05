@@ -3,3 +3,4 @@ rules:
   line-length:
     max: 3
     allow-non-breakable-words: yes
+    allow-non-breakable-inline-mappings: yes
