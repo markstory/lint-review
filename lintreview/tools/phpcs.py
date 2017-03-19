@@ -1,8 +1,8 @@
 import logging
 import os
 import functools
-from lintreview.tools import Tool
-from lintreview.tools import run_command
+from lintreview.review import IssueComment
+from lintreview.tools import Tool, process_checkstyle, run_command
 from lintreview.utils import composer_exists, in_path
 
 log = logging.getLogger(__name__)
@@ -38,7 +38,16 @@ class Phpcs(Tool):
         filename_converter = functools.partial(
             self._relativize_filename,
             files)
-        self._process_checkstyle(output, filename_converter)
+
+        # Check for errors from PHPCS
+        if output.startswith('ERROR'):
+            msg = ('Your PHPCS configuration output the following error:\n'
+                   '```\n'
+                   '{}\n'
+                   '```')
+            error = '\n'.join(output.split('\n')[0:1])
+            return self.problems.add(IssueComment(msg.format(error)))
+        process_checkstyle(self.problems, output, filename_converter)
 
     def create_command(self, files):
         command = ['phpcs']
@@ -48,13 +57,17 @@ class Phpcs(Tool):
         standard = 'PSR2'
         if self.options.get('standard'):
             standard = self.apply_base(self.options['standard'])
+        command.append('--standard=' + standard)
+
         if self.options.get('ignore'):
             ignore = self.options['ignore']
             command.append('--ignore=' + ignore)
+        if self.options.get('exclude'):
+            exclude = self.options['exclude']
+            command.append('--exclude=' + exclude)
         extension = 'php'
         if self.options.get('extensions'):
             extension = self.options['extensions']
-        command.append('--standard=' + standard)
         command.append('--extensions=' + extension)
         if self.options.get('tab_width'):
             command += ['--tab-width=' + str(self.options['tab_width'])]

@@ -1,10 +1,10 @@
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.phpcs import Phpcs
-from lintreview.utils import in_path, composer_exists
+from lintreview.utils import composer_exists
 from unittest import TestCase
 from unittest import skipIf
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 phpcs_missing = not(composer_exists('phpcs'))
 
@@ -79,6 +79,48 @@ class Testphpcs(TestCase):
         problems = self.problems.all(self.fixtures[1])
 
         eq_(3, len(problems), 'Changing standards changes error counts')
+
+    @needs_phpcs
+    def test_process_files_with_ignore(self):
+        config = {
+            'standard': 'PSR2',
+            'ignore': 'tests/fixtures/phpcs/*'
+        }
+        tool = Phpcs(self.problems, config)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+
+        eq_(0, len(problems), 'ignore option should exclude files')
+
+    @needs_phpcs
+    def test_process_files_with_exclude(self):
+        config = {
+            'standard': 'PSR2',
+            'exclude': 'Generic.WhiteSpace.DisallowTabIndent'
+        }
+        tool = Phpcs(self.problems, config)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+
+        eq_(1, len(problems), 'exclude option should reduce errors.')
+
+    @needs_phpcs
+    def test_process_files_with_invalid_exclude(self):
+        config = {
+            'standard': 'PSR2',
+            'exclude': 'Derpity.Derp'
+        }
+        tool = Phpcs(self.problems, config)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all()
+        eq_(1, len(problems), 'A failure comment should be logged.')
+
+        error = problems[0].body
+        ok_('Your PHPCS configuration output the following error' in error)
+        ok_('Derpity.Derp' in error)
 
     def test_create_command__with_path_based_standard(self):
         command = 'vendor/bin/phpcs'
