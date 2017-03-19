@@ -48,11 +48,14 @@ class Phpcs(Tool):
         standard = 'PSR2'
         if self.options.get('standard'):
             standard = self.apply_base(self.options['standard'])
+        if self.options.get('ignore'):
+            ignore = self.options['ignore']
+            command.append('--ignore=' + ignore)
         extension = 'php'
         if self.options.get('extensions'):
             extension = self.options['extensions']
-        command += ['--standard=' + standard]
-        command += ['--extensions=' + extension]
+        command.append('--standard=' + standard)
+        command.append('--extensions=' + extension)
         if self.options.get('tab_width'):
             command += ['--tab-width=' + str(self.options['tab_width'])]
         command += files
