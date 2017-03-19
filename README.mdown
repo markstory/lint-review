@@ -222,6 +222,8 @@ to do style checks on PHP, Javascript and or CSS files.
 * `standard` The coding standard to use. By default the `PSR2` standard is used. You can
   use any of the built-in standards or provide your own inside your project directory.
 * `extensions` The extensions to check. By default only `.php` files will be checked.
+* `ignore` A glob path of files to ignore.
+* `exclude` A comma separated list of sniffs to not apply.
 * `tab_width` The number of spaces to convert tabs into, this is useful for projects using
   tabs for indentation.
 
