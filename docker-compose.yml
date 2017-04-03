@@ -1,3 +1,4 @@
+---
 version: '2'
 services:
   broker:
@@ -9,15 +10,15 @@ services:
   web:
     build: .
     command:
-    - gunicorn
-    - -c
-    - /code/settings.py
-    - lintreview.web:app
+      - gunicorn
+      - -c
+      - /code/settings.py
+      - lintreview.web:app
     env_file: lintreview-env
     ports:
-     - "5000:5000"
+      - "5000:5000"
     links:
-     - broker
+      - broker
     networks:
       - front-tier
       - back-tier
@@ -26,15 +27,15 @@ services:
     environment:
       - C_FORCE_ROOT=true
     command:
-    - celery
-    - -A
-    - lintreview.tasks
-    - worker
-    - -l
-    - info
+      - celery
+      - -A
+      - lintreview.tasks
+      - worker
+      - -l
+      - info
     env_file: lintreview-env
     links:
-     - broker
+      - broker
     networks:
       - back-tier
 
