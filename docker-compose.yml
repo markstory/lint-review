@@ -14,7 +14,10 @@ services:
       - -c
       - /code/settings.py
       - lintreview.web:app
-    env_file: lintreview-env
+    environment: &lintreview_env
+      LINTREVIEW_GUNICORN_BIND: '0.0.0.0:5000'
+      LINTREVIEW_GUNICORN_LOG_ACCESS: '-'
+      LINTREVIEW_GUNICORN_LOG_ERROR: '-'
     ports:
       - "5000:5000"
     links:
@@ -24,8 +27,6 @@ services:
       - back-tier
   worker:
     build: .
-    environment:
-      - C_FORCE_ROOT=true
     command:
       - celery
       - -A
@@ -33,7 +34,11 @@ services:
       - worker
       - -l
       - info
-    env_file: lintreview-env
+    environment: &lintreview_env
+      LINTREVIEW_GUNICORN_BIND: '0.0.0.0:5000'
+      LINTREVIEW_GUNICORN_LOG_ACCESS: '-'
+      LINTREVIEW_GUNICORN_LOG_ERROR: '-'
+      C_FORCE_ROOT: "true"
     links:
       - broker
     networks:
