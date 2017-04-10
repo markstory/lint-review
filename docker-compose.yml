@@ -8,7 +8,7 @@ services:
     networks:
       - back-tier
   web:
-    build: .
+    image: markstory/lint-review
     command:
       - gunicorn
       - -c
@@ -26,7 +26,7 @@ services:
       - front-tier
       - back-tier
   worker:
-    build: .
+    image: markstory/lint-review
     command:
       - celery
       - -A
@@ -34,10 +34,8 @@ services:
       - worker
       - -l
       - info
-    environment: &lintreview_env
-      LINTREVIEW_GUNICORN_BIND: '0.0.0.0:5000'
-      LINTREVIEW_GUNICORN_LOG_ACCESS: '-'
-      LINTREVIEW_GUNICORN_LOG_ERROR: '-'
+    environment:
+      <<: *lintreview_env
       C_FORCE_ROOT: "true"
     links:
       - broker
