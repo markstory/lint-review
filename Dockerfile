@@ -1,9 +1,13 @@
 FROM python:2.7
 ENV REFRESHED_AT 2016-05-21
+
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1655A0AB68576280 && \
+    echo 'deb http://deb.nodesource.com/node_6.x jessie main' > /etc/apt/sources.list.d/nodesource-jessie.list
+
 RUN apt-get update && apt-get install -y \
     php-pear \
     ruby \
-    npm \
+    nodejs \
     ruby1.9.1 \
     ruby-dev \
     shellcheck \
@@ -11,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     apt-get -y autoremove && \
     apt-get -y clean  && \
     rm -rf /var/lib/apt/lists/*
-RUN ln -s /usr/bin/nodejs /usr/bin/node
 
 WORKDIR /code
 RUN pear install PHP_CodeSniffer

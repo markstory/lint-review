@@ -1,0 +1,4 @@
+---
+sut:
+  build: .
+  command: /code/docker_tests.sh
