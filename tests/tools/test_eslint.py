@@ -30,6 +30,7 @@ class TestEslint(TestCase):
         self.assertFalse(self.tool.match_file('dir/name/test.py'))
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('test.js'))
+        self.assertTrue(self.tool.match_file('test.jsx'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
     @needs_eslint
