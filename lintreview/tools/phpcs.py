@@ -1,11 +1,25 @@
 import logging
 import os
 import functools
+import collections
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle, run_command
 from lintreview.utils import composer_exists, in_path
 
 log = logging.getLogger(__name__)
+
+
+def stringify(value):
+    """
+    PHPCS uses a , separated strings in many places
+    because of how it handles options we have to do bad things
+    with string concatenation.
+    """
+    if isinstance(value, basestring):
+        return value
+    if isinstance(value, collections.Iterable):
+        return ','.join(value)
+    return str(value)
 
 
 class Phpcs(Tool):
@@ -57,19 +71,19 @@ class Phpcs(Tool):
         standard = 'PSR2'
         if self.options.get('standard'):
             standard = self.apply_base(self.options['standard'])
-        command.append('--standard=' + standard)
+        command.append('--standard=' + stringify(standard))
 
         if self.options.get('ignore'):
             ignore = self.options['ignore']
-            command.append('--ignore=' + ignore)
+            command.append('--ignore=' + stringify(ignore))
         if self.options.get('exclude'):
             exclude = self.options['exclude']
-            command.append('--exclude=' + exclude)
+            command.append('--exclude=' + stringify(exclude))
         extension = 'php'
         if self.options.get('extensions'):
             extension = self.options['extensions']
-        command.append('--extensions=' + extension)
+        command.append('--extensions=' + stringify(extension))
         if self.options.get('tab_width'):
-            command += ['--tab-width=' + str(self.options['tab_width'])]
+            command += ['--tab-width=' + stringify(self.options['tab_width'])]
         command += files
         return command
