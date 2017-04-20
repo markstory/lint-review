@@ -69,7 +69,7 @@ class Testphpcs(TestCase):
         eq_(3, len(problems))
 
     @needs_phpcs
-    def test_process_files_with_config(self):
+    def test_process_files__with_config(self):
         config = {
             'standard': 'Zend'
         }
@@ -81,7 +81,7 @@ class Testphpcs(TestCase):
         eq_(3, len(problems), 'Changing standards changes error counts')
 
     @needs_phpcs
-    def test_process_files_with_ignore(self):
+    def test_process_files__with_ignore(self):
         config = {
             'standard': 'PSR2',
             'ignore': 'tests/fixtures/phpcs/*'
@@ -94,7 +94,7 @@ class Testphpcs(TestCase):
         eq_(0, len(problems), 'ignore option should exclude files')
 
     @needs_phpcs
-    def test_process_files_with_exclude(self):
+    def test_process_files__with_exclude(self):
         config = {
             'standard': 'PSR2',
             'exclude': 'Generic.WhiteSpace.DisallowTabIndent'
@@ -107,7 +107,7 @@ class Testphpcs(TestCase):
         eq_(1, len(problems), 'exclude option should reduce errors.')
 
     @needs_phpcs
-    def test_process_files_with_invalid_exclude(self):
+    def test_process_files__with_invalid_exclude(self):
         config = {
             'standard': 'PSR2',
             'exclude': 'Derpity.Derp'
@@ -138,6 +138,29 @@ class Testphpcs(TestCase):
             '--standard=/some/path/test/CodeStandards',
             '--extensions=php',
             '--tab-width=4',
+            'some/file.php'
+        ]
+        eq_(result, expected)
+
+    def test_create_command__ignore_option_as_list(self):
+        config = {
+            'standard': 'PSR2',
+            'extensions': ['php', 'ctp'],
+            'exclude': ['rule1', 'rule2'],
+            'ignore': ['tests/fixtures/phpcs/*', 'tests/fixtures/eslint/*']
+        }
+        tool = Phpcs(self.problems, config)
+        result = tool.create_command(['some/file.php'])
+        command = 'vendor/bin/phpcs'
+        if phpcs_missing:
+            command = 'phpcs'
+        expected = [
+            command,
+            '--report=checkstyle',
+            '--standard=PSR2',
+            '--ignore=tests/fixtures/phpcs/*,tests/fixtures/eslint/*',
+            '--exclude=rule1,rule2',
+            '--extensions=php,ctp',
             'some/file.php'
         ]
         eq_(result, expected)
