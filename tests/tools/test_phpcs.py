@@ -152,6 +152,8 @@ class Testphpcs(TestCase):
         tool = Phpcs(self.problems, config)
         result = tool.create_command(['some/file.php'])
         command = 'vendor/bin/phpcs'
+        if phpcs_missing:
+            command = 'phpcs'
         expected = [
             command,
             '--report=checkstyle',
