@@ -24,7 +24,7 @@ class Eslint(Tool):
         """
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.js'
+        return ext == '.js' or ext == '.jsx'
 
     def process_files(self, files):
         """

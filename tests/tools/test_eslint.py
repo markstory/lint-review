@@ -30,6 +30,7 @@ class TestEslint(TestCase):
         self.assertFalse(self.tool.match_file('dir/name/test.py'))
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('test.js'))
+        self.assertTrue(self.tool.match_file('test.jsx'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
     @needs_eslint
@@ -57,7 +58,7 @@ class TestEslint(TestCase):
         eq_(expected, problems[1])
 
     @needs_eslint
-    def test_process_files_invalid_config(self):
+    def test_process_files__config_file_missing(self):
         tool = Eslint(self.problems, options={'config': 'invalid-file'})
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()

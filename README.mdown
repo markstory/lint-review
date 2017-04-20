@@ -284,6 +284,18 @@ to check javascript object notation files.
 
 * None currently supported
 
+### TypeScript
+
+#### Tslint
+
+Uses the [tslint](http://npmjs.org/package/tslint) tool to review TypeScript files. You need to
+include a `tslint.json` configuration file in your project or use the `config` option to provide
+a path to a config file.
+
+*Options*
+
+* `config` The config file you want `tslint` to use.
+
 ### CSS:
 
 #### CSSLint

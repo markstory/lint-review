@@ -10,7 +10,9 @@
     "eslint-plugin-ember": "3.x",
     "sass-lint": "1.x",
     "csslint": "0.10.x",
-    "standard": "^8.6.0"
+    "standard": "^8.6.0",
+    "tslint": "^5.1.0",
+    "typescript": "^2.1.5"
   },
   "eslintConfig": {
     "extends": "eslint:recommended"
