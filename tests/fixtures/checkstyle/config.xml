@@ -39,8 +39,6 @@
         <property name="basedir" value="${basedir}"/>
     -->
 
-    <property name="fileExtensions" value="java, properties, xml"/>
-
     <!-- Checks whether files end with a new line.                        -->
     <!-- See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile -->
     <module name="NewlineAtEndOfFile"/>
