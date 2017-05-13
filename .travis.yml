@@ -9,7 +9,7 @@ env:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install golang
+  - sudo apt-get -y install golang checkstyle
 
 install:
   - pip install -r requirements-dev.txt
