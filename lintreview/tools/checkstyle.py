@@ -40,9 +40,19 @@ class Checkstyle(Tool):
             command,
             ignore_error=True)
 
+        # Only one line is generally a config error. Replay the error
+        # to the user.
+        lines = output.strip().split('\n')
+        if len(lines) == 1:
+            msg = ("Running `checkstyle` failed with: "
+                   "```\n"
+                   "%s\n"
+                   "```\n"
+                   "Ensure your config file exists and is valid XML.")
+            return self.problems.add(IssueComment(msg % (lines[0],)))
+
         # Remove the last line if it is not XML
         # Checkstyle outputs text after the XML if there are errors.
-        lines = output.strip().split('\n')
         if not lines[-1].strip().startswith('<'):
             lines = lines[0:-1]
         output = ''.join(lines)

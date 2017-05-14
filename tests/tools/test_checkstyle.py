@@ -85,6 +85,18 @@ class TestCheckstyle(TestCase):
         eq_(1, len(problems))
         assert_in('could not run `checkstyle`', problems[0].body)
 
+    @needs_checkstyle
+    def test_process_files__missing_config(self):
+        config = {'config': 'badness.xml'}
+        tool = Checkstyle(self.problems, config)
+        tool.process_files(self.fixtures)
+
+        problems = self.problems.all()
+        eq_(1, len(problems))
+        assert_in('Running `checkstyle` failed', problems[0].body)
+        assert_in('badness.xml', problems[0].body)
+        assert_in('config file exists and is valid XML', problems[0].body)
+
     def test_create_command__with_path_based_standard(self):
         config = {
             'config': 'test/checkstyle.xml'
