@@ -43,7 +43,7 @@ class Checkstyle(Tool):
         # Only one line is generally a config error. Replay the error
         # to the user.
         lines = output.strip().split('\n')
-        if len(lines) == 1:
+        if not lines[0].startswith('<'):
             msg = ("Running `checkstyle` failed with:\n"
                    "```\n"
                    "%s\n"
