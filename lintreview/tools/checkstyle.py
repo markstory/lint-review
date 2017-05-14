@@ -44,7 +44,7 @@ class Checkstyle(Tool):
         # to the user.
         lines = output.strip().split('\n')
         if len(lines) == 1:
-            msg = ("Running `checkstyle` failed with: "
+            msg = ("Running `checkstyle` failed with:\n"
                    "```\n"
                    "%s\n"
                    "```\n"
