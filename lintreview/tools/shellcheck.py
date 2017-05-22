@@ -1,8 +1,7 @@
 import logging
 import os
 import functools
-from lintreview.tools import Tool
-from lintreview.tools import run_command
+from lintreview.tools import Tool, run_command, process_checkstyle
 from lintreview.utils import in_path
 
 log = logging.getLogger(__name__)
@@ -36,7 +35,11 @@ class Shellcheck(Tool):
         filename_converter = functools.partial(
             self._relativize_filename,
             files)
-        self._process_checkstyle(output, filename_converter)
+        process_checkstyle(self.problems, output, filename_converter)
+        map(self.escape_backtick, self.problems)
+
+    def escape_backtick(self, problem):
+        problem.body = problem.body.replace('`', '\`')
 
     def create_command(self, files):
         command = ['shellcheck']
