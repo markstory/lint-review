@@ -42,7 +42,7 @@ class Testshellcheck(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(2, len(problems))
+        eq_(3, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(
@@ -55,11 +55,19 @@ class Testshellcheck(TestCase):
 
         expected = Comment(
             fname,
-            5,
-            5,
+            4,
+            4,
+            'BASE appears unused. Verify it or export it.\n'
+            'Use $(..) instead of legacy \`..\`.')
+        eq_(expected, problems[1])
+
+        expected = Comment(
+            fname,
+            6,
+            6,
             'The order of the 2>&1 and the redirect matters. The 2>&1 has to '
             'be last.')
-        eq_(expected, problems[1])
+        eq_(expected, problems[2])
 
     @needs_shellcheck
     def test_process_files_two_files(self):
@@ -68,7 +76,7 @@ class Testshellcheck(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(2, len(problems))
+        eq_(3, len(problems))
 
     @needs_shellcheck
     def test_process_files_with_config(self):
@@ -81,4 +89,4 @@ class Testshellcheck(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(1, len(problems), 'Changing standards changes error counts')
+        eq_(2, len(problems), 'Changing standards changes error counts')

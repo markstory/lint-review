@@ -94,7 +94,6 @@ class TestCheckstyle(TestCase):
         problems = self.problems.all()
         eq_(1, len(problems))
         assert_in('Running `checkstyle` failed', problems[0].body)
-        assert_in('badness.xml', problems[0].body)
         assert_in('config file exists and is valid XML', problems[0].body)
 
     def test_create_command__with_path_based_standard(self):
