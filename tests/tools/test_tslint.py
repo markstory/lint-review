@@ -1,6 +1,5 @@
-from unittest import TestCase
-from unittest import skipIf
-
+import os
+from unittest import TestCase, skipIf
 from lintreview.review import Problems
 from lintreview.review import Comment, IssueComment
 from lintreview.tools.tslint import Tslint
@@ -99,6 +98,30 @@ class TestTslint(TestCase):
         msg = 'Missing trailing comma'
         expected = Comment(FILE_WITH_ERRORS, 12, 12, msg)
         eq_(expected, problems[2])
+
+    @needs_tslint
+    def test_process_output__ancestor_directory(self):
+        # Simulate XML with ../file in the output
+        # which happens with tslint
+        options = {
+            'config': 'tests/fixtures/tslint/tslint_good.json'
+        }
+        restore = os.getcwd()
+        tool = Tslint(self.problems, options, restore)
+        xml = """<?xml version="1.0" encoding="utf-8"?>
+<checkstyle version="4.3">
+  <file name="../tests/fixtures/tslint/has_errors.ts">
+    <error line="11" column="3" severity="error" message="bad code"
+      source="failure.tslint.object-literal-sort-keys" />
+  </file>
+</checkstyle>"""
+        os.chdir(os.path.join('.', 'lintreview'))
+        tool._process_output(xml, [FILE_WITH_ERRORS])
+        os.chdir(restore)
+
+        problems = self.problems.all(FILE_WITH_ERRORS)
+        expected = Comment(FILE_WITH_ERRORS, 11, 11, 'bad code')
+        eq_(expected, problems[0])
 
     @needs_tslint
     def test_process_files__invalid_rule(self):

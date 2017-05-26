@@ -82,13 +82,22 @@ class Tool(object):
         absolute path to locate the filename
         """
         if name in files:
-            return name  # looks like it was already relative
+            # was already relative to repository
+            return name
 
+        abs_name = os.path.realpath(name)
         for f in files:
             abs_path = os.path.realpath(f)
+
+            # output filename was absolute
             if abs_path == name:
                 return f
-        msg = "Could not locate '%s' in changed files." % (name, )
+
+            # output filename is relative to base_path
+            if self.base_path and os.path.join(self.base_path, f) == abs_name:
+                return f
+
+        msg = "Could not locate '%s' in changed files: %s." % (name, files)
         raise ValueError(msg)
 
     def _process_checkstyle(self, xml, filename_converter=None):
