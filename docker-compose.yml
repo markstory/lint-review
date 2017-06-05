@@ -30,6 +30,9 @@ services:
     networks:
       - front-tier
       - back-tier
+    depends_on:
+      - broker
+      - worker
   worker:
     image: markstory/lint-review
     command:
@@ -51,6 +54,8 @@ services:
       - broker
     networks:
       - back-tier
+    depends_on:
+      - broker
 
 networks:
   front-tier:
