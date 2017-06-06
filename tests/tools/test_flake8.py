@@ -63,7 +63,6 @@ class TestFlake8(TestCase):
     def test_config_options_and_process_file(self):
         options = {
             'ignore': 'F4,W603',
-            'config': ''
         }
         self.tool = Flake8(self.problems, options)
         self.tool.process_files([self.fixtures[1]])
@@ -72,3 +71,20 @@ class TestFlake8(TestCase):
         for p in problems:
             self.assertFalse('F4' in p.body)
             self.assertFalse('W603' in p.body)
+
+    def test_make_command__config(self):
+        options = {
+            'ignore': 'F4,W603',
+            'max-line-length': 120,
+            'max-complexity': 10
+        }
+        tool = Flake8(self.problems, options)
+        out = tool.make_command([self.fixtures[1]])
+        expected = [
+            'flake8',
+            '--ignore', 'F4,W603',
+            '--max-complexity', 10,
+            '--max-line-length', 120,
+            self.fixtures[1]
+        ]
+        eq_(expected, out)

@@ -41,18 +41,24 @@ class Flake8(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', len(files), self.name)
-        command = ['flake8']
-        for option in self.options:
-            if option in self.PYFLAKE_OPTIONS:
-                command.extend(
-                    ['--%s' % option, self.options.get(option)])
-            else:
-                log.warning('Set non-existent flake8 option: %s', option)
-
-        command += files
+        command = self.make_command(files)
         output = run_command(command, split=True, ignore_error=True)
         if not output:
             log.debug('No flake8 errors found.')
             return False
 
         process_quickfix(self.problems, output, lambda name: name)
+
+    def make_command(self, files):
+        command = ['flake8']
+        for option in self.options:
+            if option in self.PYFLAKE_OPTIONS:
+                command.extend([
+                    '--%s' % option,
+                    self.options.get(option)
+                ])
+            else:
+                log.warning('Set non-existent flake8 option: %s', option)
+
+        command += files
+        return command
