@@ -6,7 +6,7 @@
     "jscs": "1.x",
     "jshint": "2.x",
     "jscs-ember-deprecations": "2.3.0",
-    "eslint": "3.x",
+    "eslint": "4.x",
     "eslint-plugin-ember": "3.x",
     "sass-lint": "1.x",
     "csslint": "0.10.x",
