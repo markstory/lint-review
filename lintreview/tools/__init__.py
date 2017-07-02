@@ -130,6 +130,7 @@ def run_command(
         ignore_error=False,
         include_errors=True,
         shell=False,
+        env=None,
         cwd=None):
     """
     Execute subprocesses.
@@ -137,7 +138,8 @@ def run_command(
     command = map(unicode, command)
     log.info('Running %s', u' '.join(command))
 
-    env = os.environ.copy()
+    if env is None:
+        env = os.environ.copy()
 
     if include_errors:
         error_pipe = subprocess.STDOUT
