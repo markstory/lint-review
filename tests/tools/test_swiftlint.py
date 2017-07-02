@@ -2,11 +2,10 @@ from unittest import TestCase
 from unittest import skipIf
 
 from lintreview.review import Problems
-from lintreview.review import Comment, IssueComment
+from lintreview.review import Comment
 from lintreview.tools.swiftlint import Swiftlint
 from lintreview.utils import in_path
-from lintreview.utils import npm_exists
-from nose.tools import eq_, ok_
+from nose.tools import eq_
 
 swiftlint_missing = not in_path('swiftlint')
 
