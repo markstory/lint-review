@@ -20,8 +20,10 @@ class DiffCollection(object):
     def _add(self, content):
         try:
             self._add_diff(content)
-        except:
-            log.warn('Could not process diff %s', str(content))
+        except Exception as e:
+            log.warn('Could not process diff %s. Got %s',
+                     str(content),
+                     e.message)
 
     def _add_diff(self, content):
         if not self._has_additions(content):
