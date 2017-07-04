@@ -38,9 +38,13 @@ class DiffCollection(object):
         to have additions at all.
 
         - Removed files never need to be linted as they are dead.
+        - Renamed files don't need to be linted as they have no diff
         - Any other file with a `+` in it should be checked.
         """
-        if content.status == 'removed':
+        if content.status in ('removed', 'renamed'):
+            return False
+        if content.additions == 0 and content.deletions == 0 \
+                and content.changes == 0:
             return False
         if not hasattr(content, 'patch'):
             return False
