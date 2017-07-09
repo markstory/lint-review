@@ -40,7 +40,7 @@ class WebTest(TestCase):
 
     def test_ping(self):
         res = self.app.get('/ping')
-        eq_("lint-review: %s pong\n" % (web.version,), res.data)
+        eq_(b"lint-review: %s pong\n" % (web.version,), res.data)
 
     def test_start_request_no_get(self):
         res = self.app.get('/review/start')
@@ -59,7 +59,7 @@ class WebTest(TestCase):
         res = self.app.post('/review/start',
                             content_type='application/json', data=data)
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
         assert not(task.called)
 
     @patch('lintreview.web.get_lintrc')

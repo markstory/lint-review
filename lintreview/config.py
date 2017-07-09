@@ -4,7 +4,10 @@ import logging.config
 
 from flask.config import Config
 from six.moves.configparser import ConfigParser
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import six
 
 

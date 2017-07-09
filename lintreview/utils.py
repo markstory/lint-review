@@ -72,6 +72,6 @@ def bundle_exists(name):
     """
     try:
         installed = subprocess.check_output(['bundle', 'list'])
-    except subprocess.CalledProcessError or OSError:
+    except (subprocess.CalledProcessError, FileNotFoundError, IOError):
         return False
     return name in installed
