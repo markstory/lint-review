@@ -23,6 +23,9 @@ class Testshellcheck(TestCase):
         self.tool = Shellcheck(self.problems)
 
     def test_match_file(self):
+        self.assertTrue(self.tool.match_file('test.bash'))
+        self.assertTrue(self.tool.match_file('test.zsh'))
+        self.assertTrue(self.tool.match_file('test.ksh'))
         self.assertTrue(self.tool.match_file('test.sh'))
         self.assertTrue(self.tool.match_file('dir/name/test.sh'))
         self.assertFalse(self.tool.match_file('dir/name/test.py'))

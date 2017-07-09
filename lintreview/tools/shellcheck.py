@@ -20,7 +20,7 @@ class Shellcheck(Tool):
     def match_file(self, filename):
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.sh'
+        return ext in ('.sh', '.bash', '.ksh', '.zsh')
 
     def process_files(self, files):
         """
