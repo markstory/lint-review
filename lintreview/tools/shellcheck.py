@@ -23,10 +23,7 @@ class Shellcheck(Tool):
         if ext in ('.sh', '.bash', '.ksh', '.zsh'):
             return True
 
-        if not os.path.exists(filename):
-            return False
-
-        if not os.access(filename, os.X_OK):
+        if not os.path.exists(filename) or not os.access(filename, os.X_OK):
             return False
 
         # Check for a shebang in the first line.
