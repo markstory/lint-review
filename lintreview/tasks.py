@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import lintreview.github as github
 import lintreview.git as git
 import logging
@@ -62,7 +63,7 @@ def process_pull_request(user, repo_name, number, lintrc):
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo, number))
-    except BaseException, e:
+    except BaseException as e:
         log.exception(e)
 
 

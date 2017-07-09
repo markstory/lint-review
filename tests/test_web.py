@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lintreview import web
 from mock import patch, Mock
 from nose.tools import eq_

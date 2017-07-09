@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 import logging
 import os
 import functools
 from lintreview.tools import Tool, run_command, process_checkstyle
 from lintreview.utils import in_path
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +52,7 @@ class Shellcheck(Tool):
             self._relativize_filename,
             files)
         process_checkstyle(self.problems, output, filename_converter)
-        map(self.escape_backtick, self.problems)
+        list(map(self.escape_backtick, self.problems))
 
     def escape_backtick(self, problem):
         problem.body = problem.body.replace('`', '\`')

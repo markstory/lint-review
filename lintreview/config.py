@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import os
 import logging.config
 
 from flask.config import Config
-from ConfigParser import ConfigParser
+from six.moves.configparser import ConfigParser
 from StringIO import StringIO
+import six
 
 
 def load_config():
@@ -57,11 +59,11 @@ def build_review_config(ini_config, app_config=None):
 
 
 def comma_value(values):
-    return map(lambda x: x.strip(), values.split(','))
+    return [x.strip() for x in values.split(',')]
 
 
 def newline_value(values):
-    return map(lambda x: x.strip(), values.split('\n'))
+    return [x.strip() for x in values.split('\n')]
 
 
 class ReviewConfig(object):
@@ -85,7 +87,7 @@ class ReviewConfig(object):
         empty config, and the current data has non-empty config, the
         non-empty config will be retained.
         """
-        for key, value in data.iteritems():
+        for key, value in six.iteritems(data):
             if key == 'linters' and 'linters' in self._data:
                 self._update_linter_config(value)
             else:
@@ -98,7 +100,7 @@ class ReviewConfig(object):
         Because linter config is a nested structure, it needs to be
         updated in a somewhat recursive way.
         """
-        for linter, tool_config in linter_config.iteritems():
+        for linter, tool_config in six.iteritems(linter_config):
             if self._config_update(linter, tool_config):
                 self._data['linters'][linter] = tool_config
 
@@ -112,7 +114,7 @@ class ReviewConfig(object):
 
     def linters(self):
         try:
-            return self._data['linters'].keys()
+            return list(self._data['linters'].keys())
         except:
             return []
 
