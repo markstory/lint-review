@@ -1,4 +1,3 @@
-import os
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.shellcheck import Shellcheck
