@@ -31,14 +31,14 @@ class TestPep8(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(5, len(problems))
+        eq_(6, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 3, 3, 'E401 multiple imports on one line')
+        expected = Comment(fname, 2, 2, 'E401 multiple imports on one line')
         eq_(expected, problems[0])
 
-        expected = Comment(fname, 11, 11, "E225 missing whitespace around operator")
-        eq_(expected, problems[4])
+        expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
+        eq_(expected, problems[5])
 
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
@@ -46,12 +46,12 @@ class TestPep8(TestCase):
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(5, len(problems))
-        expected = Comment(self.fixtures[1], 3, 3, 'E401 multiple imports on one line')
+        eq_(6, len(problems))
+        expected = Comment(self.fixtures[1], 2, 2, 'E401 multiple imports on one line')
         eq_(expected, problems[0])
 
-        expected = Comment(self.fixtures[1], 11, 11, "E225 missing whitespace around operator")
-        eq_(expected, problems[4])
+        expected = Comment(self.fixtures[1], 11, 11, "W603 '<>' is deprecated, use '!='")
+        eq_(expected, problems[5])
 
     def test_config_options_and_process_file(self):
         options = {
