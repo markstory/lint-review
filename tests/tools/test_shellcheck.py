@@ -23,11 +23,18 @@ class Testshellcheck(TestCase):
         self.tool = Shellcheck(self.problems)
 
     def test_match_file(self):
+        self.assertTrue(self.tool.match_file('test.bash'))
+        self.assertTrue(self.tool.match_file('test.zsh'))
+        self.assertTrue(self.tool.match_file('test.ksh'))
         self.assertTrue(self.tool.match_file('test.sh'))
         self.assertTrue(self.tool.match_file('dir/name/test.sh'))
         self.assertFalse(self.tool.match_file('dir/name/test.py'))
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
+
+    def test_match_file__executable(self):
+        res = self.tool.match_file('tests/fixtures/shellcheck/tool')
+        self.assertTrue(res)
 
     @needs_shellcheck
     def test_check_dependencies(self):

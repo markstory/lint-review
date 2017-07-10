@@ -20,7 +20,21 @@ class Shellcheck(Tool):
     def match_file(self, filename):
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.sh'
+        if ext in ('.sh', '.bash', '.ksh', '.zsh'):
+            return True
+
+        if not os.path.exists(filename) or not os.access(filename, os.X_OK):
+            return False
+
+        # Check for a shebang in the first line.
+        with open(filename, 'r') as f:
+            line = f.readline()
+            return line.startswith('#!') and (
+                'bash' in line or
+                'sh' in line or
+                'zsh' in line or
+                'ksh' in line
+            )
 
     def process_files(self, files):
         """

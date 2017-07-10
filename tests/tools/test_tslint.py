@@ -47,13 +47,10 @@ class TestTslint(TestCase):
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(3, len(problems))
 
-        msg = ("The key 'middle' is not sorted alphabetically")
-        expected = Comment(FILE_WITH_ERRORS, 11, 11, msg)
-        eq_(expected, problems[0])
-
-        msg = ("Spaces before function parens are disallowed")
+        msg = ("Shadowed name: 'range'\n"
+               "Spaces before function parens are disallowed")
         expected = Comment(FILE_WITH_ERRORS, 1, 1, msg)
-        eq_(expected, problems[1])
+        eq_(expected, problems[0])
 
     @needs_tslint
     def test_process_files__invalid_config(self):
@@ -87,17 +84,14 @@ class TestTslint(TestCase):
 
         problems = self.problems.all(FILE_WITH_ERRORS)
 
-        msg = "The key 'middle' is not sorted alphabetically"
-        expected = Comment(FILE_WITH_ERRORS, 11, 11, msg)
+        msg = ("Shadowed name: 'range'\n"
+               'Spaces before function parens are disallowed')
+        expected = Comment(FILE_WITH_ERRORS, 1, 1, msg)
         eq_(expected, problems[0])
 
-        msg = 'Spaces before function parens are disallowed'
-        expected = Comment(FILE_WITH_ERRORS, 1, 1, msg)
+        msg = "The key 'middle' is not sorted alphabetically"
+        expected = Comment(FILE_WITH_ERRORS, 11, 11, msg)
         eq_(expected, problems[1])
-
-        msg = 'Missing trailing comma'
-        expected = Comment(FILE_WITH_ERRORS, 12, 12, msg)
-        eq_(expected, problems[2])
 
     @needs_tslint
     def test_process_output__ancestor_directory(self):
