@@ -48,6 +48,8 @@ class Flake8(Tool):
             log.debug('No flake8 errors found.')
             return False
 
+        output.sort()
+
         process_quickfix(self.problems, output, lambda name: name)
 
     def make_command(self, files):
