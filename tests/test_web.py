@@ -82,7 +82,7 @@ class WebTest(TestCase):
                             content_type='application/json', data=data)
         assert task.delay.called, 'Cleanup task should be scheduled'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -102,7 +102,7 @@ linters = pep8"""
                             content_type='application/json', data=data)
         assert task.delay.called, 'Process request should be called'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -122,4 +122,4 @@ linters = pep8"""
                             content_type='application/json', data=data)
         assert task.delay.called, 'Process request should be called'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
