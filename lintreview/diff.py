@@ -21,8 +21,9 @@ class DiffCollection(object):
         try:
             self._add_diff(content)
         except Exception as e:
-            log.warn('Could not process diff %s. Got %s',
+            log.warn('Could not process diff %s. content=%s error=%s',
                      str(content),
+                     content.patch,
                      e.message)
 
     def _add_diff(self, content):
@@ -47,6 +48,8 @@ class DiffCollection(object):
                 and content.changes == 0:
             return False
         if not hasattr(content, 'patch'):
+            return False
+        if not len(content.patch):
             return False
         return '+' in content.patch
 

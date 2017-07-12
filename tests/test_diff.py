@@ -105,8 +105,7 @@ class TestDiffCollection(TestCase):
 
     def test_parsing_diffs__renamed_file_and_blob(self):
         changes = DiffCollection(self.renamed_files)
-        eq_(0,
-            len(changes),
+        eq_(0, len(changes),
             'Should be no files as a blob and a rename happened')
         eq_([], changes.get_files())
 
