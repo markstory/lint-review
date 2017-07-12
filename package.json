@@ -3,18 +3,22 @@
   "version": "0.1.14",
   "private": true,
   "dependencies": {
-    "jscs": "1.x",
-    "jshint": "2.x",
-    "jscs-ember-deprecations": "2.3.0",
+    "csslint": "0.10.x",
     "eslint": "4.x",
     "eslint-plugin-ember": "3.x",
+    "jscs": "1.x",
+    "jscs-ember-deprecations": "2.3.0",
+    "jshint": "2.x",
     "sass-lint": "1.x",
-    "csslint": "0.10.x",
     "standard": "^8.6.0",
     "tslint": "^5.1.0",
-    "typescript": "^2.1.5"
+    "typescript": "^2.1.5",
+    "xo": "^0.18"
   },
   "eslintConfig": {
     "extends": "eslint:recommended"
+  },
+  "xo": {
+    "space": true
   }
 }
