@@ -36,9 +36,7 @@ class Xo(Tool):
         command = [cmd, '--reporter', 'checkstyle']
 
         command += files
-        output = run_command(
-            command,
-            ignore_error=True)
+        output = run_command(command, ignore_error=True)
         self._process_output(output, files)
 
     def _process_output(self, output, files):
