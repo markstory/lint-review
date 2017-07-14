@@ -35,10 +35,6 @@ class Xo(Tool):
             cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'xo')
         command = [cmd, '--reporter', 'checkstyle']
 
-        # Add config file or default to recommended linters
-        if self.options.get('config'):
-            command += ['--config', self.apply_base(self.options['config'])]
-
         command += files
         output = run_command(
             command,
