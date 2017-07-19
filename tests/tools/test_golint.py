@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.golint import Golint
 from lintreview.utils import go_bin_path

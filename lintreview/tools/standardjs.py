@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import functools
 import logging
 import os
@@ -44,6 +45,5 @@ class Standardjs(Tool):
             split=True,
             ignore_error=True)
 
-        output = filter(lambda line: not line.startswith('standard'),
-                        output)
+        output = [line for line in output if not line.startswith('standard')]
         process_quickfix(self.problems, output, filename_converter)

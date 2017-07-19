@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from . import load_fixture, create_pull_files
 from lintreview.diff import DiffCollection
 from lintreview.diff import Diff

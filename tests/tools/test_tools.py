@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import lintreview.tools as tools
 import github3
 from lintreview.config import ReviewConfig, build_review_config

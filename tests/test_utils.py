@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import lintreview.utils as utils
 import os
 from unittest import skipIf
