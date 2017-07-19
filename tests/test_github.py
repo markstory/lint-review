@@ -52,7 +52,10 @@ def test_register_hook():
 def test_register_hook__already_exists():
     repo = Mock(spec=github3.repos.repo.Repository,
                 full_name='mark/lint-review')
-    repo.hooks.return_value = [github3.repos.hook.Hook(f) for f in json.loads(load_fixture('webhook_list.json'))]
+    repo.hooks.return_value = [
+            github3.repos.hook.Hook(f)
+            for f in json.loads(load_fixture('webhook_list.json'))
+        ]
     url = 'http://example.com/review/start'
 
     github.register_hook(repo, url)
@@ -62,7 +65,10 @@ def test_register_hook__already_exists():
 def test_unregister_hook__success():
     repo = Mock(spec=github3.repos.repo.Repository,
                 full_name='mark/lint-review')
-    hooks = [github3.repos.hook.Hook(f) for f in json.loads(load_fixture('webhook_list.json'))]
+    hooks = [
+        github3.repos.hook.Hook(f)
+        for f in json.loads(load_fixture('webhook_list.json'))
+        ]
     repo.hooks.return_value = hooks
     url = 'http://example.com/review/start'
     github.unregister_hook(repo, url)

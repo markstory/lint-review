@@ -30,7 +30,8 @@ class TestReview(TestCase):
 
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
-        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
+        self.pr.review_comments.return_value = [
+                GhIssueComment(f) for f in json.loads(fixture_data)]
 
         review = Review(self.repo, self.pr)
         review.load_comments()
@@ -39,7 +40,8 @@ class TestReview(TestCase):
 
     def test_load_comments__loads_comments(self):
         fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
+        self.pr.review_comments.return_value = [
+            GhIssueComment(f) for f in json.loads(fixture_data)]
         review = Review(self.repo, self.pr)
         review.load_comments()
 
@@ -60,7 +62,8 @@ class TestReview(TestCase):
 
     def test_filter_existing__removes_duplicates(self):
         fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
+        self.pr.review_comments.return_value = [
+            GhIssueComment(f) for f in json.loads(fixture_data)]
         problems = Problems()
         review = Review(self.repo, self.pr)
         filename_1 = "Routing/Filter/AssetCompressor.php"
@@ -241,7 +244,8 @@ class TestReview(TestCase):
 
     def test_publish_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture)]
+        self.pr.review_comments.return_value = [
+            GhIssueComment(f) for f in json.loads(fixture)]
 
         problems = Problems()
 

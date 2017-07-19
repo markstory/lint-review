@@ -17,7 +17,8 @@ class ProcessorTest(TestCase):
     def get_pull_request(self, fixture):
         pull_request = Mock(number=1, head='123abc')
 
-        pull_request.files.return_value = [PullFile(f) for f in json.loads(fixture)]
+        pull_request.files.return_value = [
+                PullFile(f) for f in json.loads(fixture)]
 
         return pull_request
 
