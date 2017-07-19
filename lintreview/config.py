@@ -87,7 +87,7 @@ class ReviewConfig(object):
         empty config, and the current data has non-empty config, the
         non-empty config will be retained.
         """
-        for key, value in six.iteritems(data):
+        for key, value in data.items():
             if key == 'linters' and 'linters' in self._data:
                 self._update_linter_config(value)
             else:
