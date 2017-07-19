@@ -49,7 +49,7 @@ class DiffCollection(object):
             return False
         if not hasattr(content, 'patch'):
             return False
-        if not len(content.patch):
+        if content.patch is None:
             return False
         return '+' in content.patch
 
