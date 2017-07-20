@@ -35,7 +35,7 @@ class Commitcheck(Tool):
         bad = []
         for commit in commits:
             bad.append(self._check_commit(pattern, commit))
-        bad = [_f for _f in bad if _f]
+        bad = [commit for commit in bad if commit]
 
         if not bad:
             return log.debug('No bad commit messages.')
