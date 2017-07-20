@@ -5,7 +5,6 @@ import logging.config
 from flask.config import Config
 from six.moves.configparser import ConfigParser
 from StringIO import StringIO
-import six
 
 
 def load_config():
@@ -100,7 +99,7 @@ class ReviewConfig(object):
         Because linter config is a nested structure, it needs to be
         updated in a somewhat recursive way.
         """
-        for linter, tool_config in six.iteritems(linter_config):
+        for linter, tool_config in linter_config.items():
             if self._config_update(linter, tool_config):
                 self._data['linters'][linter] = tool_config
 
