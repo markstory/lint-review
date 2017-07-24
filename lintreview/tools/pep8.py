@@ -29,8 +29,8 @@ class Pep8(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = ['pep8', '-r']
-        if self.options.get('ignore'):
-            command += ['--ignore', self.options.get('ignore')]
+        for option, value in self.options:
+            command += ' --{}={}'.format(option, value)
         command += files
         output = run_command(command, split=True, ignore_error=True)
         if not output:
