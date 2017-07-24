@@ -29,7 +29,7 @@ class Pep8(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = ['pep8', '-r']
-        for option, value in self.options:
+        for option, value in self.options.items():
             command += ' --{}={}'.format(option, value)
         command += files
         output = run_command(command, split=True, ignore_error=True)
