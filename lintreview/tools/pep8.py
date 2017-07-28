@@ -38,7 +38,7 @@ class Pep8(Tool):
             if option in pep8_options:
                 command += u' --{}={}'.format(option, value)
             else:
-                log.error(u'%s is not a valid option to pep8', option)
+                log.error('%s is not a valid option to pep8', option)
         command += files
         output = run_command(command, split=True, ignore_error=True)
         if not output:
