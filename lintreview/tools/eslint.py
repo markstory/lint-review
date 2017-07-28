@@ -47,7 +47,7 @@ class Eslint(Tool):
         self._process_output(output, files)
 
     def _process_output(self, output, files):
-        if output.startswith('Cannot read config file'):
+        if 'Cannot read config file' in output:
             msg = u'Your eslint config file is missing or invalid. ' \
                    u'Please ensure that `{}` exists and is valid.'
             msg = msg.format(self.options['config'])
@@ -61,6 +61,18 @@ class Eslint(Tool):
                    '```'
             error = '\n'.join(output.split('\n')[0:2])
             return self.problems.add(IssueComment(msg.format(error)))
+
+        missing_plugin = "ESLint couldn't find the plugin"
+        if missing_plugin in output:
+            line = output.strip().split('\n')[2:3].pop()
+            line = line.split('.')[0]
+
+            msg = u'Your eslint configuration output the following error:\n' \
+                  '```\n' \
+                  '{}\n' \
+                  '```\n' \
+                  'The above plugin is not installed.'
+            return self.problems.add(IssueComment(msg.format(line)))
 
         filename_converter = functools.partial(
             self._relativize_filename,

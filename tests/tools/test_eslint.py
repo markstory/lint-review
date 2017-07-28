@@ -90,6 +90,20 @@ class TestEslint(TestCase):
         ok_("Referenced from" in error.body)
 
     @needs_eslint
+    def test_process_files__missing_plugin(self):
+        options = {'config': 'tests/fixtures/eslint/missingplugin.json'}
+        tool = Eslint(self.problems, options)
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all()
+        print problems[0]
+        eq_(1, len(problems), 'Invalid config should report an error')
+        error = problems[0]
+        ok_('Your eslint configuration output the following error'
+            in error.body)
+        ok_('ESLint couldn\'t find the plugin "eslint-plugin-mocha"'
+            in error.body)
+
+    @needs_eslint
     def test_process_files_with_config(self):
         options = {
             'config': 'tests/fixtures/eslint/config.json'
