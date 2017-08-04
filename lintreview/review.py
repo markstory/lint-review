@@ -22,8 +22,10 @@ class IssueComment(object):
         log.debug("Publishing issue comment '%s'", self.body)
         try:
             pull_request.create_comment(self.body)
-        except:
-            log.warn("Failed to save comment '%s'", self.body)
+        except Exception as e:
+            log.warn("Failed to save comment. body='%s' error=%s",
+                     self.body,
+                     e.message)
 
     def key(self):
         return (self.filename, self.position)
