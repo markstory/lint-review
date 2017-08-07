@@ -47,7 +47,7 @@ class Eslint(Tool):
         self._process_output(output, files)
 
     def _process_output(self, output, files):
-        if output.startswith('Cannot read config file'):
+        if 'Cannot read config file' in output:
             msg = u'Your eslint config file is missing or invalid. ' \
                    u'Please ensure that `{}` exists and is valid.'
             msg = msg.format(self.options['config'])
