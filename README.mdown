@@ -209,6 +209,12 @@ Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code.
 *Options*
 
 * `ignore` Set which pep8 error codes you wish to ignore.
+* `exclude` Exclude files or directories which match these comma
+   separated patterns (default: .svn, CVS, .bzr, .hg, .git)
+* `filename` When parsing directories, only check filenames
+   matching these comma separated patterns (default: `*.py`)
+* `select` Select errors and warnings (e.g. E,W6)
+* `max-line-length` Set maximum allowed line length (default: 79)
 
 ### PHP
 
