@@ -1,0 +1,7 @@
+linters:
+  flake8: {  }
+  rubocop: {  }
+ignore:
+  files:
+    - 'bower_components/*'
+    - 'node_modules/*'
