@@ -47,6 +47,15 @@ class Eslint(Tool):
         self._process_output(output, files)
 
     def _process_output(self, output, files):
+        if '<?xml' not in output:
+            return self._config_error(output)
+
+        filename_converter = functools.partial(
+            self._relativize_filename,
+            files)
+        process_checkstyle(self.problems, output, filename_converter)
+
+    def _config_error(self, output):
         if 'Cannot read config file' in output:
             msg = u'Your eslint config file is missing or invalid. ' \
                    u'Please ensure that `{}` exists and is valid.'
@@ -73,8 +82,3 @@ class Eslint(Tool):
                   '```\n' \
                   'The above plugin is not installed.'
             return self.problems.add(IssueComment(msg.format(line)))
-
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
