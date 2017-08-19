@@ -74,6 +74,16 @@ class TestDiffCollection(TestCase):
         result = changes.get_files(ignore_patterns=ignore)
         eq_(expected, result)
 
+    def test_get_files__ignore_pattern__multiple_wildcard(self):
+        data = load_fixture('multiple_wildcard_pull_request.json')
+        changes = DiffCollection(create_pull_files(data))
+        expected = [
+            "buildpacks/buildpack-ruby/tests/ruby-sinatra/test_web.rb",
+        ]
+        ignore = ['buildpacks/*/tests/*/test.sh']
+        result = changes.get_files(ignore_patterns=ignore)
+        eq_(expected, result)
+
     def test_has_line_changed__no_file(self):
         changes = DiffCollection(self.two_files)
         self.assertFalse(changes.has_line_changed('derp', 99))
