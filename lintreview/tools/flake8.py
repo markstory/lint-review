@@ -50,7 +50,7 @@ class Flake8(Tool):
         process_quickfix(self.problems, output, lambda name: name)
 
     def make_command(self, files):
-        command = ['flake8']
+        command = ['flake8', '--isolated']
         for option in self.options:
             if option in self.PYFLAKE_OPTIONS:
                 command.extend([

@@ -213,6 +213,8 @@ def process_quickfix(problems, output, filename_converter):
     """
     for line in output:
         parts = line.split(':', 3)
+        if len(parts) < 3:
+            continue
         message = parts[-1].strip()
         filename = filename_converter(parts[0].strip())
         problems.add(filename, int(parts[1]), message)
