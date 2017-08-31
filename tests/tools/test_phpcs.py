@@ -122,6 +122,26 @@ class Testphpcs(TestCase):
         ok_('Your PHPCS configuration output the following error' in error)
         ok_('Derpity.Derp' in error)
 
+    def test_create_command__with_builtin_standard(self):
+        command = 'vendor/bin/phpcs'
+        if phpcs_missing:
+            command = 'phpcs'
+        config = {
+            'standard': 'Zend',
+            'tab_width': 4,
+        }
+        tool = Phpcs(self.problems, config, '/some/path')
+        result = tool.create_command(['some/file.php'])
+        expected = [
+            command,
+            '--report=checkstyle',
+            '--standard=Zend',
+            '--extensions=php',
+            '--tab-width=4',
+            'some/file.php'
+        ]
+        eq_(result, expected)
+
     def test_create_command__with_path_based_standard(self):
         command = 'vendor/bin/phpcs'
         if phpcs_missing:

@@ -60,7 +60,7 @@ class Shellcheck(Tool):
         command += ['--format=checkstyle']
         shell = 'sh'
         if self.options.get('shell'):
-            shell = self.apply_base(self.options['shell'])
+            shell = self.options['shell']
         command += ['--shell=' + shell]
         if self.options.get('exclude'):
             command += ['--exclude=' + str(self.options['exclude'])]

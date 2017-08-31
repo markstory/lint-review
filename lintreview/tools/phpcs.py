@@ -63,6 +63,15 @@ class Phpcs(Tool):
             return self.problems.add(IssueComment(msg.format(error)))
         process_checkstyle(self.problems, output, filename_converter)
 
+    def apply_base(self, path):
+        """
+        PHPCS supports either standard names, or paths
+        to standard files. Assume no os.sep implies a built-in standard name
+        """
+        if os.sep not in path:
+            return path
+        return super(Phpcs, self).apply_base(path)
+
     def create_command(self, files):
         command = ['phpcs']
         if composer_exists('phpcs'):
