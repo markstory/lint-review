@@ -111,14 +111,19 @@ class Tool(object):
 
     def apply_base(self, value):
         """
-        Used to convert config values into absolute paths. If `value`
-        does not have a os.sep it will be returned unaltered.
+        Used to convert config values into absolute paths.
+
+        If the tool has a base_path set, the value will be relative to
+        that base path. If the value traverses to an ancestor of the base_path
+        only the basename of value will be returned. This is to prevent
+        directory traversal outside of the basedir.
         """
-        if os.sep not in value:
-            return value
         if not self.base_path:
             return value
-        return os.path.join(self.base_path, value)
+        path = os.path.abspath(os.path.join(self.base_path, value))
+        if path.startswith(self.base_path):
+            return path
+        return os.path.basename(value)
 
     def __repr__(self):
         return '<%sTool config: %s>' % (self.name, self.options)

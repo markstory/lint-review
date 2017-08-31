@@ -1,10 +1,20 @@
 import lintreview.tools as tools
 import github3
+import os
 from lintreview.config import ReviewConfig, build_review_config
 from lintreview.review import Review
 from lintreview.review import Problems
 from nose.tools import eq_, raises
 from mock import Mock
+
+
+fixture_path = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'fixtures'
+    )
+)
 
 
 sample_ini = """
@@ -60,6 +70,42 @@ def test_tool_constructor__config():
 
     tool = tools.Tool(problems, None)
     eq_(tool.options, {})
+
+
+def test_tool_apply_base__no_base():
+    problems = Problems()
+    tool = tools.Tool(problems, {})
+
+    result = tool.apply_base('comments_current.json')
+    eq_(result, 'comments_current.json')
+
+
+def test_tool_apply_base__with_base():
+    problems = Problems()
+    tool = tools.Tool(problems, {}, fixture_path)
+
+    result = tool.apply_base('comments_current.json')
+    eq_(result, fixture_path + '/comments_current.json')
+
+    result = tool.apply_base('./comments_current.json')
+    eq_(result, fixture_path + '/comments_current.json')
+
+    result = tool.apply_base('eslint/config.json')
+    eq_(result, fixture_path + '/eslint/config.json')
+
+    result = tool.apply_base('./eslint/config.json')
+    eq_(result, fixture_path + '/eslint/config.json')
+
+    result = tool.apply_base('../fixtures/eslint/config.json')
+    eq_(result, fixture_path + '/eslint/config.json')
+
+
+def test_tool_apply_base__with_base_no_traversal():
+    problems = Problems()
+    tool = tools.Tool(problems, {}, fixture_path)
+
+    result = tool.apply_base('../../../comments_current.json')
+    eq_(result, 'comments_current.json')
 
 
 def test_run():
