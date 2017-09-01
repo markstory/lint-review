@@ -1,8 +1,11 @@
+from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.flake8 import Flake8
 from unittest import TestCase
 from nose.tools import eq_
+
+from collections import OrderedDict
 
 
 class TestFlake8(TestCase):
@@ -73,11 +76,11 @@ class TestFlake8(TestCase):
             self.assertFalse('W603' in p.body)
 
     def test_make_command__config(self):
-        options = {
+        options = OrderedDict({
             'ignore': 'F4,W603',
+            'max-complexity': 10,
             'max-line-length': 120,
-            'max-complexity': 10
-        }
+        })
         tool = Flake8(self.problems, options)
         out = tool.make_command([self.fixtures[1]])
         expected = [

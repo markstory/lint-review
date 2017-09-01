@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.shellcheck import Shellcheck

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from . import load_fixture
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
@@ -28,9 +30,7 @@ class TestReview(TestCase):
 
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
-        self.pr.review_comments.return_value = map(
-            lambda f: GhIssueComment(f),
-            json.loads(fixture_data))
+        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
 
         review = Review(self.repo, self.pr)
         review.load_comments()
@@ -39,9 +39,7 @@ class TestReview(TestCase):
 
     def test_load_comments__loads_comments(self):
         fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = map(
-            lambda f: GhIssueComment(f),
-            json.loads(fixture_data))
+        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
         review = Review(self.repo, self.pr)
         review.load_comments()
 
@@ -62,9 +60,7 @@ class TestReview(TestCase):
 
     def test_filter_existing__removes_duplicates(self):
         fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = map(
-            lambda f: GhIssueComment(f),
-            json.loads(fixture_data))
+        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture_data)]
         problems = Problems()
         review = Review(self.repo, self.pr)
         filename_1 = "Routing/Filter/AssetCompressor.php"
@@ -245,9 +241,7 @@ class TestReview(TestCase):
 
     def test_publish_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = map(
-            lambda f: GhIssueComment(f),
-            json.loads(fixture))
+        self.pr.review_comments.return_value = [GhIssueComment(f) for f in json.loads(fixture)]
 
         problems = Problems()
 
@@ -304,7 +298,7 @@ class TestProblems(TestCase):
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
         for item in self.problems:
-            print item
+            print(item)
         eq_(1, len(self.problems))
 
         self.problems.add('file.py', 11, 'Not good')
@@ -353,8 +347,7 @@ class TestProblems(TestCase):
         eq_(1, len(problems))
 
     def test_add__with_diff_containing_block_offset(self):
-        res = map(lambda f: PullFile(f),
-                  json.loads(self.block_offset))
+        res = [PullFile(f) for f in json.loads(self.block_offset)]
         changes = DiffCollection(res)
 
         problems = Problems(changes=changes)
@@ -381,8 +374,7 @@ class TestProblems(TestCase):
         eq_(expected, result)
 
     def test_limit_to_changes__remove_problems(self):
-        res = map(lambda f: PullFile(f),
-                  json.loads(self.two_files_json))
+        res = [PullFile(f) for f in json.loads(self.two_files_json)]
         changes = DiffCollection(res)
 
         # Setup some fake problems.

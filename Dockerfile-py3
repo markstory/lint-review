@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:3.6
 ENV REFRESHED_AT 2016-05-21
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1655A0AB68576280 && \

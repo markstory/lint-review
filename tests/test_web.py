@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lintreview import web
 from mock import patch, Mock
 from nose.tools import eq_
@@ -39,7 +40,7 @@ class WebTest(TestCase):
 
     def test_ping(self):
         res = self.app.get('/ping')
-        eq_("lint-review: %s pong\n" % (web.version,), res.data)
+        eq_(b"lint-review: %s pong\n" % (web.version,), res.data)
 
     def test_start_request_no_get(self):
         res = self.app.get('/review/start')
@@ -58,7 +59,7 @@ class WebTest(TestCase):
         res = self.app.post('/review/start',
                             content_type='application/json', data=data)
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
         assert not(task.called)
 
     @patch('lintreview.web.get_lintrc')
@@ -81,7 +82,7 @@ class WebTest(TestCase):
                             content_type='application/json', data=data)
         assert task.delay.called, 'Cleanup task should be scheduled'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -101,7 +102,7 @@ linters = pep8"""
                             content_type='application/json', data=data)
         assert task.delay.called, 'Process request should be called'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -121,4 +122,4 @@ linters = pep8"""
                             content_type='application/json', data=data)
         assert task.delay.called, 'Process request should be called'
         eq_(204, res.status_code)
-        eq_('', res.data)
+        eq_(b'', res.data)

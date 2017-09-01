@@ -1,8 +1,13 @@
+from __future__ import absolute_import
 import os
 import logging
 import shutil
 import subprocess
-from urlparse import urlparse, urlunparse
+try:
+    from urlparse import urlparse, urlunparse
+except ImportError:
+    from urllib.parse import urlparse, urlunparse
+
 
 log = logging.getLogger(__name__)
 

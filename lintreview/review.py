@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import OrderedDict
 import logging
 
@@ -299,7 +300,7 @@ class Problems(object):
             return [error
                     for error in self
                     if error.filename == filename]
-        return self._items.values()
+        return list(self._items.values())
 
     def add(self, filename, line=None, body=None, position=None):
         """
