@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from . import load_fixture
 from lintreview.processor import Processor
 from lintreview.diff import DiffCollection
@@ -16,9 +17,8 @@ class ProcessorTest(TestCase):
     def get_pull_request(self, fixture):
         pull_request = Mock(number=1, head='123abc')
 
-        pull_request.files.return_value = map(
-            lambda f: PullFile(f),
-            json.loads(fixture))
+        pull_request.files.return_value = [
+                PullFile(f) for f in json.loads(fixture)]
 
         return pull_request
 

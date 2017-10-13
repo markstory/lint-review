@@ -1,7 +1,10 @@
+from __future__ import absolute_import
 import logging
 import os
 import subprocess
 from xml.etree import ElementTree
+from six.moves import map
+import six
 
 log = logging.getLogger(__name__)
 
@@ -140,7 +143,7 @@ def run_command(
     """
     Execute subprocesses.
     """
-    command = map(unicode, command)
+    command = list(map(six.text_type, command))
     log.info('Running %s', u' '.join(command))
 
     if env is None:
@@ -251,4 +254,4 @@ def process_checkstyle(problems, xml, filename_converter):
                 lines = [int(x) for x in line.split(',')]
             else:
                 lines = [int(line)]
-            map(lambda x: problems.add(filename, x, message), lines)
+            list(map(lambda x: problems.add(filename, x, message), lines))

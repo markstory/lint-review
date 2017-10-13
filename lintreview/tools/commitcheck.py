@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lintreview.tools import Tool
 from lintreview.review import IssueComment
 import logging
@@ -34,7 +35,7 @@ class Commitcheck(Tool):
         bad = []
         for commit in commits:
             bad.append(self._check_commit(pattern, commit))
-        bad = filter(None, bad)
+        bad = [commit for commit in bad if commit]
 
         if not bad:
             return log.debug('No bad commit messages.')

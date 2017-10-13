@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import lintreview.git as git
 import os
-from test_github import config
+from .test_github import config
 from nose.tools import eq_
 from nose.tools import raises
 from unittest import skipIf
