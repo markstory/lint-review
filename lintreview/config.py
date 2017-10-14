@@ -4,7 +4,7 @@ import logging.config
 
 from flask.config import Config
 from six.moves.configparser import ConfigParser
-from StringIO import StringIO
+from six import StringIO
 
 
 def load_config():
