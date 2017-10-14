@@ -94,10 +94,8 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, options)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        print problems[0]
         eq_(1, len(problems), 'Invalid config should report an error')
         error = problems[0]
-        print error
         ok_('Your eslint configuration output the following error'
             in error.body)
         ok_('ESLint couldn\'t find the plugin "eslint-plugin-mocha"'
