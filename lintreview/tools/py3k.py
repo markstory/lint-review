@@ -44,7 +44,13 @@ class Py3k(Tool):
 
     def make_command(self, files):
         msg_template = '{path}:{line}:{column}:{msg_id} {msg}'
-        command = ['pylint', '--py3k', '--reports=n', '--msg-template', msg_template]
+        command = [
+            'pylint',
+            '--py3k',
+            '--reports=n',
+            '--msg-template',
+            msg_template,
+        ]
         for option in self.options:
             log.warning('Set non-existent py3k option: %s', option)
         command.extend(files)

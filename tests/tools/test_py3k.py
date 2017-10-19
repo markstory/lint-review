@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from unittest import TestCase
 
-from nose.tools import eq_, assert_in, assert_not_in
+from nose.tools import eq_
 
 from lintreview.review import Problems
 from lintreview.review import Comment
