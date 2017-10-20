@@ -40,6 +40,7 @@ class Py3k(Tool):
             log.debug('No py3k errors found.')
             return False
 
+        output = [line for line in output if not line.startswith("*********")]
         process_quickfix(self.problems, output, lambda name: name)
 
     def make_command(self, files):
