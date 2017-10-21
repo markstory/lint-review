@@ -3,7 +3,7 @@ from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jsonlint import Jsonlint
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 
 
 class TestJsonlint(TestCase):
@@ -45,8 +45,12 @@ class TestJsonlint(TestCase):
                "to be used as strings: u'three'\n"
                "Warning: Strict JSON does not allow a final comma "
                "in an object (dictionary) literal")
-        expected = Comment(fname, 3, 3, msg)
-        eq_(expected, problems[1])
+        eq_(3, problems[1].line)
+        eq_(3, problems[1].position)
+        assert_in("Warning: JSON does not allow identifiers",
+                  problems[1].body)
+        assert_in("Warning: Strict JSON does not allow a final comma",
+                  problems[1].body)
 
     def test_process_files_three_files(self):
         self.tool.process_files(self.fixtures)
@@ -62,17 +66,15 @@ class TestJsonlint(TestCase):
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[0])
 
-        msg = ("Warning: JSON does not allow identifiers "
-               "to be used as strings: u'three'\n"
-               "Warning: Strict JSON does not allow a final comma "
-               "in an object (dictionary) literal")
-        expected = Comment(fname, 3, 3, msg)
-        eq_(expected, problems[1])
+        eq_(3, problems[1].line)
+        eq_(3, problems[1].position)
+        assert_in('JSON does not allow identifiers to be used',
+                  problems[1].body)
 
         fname = self.fixtures[2]
         problems = self.problems.all(fname)
         eq_(1, len(problems))
 
-        msg = "Error: Unknown identifier: u'bleugh'"
-        expected = Comment(fname, 1, 1, msg)
-        eq_(expected, problems[0])
+        eq_(1, problems[0].line)
+        eq_(1, problems[0].position)
+        assert_in('Unknown identifier', problems[0].body)

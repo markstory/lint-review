@@ -400,10 +400,10 @@ class TestProblems(TestCase):
         result = self.problems.all(filename_1)
         eq_(2, len(result))
         expected = [
-            (None, None, 'This is a general comment'),
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something else bad')]
-        eq_(result.sort(), expected.sort())
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something else bad')]
+        eq_(len(result), len(expected))
+        eq_(result, expected)
 
         result = self.problems.all(filename_2)
         eq_(1, len(result))
