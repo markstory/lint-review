@@ -74,4 +74,4 @@ def bundle_exists(name):
         installed = subprocess.check_output(['bundle', 'list'])
     except subprocess.CalledProcessError or OSError:
         return False
-    return name in installed
+    return name in installed.decode('utf-8')
