@@ -10,8 +10,6 @@ matrix:
   include:
     - python: "2.7"
     - python: "3.6"
-  allow_failures:
-    - python: "3.6"
 
 env:
   - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
