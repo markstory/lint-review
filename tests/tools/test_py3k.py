@@ -1,14 +1,19 @@
 from __future__ import absolute_import
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
 from nose.tools import eq_
 
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.py3k import Py3k
+import sys
+
+not_python2 = sys.version_info[0] >= 3
 
 
 class TestPy3k(TestCase):
+
+    needs_py2 = skipIf(not_python2, 'Cannot run in python3')
 
     class fixtures:
         no_errors = 'tests/fixtures/py3k/no_errors.py'
@@ -29,6 +34,7 @@ class TestPy3k(TestCase):
         self.tool.process_files([self.fixtures.no_errors])
         eq_([], self.problems.all(self.fixtures.no_errors))
 
+    @needs_py2
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
@@ -41,6 +47,7 @@ class TestPy3k(TestCase):
                     'W1638 range built-in referenced when not iterating')
         ], problems)
 
+    @needs_py2
     def test_process_files_two_files(self):
         self.tool.process_files([self.fixtures.no_errors,
                                  self.fixtures.has_errors])
