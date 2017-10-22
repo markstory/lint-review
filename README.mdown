@@ -216,6 +216,15 @@ Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code.
 * `select` Select errors and warnings (e.g. E,W6)
 * `max-line-length` Set maximum allowed line length (default: 79)
 
+#### py3k
+
+Uses [pylint](https://www.pylint.org/) to check for Python 3 compatibility
+issues.
+
+*Options* 
+
+* No options are supported.
+
 ### PHP
 
 #### PHPCS
