@@ -11,3 +11,4 @@ flake8>=3.3.0,<3.4.0
 yamllint>=1.6.1,<1.7.0
 demjson>=2.2.3,<2.3.0
 ansible-lint>=3.4.11,<3.5.0
+pylint>=1.7.4
