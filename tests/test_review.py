@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from __future__ import print_function
 from . import load_fixture
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
@@ -301,8 +300,6 @@ class TestProblems(TestCase):
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
-        for item in self.problems:
-            print(item)
         eq_(1, len(self.problems))
 
         self.problems.add('file.py', 11, 'Not good')
@@ -403,10 +400,10 @@ class TestProblems(TestCase):
         result = self.problems.all(filename_1)
         eq_(2, len(result))
         expected = [
-            (None, None, 'This is a general comment'),
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something else bad')]
-        eq_(result.sort(), expected.sort())
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something else bad')]
+        eq_(len(result), len(expected))
+        eq_(result, expected)
 
         result = self.problems.all(filename_2)
         eq_(1, len(result))

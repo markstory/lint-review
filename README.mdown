@@ -6,16 +6,16 @@
 [![Docker Stars](https://img.shields.io/docker/stars/markstory/lint-review.svg?maxAge=2592000)](https://hub.docker.com/r/markstory/lint-review/)
 
 Lint Review helps automate a tedious part of code review - enforcing coding
-standards. By using the github API Lint Review runs a repository's configured linters
+standards. By using the GitHub API Lint Review runs a repository's configured linters
 and updates pull requests with line comments where lint errors would be introduced.
 
 Lint Review requires:
 
-* Python 2.7 (It will probably work in 2.6, but I've only tested 2.7)
+* Python 2.7 or Python 3.6+
 * RabbitMQ (or any other Message broker that is compatible with Celery)
 * A publically addressable hostname/IP that either github or your github:enterprise
   can reach.
-* A github account with read/write access to the repositories you want linted. This
+* A GitHub account with read/write access to the repositories you want linted. This
   account is used to post comments on pull reviews.
 
 Lint Review runs as two processes. A web process handles accepting webhooks from github,

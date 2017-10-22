@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import functools
 import logging
 import os
+import re
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, run_command, process_checkstyle
 from lintreview.utils import in_path, npm_exists
@@ -63,19 +64,19 @@ class Eslint(Tool):
             msg = msg.format(self.options['config'])
             return self.problems.add(IssueComment(msg))
 
-        missing_ruleset = 'Cannot find module'
-        if missing_ruleset in output:
+        missing_ruleset = re.search(r'Cannot find module.*', output)
+        if missing_ruleset:
             msg = u'Your eslint configuration output the following error:\n' \
                    '```\n' \
                    '{}\n' \
                    '```'
-            error = '\n'.join(output.split('\n')[0:2])
+            error = missing_ruleset.group(0)
             return self.problems.add(IssueComment(msg.format(error)))
 
-        missing_plugin = "ESLint couldn't find the plugin"
-        if missing_plugin in output:
-            line = output.strip().split('\n')[2:3].pop()
-            line = line.split('.')[0]
+        missing_plugin = re.search(r'ESLint couldn\'t find the plugin.*',
+                                   output)
+        if missing_plugin:
+            line = missing_plugin.group(0)
 
             msg = u'Your eslint configuration output the following error:\n' \
                   '```\n' \
