@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import os
 import logging
+import functools
 from lintreview.tools import Tool, run_command, process_quickfix
 from lintreview.utils import in_path
 
@@ -41,7 +42,11 @@ class Py3k(Tool):
             return False
 
         output = [line for line in output if not line.startswith("*********")]
-        process_quickfix(self.problems, output, lambda name: name)
+
+        filename_converter = functools.partial(
+            self._relativize_filename,
+            files)
+        process_quickfix(self.problems, output, filename_converter)
 
     def make_command(self, files):
         msg_template = '{path}:{line}:{column}:{msg_id} {msg}'
