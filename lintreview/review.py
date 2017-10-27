@@ -330,7 +330,7 @@ class Problems(object):
         If position is not supplied the diff collection will be scanned
         and the line numbers diff offset will be fetched from there.
         """
-        if isinstance(filename, IssueComment):
+        if isinstance(filename, BaseComment):
             self._items[filename.key()] = filename
             return
 
@@ -355,7 +355,7 @@ class Problems(object):
         """Add multiple problems to the review.
         """
         for p in problems:
-            self.add(*p)
+            self.add(p)
 
     def limit_to_changes(self):
         """Limit the contained problems to only those changed

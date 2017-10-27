@@ -161,6 +161,24 @@ class TestGithubPullRequest(TestCase):
             comment['path'],
             comment['position'])
 
+    def test_create_review(self):
+        self.model._post = Mock()
+        self.model._json = Mock()
+        pull = GithubPullRequest(self.model)
+        review = {
+            'commit_id': 'abc123',
+            'event': 'COMMENT',
+            'body': 'Bad things',
+            'comments': [
+                {'position': 1, 'body': 'Bad space', 'path': 'some/file.php'}
+            ]
+        }
+        pull.create_review(review)
+        self.model._post.assert_called_with(
+            'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews',
+            data=review)
+        assert self.model._json.called
+
 
 @contextmanager
 def add_ok_label(pull_request, *labels, **kw):

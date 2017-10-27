@@ -2,9 +2,9 @@ from __future__ import absolute_import
 from . import load_fixture
 from lintreview.config import load_config
 from lintreview.diff import DiffCollection
-from lintreview.review import Review, Problems, Comment
+from lintreview.review import Review, Problems, Comment, IssueComment
 from lintreview.repo import GithubRepository, GithubPullRequest
-from mock import Mock, call
+from mock import Mock
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
@@ -89,27 +89,51 @@ class TestReview(TestCase):
         expected = Comment(filename_2, 88, 88, 'I <3 it')
         eq_(res[0], expected)
 
-    def test_publish_problems(self):
+    def test_publish_review(self):
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
         )
         problems.add_many(errors)
         sha = 'abc123'
 
         review = Review(self.repo, self.pr)
-        review.publish_problems(problems, sha)
+        review.publish_review(problems, sha)
 
-        assert self.pr.create_review_comment.called
-        eq_(2, self.pr.create_review_comment.call_count)
+        assert self.pr.create_review.called
+        eq_(1, self.pr.create_review.call_count)
 
-        assert_review_comments_created(
-            self.pr.create_review_comment.call_args_list,
+        assert_review(
+            self.pr.create_review.call_args,
             errors,
             sha)
+
+    def test_publish__join_issue_comments(self):
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            IssueComment('First'),
+            Comment(filename_1, 119, 119, 'Something bad'),
+            IssueComment('Second'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review = Review(self.repo, self.pr)
+        review.publish_review(problems, sha)
+
+        assert self.pr.create_review.called
+        eq_(1, self.pr.create_review.call_count)
+
+        assert_review(
+            self.pr.create_review.call_args,
+            [errors[1]],
+            sha,
+            body='First\n\nSecond')
 
     def test_publish_status__ok_no_comment_label_or_status(self):
         config = {
@@ -163,13 +187,13 @@ class TestReview(TestCase):
         assert not self.pr.create_comment.called, 'Comment not created'
         assert not self.pr.add_label.called, 'Label added created'
 
-    def test_publish_problems_remove_ok_label(self):
+    def test_publish_review_remove_ok_label(self):
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
         )
         problems.add_many(errors)
         sha = 'abc123'
@@ -177,15 +201,15 @@ class TestReview(TestCase):
 
         review = Review(self.repo, self.pr, config)
         sha = 'abc123'
-        review.publish_problems(problems, sha)
+        review.publish_review(problems, sha)
 
         assert self.pr.remove_label.called, 'Label should be removed'
-        assert self.pr.create_review_comment.called, 'Comments should be added'
-        eq_(2, self.pr.create_review_comment.call_count)
+        assert self.pr.create_review.called, 'Review should be added'
+        eq_(1, self.pr.create_review.call_count)
 
         self.pr.remove_label.assert_called_with(config['OK_LABEL'])
-        assert_review_comments_created(
-            self.pr.create_review_comment.call_args_list,
+        assert_review(
+            self.pr.create_review.call_args,
             errors,
             sha)
 
@@ -250,8 +274,8 @@ class TestReview(TestCase):
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
         )
         problems.add_many(errors)
         problems.set_changes([1])
@@ -268,8 +292,8 @@ class TestReview(TestCase):
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something bad'),
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
         )
         problems.add_many(errors)
         problems.set_changes([1])
@@ -362,17 +386,13 @@ class TestProblems(TestCase):
 
     def test_add_many(self):
         errors = [
-            ('some/file.py', 10, 'Thing is wrong'),
-            ('some/file.py', 12, 'Not good'),
+            Comment('some/file.py', 10, 10, 'Thing is wrong'),
+            Comment('some/file.py', 12, 12, 'Not good'),
         ]
         self.problems.add_many(errors)
         result = self.problems.all('some/file.py')
         eq_(2, len(result))
-        expected = [
-            Comment(errors[0][0], errors[0][1], errors[0][1], errors[0][2]),
-            Comment(errors[1][0], errors[1][1], errors[1][1], errors[1][2]),
-        ]
-        eq_(expected, result)
+        eq_(errors, result)
 
     def test_limit_to_changes__remove_problems(self):
         res = [PullFile(f) for f in json.loads(self.two_files_json)]
@@ -381,17 +401,17 @@ class TestProblems(TestCase):
         # Setup some fake problems.
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            (None, None, 'This is a general comment'),
-            (filename_1, 117, 'Something bad'),
-            (filename_1, 119, 'Something else bad'),
-            (filename_1, 130, 'Filtered out, as line is not changed'),
+            Comment(None, None, None, 'This is a general comment'),
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something else bad'),
+            Comment(filename_1, 130, 130, 'Filtered out, line is not changed'),
         )
         self.problems.add_many(errors)
         filename_2 = 'Test/test_files/View/Parse/single.ctp'
         errors = (
-            (filename_2, 2, 'Filtered out'),
-            (filename_2, 3, 'Something bad'),
-            (filename_2, 7, 'Filtered out'),
+            Comment(filename_2, 2, 2, 'Filtered out'),
+            Comment(filename_2, 3, 3, 'Something bad'),
+            Comment(filename_2, 7, 7, 'Filtered out'),
         )
         self.problems.add_many(errors)
         self.problems.set_changes(changes)
@@ -420,15 +440,19 @@ class TestProblems(TestCase):
         assert problems.has_changes()
 
 
-def assert_review_comments_created(call_args, errors, sha):
+def assert_review(call_args, errors, sha, body=''):
     """
     Check that the review comments match the error list.
     """
-    eq_(len(call_args), len(errors), 'Errors and comment counts are off')
-    for i, err in enumerate(errors):
-        expected = call(
-            commit_id=sha,
-            path=err[0],
-            position=err[1],
-            body=err[2])
-        eq_(expected, call_args[i])
+    actual = call_args[0][0]
+    comments = [error.payload() for error in errors]
+    expected = {
+        'commit_id': sha,
+        'event': 'COMMENT',
+        'body': body,
+        'comments': comments
+    }
+    eq_(actual.keys(), expected.keys())
+    eq_(len(expected['comments']),
+        len(actual['comments']),
+        'Error and comment counts are off.')
