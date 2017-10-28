@@ -124,5 +124,9 @@ class GithubPullRequest(object):
     def create_comment(self, body):
         self.pull.create_comment(body)
 
+    def create_review(self, review):
+        url = self.pull._build_url('reviews', base_url=self.pull._api)
+        self.pull._json(self.pull._post(url, data=review), 201)
+
     def create_review_comment(self, body, commit_id, path, position):
         self.pull.create_review_comment(body, commit_id, path, position)
