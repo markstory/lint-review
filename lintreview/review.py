@@ -197,7 +197,8 @@ class Review(object):
                  self._pr.display_name)
         self.remove_ok_label()
         review = self._build_review(problems, head_commit)
-        self._pr.create_review(review)
+        if len(review['comments']):
+            self._pr.create_review(review)
 
     def _build_review(self, problems, head_commit):
         """Because github3.py doesn't support creating reviews
