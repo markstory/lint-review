@@ -111,6 +111,15 @@ class TestReview(TestCase):
             errors,
             sha)
 
+    def test_publish_review__no_comments(self):
+        problems = Problems()
+        sha = 'abc123'
+
+        review = Review(self.repo, self.pr)
+        review.publish_review(problems, sha)
+
+        assert self.pr.create_review.called is False
+
     def test_publish__join_issue_comments(self):
         problems = Problems()
 
