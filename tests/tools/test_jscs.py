@@ -11,7 +11,7 @@ from nose.tools import eq_
 jscs_missing = not(in_path('jscs') or npm_exists('jscs'))
 
 
-class TestJcs(TestCase):
+class TestJscs(TestCase):
 
     needs_jscs = skipIf(jscs_missing, 'Needs jscs to run')
 

@@ -2,10 +2,8 @@ from __future__ import absolute_import
 import functools
 import logging
 import os
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+from lintreview.tools import Tool, run_command, process_checkstyle
+from lintreview.utils import in_path, npm_exists
 
 
 log = logging.getLogger(__name__)
@@ -52,4 +50,4 @@ class Sasslint(Tool):
         filename_converter = functools.partial(
             self._relativize_filename,
             files)
-        self._process_checkstyle(output, filename_converter)
+        process_checkstyle(self.problems, output, filename_converter)

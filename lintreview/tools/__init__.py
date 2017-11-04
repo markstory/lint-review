@@ -103,15 +103,6 @@ class Tool(object):
         msg = "Could not locate '%s' in changed files: %s." % (name, files)
         raise ValueError(msg)
 
-    def _process_checkstyle(self, xml, filename_converter=None):
-        """
-        Process a checkstyle xml file.
-
-        Errors and warnings in the XML file will
-        be added to the problems object.
-        """
-        process_checkstyle(self.problems, xml, filename_converter)
-
     def apply_base(self, value):
         """
         Used to convert config values into absolute paths.

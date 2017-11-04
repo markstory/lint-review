@@ -1,10 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+from lintreview.tools import Tool, run_command, process_checkstyle
+from lintreview.utils import in_path, npm_exists
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +33,7 @@ class Jscs(Tool):
         output = run_command(
             command,
             ignore_error=True)
-        self._process_checkstyle(output)
+        process_checkstyle(self.problems, output, None)
 
     def create_command(self, files):
         cmd = 'jscs'
