@@ -18,3 +18,16 @@ def create_pull_files(data):
 
 def create_commits(data):
     return [RepoCommit(f) for f in json.loads(data)]
+
+
+def read_file(path):
+    with open(path, 'r') as f:
+        return f.read()
+
+
+def read_and_restore_file(path, contents):
+    with open(path, 'r') as f:
+        updated = f.read()
+    with open(path, 'w') as f:
+        f.write(contents)
+    return updated

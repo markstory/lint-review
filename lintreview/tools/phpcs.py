@@ -30,7 +30,7 @@ class Phpcs(Tool):
 
     def check_dependencies(self):
         """
-        See if phpcs is on the system path.
+        See if PHPCS is on the system path.
         """
         return in_path('phpcs') or composer_exists('phpcs')
 
@@ -79,6 +79,11 @@ class Phpcs(Tool):
         if composer_exists('phpcs'):
             command = ['vendor/bin/phpcs']
         command += ['--report=checkstyle']
+        command = self._apply_options(command)
+        command += files
+        return command
+
+    def _apply_options(self, command):
         standard = 'PSR2'
         if self.options.get('standard'):
             standard = self.apply_base(self.options['standard'])
@@ -96,5 +101,30 @@ class Phpcs(Tool):
         command.append('--extensions=' + stringify(extension))
         if self.options.get('tab_width'):
             command += ['--tab-width=' + stringify(self.options['tab_width'])]
+        return command
+
+    def has_fixer(self):
+        """
+        PHPCS has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
+    def execute_fixer(self, files):
+        """
+        Run PHPCS in the fixer mode.
+        """
+        log.debug('Fixing %s files with %s', files, self.name)
+        command = self.create_fixer_command(files)
+        output = run_command(
+            command,
+            ignore_error=True,
+            include_errors=False)
+        log.error(output)
+
+    def create_fixer_command(self, files):
+        command = ['phpcbf']
+        if composer_exists('phpcbf'):
+            command = ['vendor/bin/phpcbf']
+        command = self._apply_options(command)
         command += files
         return command
