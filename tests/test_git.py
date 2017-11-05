@@ -89,3 +89,35 @@ def test_clone_or_update():
         'e4f880c77e6b2c81c81cad5d45dd4e1c39b919a0')
     assert git.exists(path)
     git.destroy(path)
+
+
+def test_diff():
+    assert False
+
+
+def test_apply_cached():
+    assert False
+
+
+def test_apply_cached__empty():
+    assert False
+
+
+def test_apply_cached__bad_patch():
+    assert False
+
+
+def test_commit():
+    assert False
+
+
+def test_push():
+    assert False
+
+
+def test_push__fails():
+    assert False
+
+
+def test_add_remote():
+    assert False
