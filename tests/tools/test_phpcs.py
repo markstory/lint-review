@@ -193,6 +193,7 @@ class Testphpcs(TestCase):
         tool = Phpcs(self.problems, {'fixer': True})
         eq_(True, tool.has_fixer())
 
+    @needs_phpcs
     def test_execute_fixer(self):
         tool = Phpcs(self.problems, {'fixer': True})
 
@@ -203,6 +204,7 @@ class Testphpcs(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
+    @needs_phpcs
     def test_execute_fixer__no_problems_remain(self):
         tool = Phpcs(self.problems, {'fixer': True})
 
