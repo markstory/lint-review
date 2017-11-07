@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 import os
 import logging
-from lintreview.tools import Tool
-from lintreview.tools import run_command, process_quickfix
+from lintreview.tools import Tool, run_command, process_quickfix
 from lintreview.utils import in_path
 
 log = logging.getLogger(__name__)

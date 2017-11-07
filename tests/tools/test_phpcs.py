@@ -1,11 +1,10 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs
 from lintreview.utils import composer_exists
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 from nose.tools import eq_, ok_
+from tests import read_file, read_and_restore_file
 
 phpcs_missing = not(composer_exists('phpcs'))
 
@@ -185,3 +184,34 @@ class Testphpcs(TestCase):
             'some/file.php'
         ]
         eq_(result, expected)
+
+    def test_has_fixer__not_enabled(self):
+        tool = Phpcs(self.problems, {})
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Phpcs(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    @needs_phpcs
+    def test_execute_fixer(self):
+        tool = Phpcs(self.problems, {'fixer': True})
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
+    @needs_phpcs
+    def test_execute_fixer__no_problems_remain(self):
+        tool = Phpcs(self.problems, {'fixer': True})
+
+        # The fixture file can have all problems fixed by phpcs
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+        tool.process_files(self.fixtures)
+
+        read_and_restore_file(self.fixtures[1], original)
+        eq_(0, len(self.problems.all()), 'All errors should be autofixed')

@@ -35,16 +35,18 @@ class Tool(object):
         pull request. Files will be filtered by
         match_file()
         """
-        matching_files = []
-        for f in files:
-            if self.match_file(f):
-                matching_files.append(f)
-        if len(matching_files):
-            log.info('Running %s on %d files', self.name, len(matching_files))
-            self.process_files(matching_files)
-            self.post_process(files)
-        else:
+        matching_files = [f for f in files if self.match_file(f)]
+        num_files = len(matching_files)
+
+        if not num_files:
             log.debug('No matching files for %s', self.name)
+            return
+
+        if self.has_fixer():
+            log.info('Running %s fixer on %d files', self.name, num_files)
+            self.execute_fixer(matching_files)
+        log.info('Running %s on %d files', self.name, num_files)
+        self.process_files(matching_files)
 
     def execute_commits(self, commits):
         """
@@ -58,6 +60,21 @@ class Tool(object):
         """
         pass
 
+    def execute_fixer(self, files):
+        """
+        Execute the fixer on all of the provided files.
+        """
+        pass
+
+    def has_fixer(self):
+        """
+        Hook method to check if a fixer exists and should be run.
+
+        For tools that have fixers, and the configuration file has
+        enabled fixers for that tool, this method should return True.
+        """
+        return False
+
     def match_file(self, filename):
         """
         Used to check if files can be handled by this
@@ -68,13 +85,6 @@ class Tool(object):
     def process_files(self, files):
         """
         Used to process all files. Overridden by tools
-        """
-        return False
-
-    def post_process(self, files):
-        """
-        Do any post processing required by
-        a tool.
         """
         return False
 
@@ -102,15 +112,6 @@ class Tool(object):
 
         msg = "Could not locate '%s' in changed files: %s." % (name, files)
         raise ValueError(msg)
-
-    def _process_checkstyle(self, xml, filename_converter=None):
-        """
-        Process a checkstyle xml file.
-
-        Errors and warnings in the XML file will
-        be added to the problems object.
-        """
-        process_checkstyle(self.problems, xml, filename_converter)
 
     def apply_base(self, value):
         """
