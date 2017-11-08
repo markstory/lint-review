@@ -144,17 +144,32 @@ def test_apply_cached__bad_patch():
     git.apply_cached(clone_path, 'not a diff')
 
 
-def test_commit():
-    assert False
+def test_commit_and_status():
+    git.clone_or_update(
+        config,
+        'git://github.com/markstory/lint-review.git',
+        clone_path,
+        'master')
+    with open(clone_path + '/README.mdown', 'w') as f:
+        f.write('New readme')
+    diff = git.diff(clone_path)
+
+    status = git.status(clone_path)
+    assert 'README.mdown' in status
+
+    git.apply_cached(clone_path, diff)
+    git.commit(clone_path, 'robot <bot@example.com>', 'Fixed readme')
+    status = git.status(clone_path)
+    eq_('', status, 'No changes unstaged, or uncommitted')
 
 
 def test_push():
-    assert False
+    assert False, 'not done'
 
 
 def test_push__fails():
-    assert False
+    assert False, 'not done'
 
 
 def test_add_remote():
-    assert False
+    assert False, 'not done'

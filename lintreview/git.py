@@ -116,9 +116,24 @@ def apply_cached(path, patch):
     return output
 
 
+def status(path):
+    """Get the working status of path"""
+    command = ['git', 'status', '-s']
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        log.error("Unable to get status: %s", output)
+        raise IOError(u"Unable to get status '{}'".format(output))
+    return output
+
+
 def commit(path, author, message):
     """Commit the staged changes in the repository"""
-    pass
+    command = ['git', 'commit', '--author', author, '-m', message]
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        log.error("Unable to commit changes: %s", output)
+        raise IOError(u"Unable to commit changes '{}'".format(output))
+    return output
 
 
 def push(path, branch, remote):
