@@ -120,6 +120,21 @@ class TestReview(TestCase):
 
         assert self.pr.create_review.called is False
 
+    def test_publish_review__only_issue_comment(self):
+        problems = Problems()
+        problems.add(IssueComment('Very bad'))
+        sha = 'abc123'
+
+        review = Review(self.repo, self.pr)
+        review.publish_review(problems, sha)
+
+        assert self.pr.create_review.called
+        assert_review(
+            self.pr.create_review.call_args,
+            [],
+            sha,
+            body='Very bad')
+
     def test_publish__join_issue_comments(self):
         problems = Problems()
 
@@ -462,6 +477,6 @@ def assert_review(call_args, errors, sha, body=''):
         'comments': comments
     }
     eq_(actual.keys(), expected.keys())
-    eq_(len(expected['comments']),
+    eq_(len(comments),
         len(actual['comments']),
         'Error and comment counts are off.')
