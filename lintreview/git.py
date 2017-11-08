@@ -88,7 +88,10 @@ def checkout(path, ref):
 
 
 def diff(path):
-    """Get the unstaged changes"""
+    """Get a diff of the unstaged changes.
+    See lintreview.diff.parse_diff if you need to create
+    more useful objects from the diff.
+    """
     command = ['git', 'diff', '--patience']
     return_code, output = _process(command, chdir=path)
     if return_code:

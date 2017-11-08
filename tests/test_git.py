@@ -2,15 +2,19 @@ from __future__ import absolute_import
 import lintreview.git as git
 import os
 from .test_github import config
-from nose.tools import eq_
-from nose.tools import raises
+from nose.tools import eq_, raises, assert_in
 from unittest import skipIf
 
 settings = {
     'WORKSPACE': './tests'
 }
-
+clone_path = settings['WORKSPACE'] + '/test_clone'
 cant_write_to_test = not(os.access(os.path.abspath('./tests'), os.W_OK))
+
+
+def teardown():
+    if git.exists(clone_path):
+        git.destroy(clone_path)
 
 
 def test_get_repo_path():
@@ -57,42 +61,47 @@ def test_exists__no_git():
 
 @raises(IOError)
 def test_repo_clone_no_repo():
-    path = settings['WORKSPACE'] + '/test_clone'
     git.clone(
         'git://github.com/markstory/it will never work.git',
-        path)
+        clone_path)
 
 
 @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
 def test_repo_operations():
-    path = settings['WORKSPACE'] + '/test_clone'
-
-    assert not(git.exists(path)), 'Directory should not exist.'
     res = git.clone(
         'git://github.com/markstory/lint-review.git',
-        path)
+        clone_path)
     assert res, 'Cloned successfully.'
-    assert git.exists(path), 'Cloned dir should be there.'
-    git.destroy(path)
-    assert not(git.exists(path)), 'Cloned dir should be gone.'
+    assert git.exists(clone_path), 'Cloned dir should be there.'
+    git.destroy(clone_path)
+    assert not(git.exists(clone_path)), 'Cloned dir should be gone.'
 
 
 @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
 def test_clone_or_update():
-    path = settings['WORKSPACE'] + '/test_clone'
-
-    assert not(git.exists(path)), 'Directory should not exist.'
     git.clone_or_update(
         config,
         'git://github.com/markstory/lint-review.git',
-        path,
+        clone_path,
         'e4f880c77e6b2c81c81cad5d45dd4e1c39b919a0')
-    assert git.exists(path)
-    git.destroy(path)
+    assert git.exists(clone_path)
 
 
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
 def test_diff():
-    assert False
+    git.clone_or_update(
+        config,
+        'git://github.com/markstory/lint-review.git',
+        clone_path,
+        'master')
+    with open(clone_path + '/README.mdown', 'w') as f:
+        f.write('New readme')
+    result = git.diff(clone_path)
+
+    assert_in('a/README.mdown', result)
+    assert_in('b/README.mdown', result)
+    assert_in('+New readme', result)
+    assert_in('-# Lint Review', result)
 
 
 def test_apply_cached():
