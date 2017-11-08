@@ -105,15 +105,43 @@ def test_diff():
 
 
 def test_apply_cached():
-    assert False
+    git.clone_or_update(
+        config,
+        'git://github.com/markstory/lint-review.git',
+        clone_path,
+        'master')
+    with open(clone_path + '/README.mdown', 'w') as f:
+        f.write('New readme')
+    # Get the initial diff.
+    diff = git.diff(clone_path)
+    git.apply_cached(clone_path, diff)
+
+    # Changes have been staged, diff result should be empty.
+    diff = git.diff(clone_path)
+    eq_(diff, '')
 
 
 def test_apply_cached__empty():
-    assert False
+    git.clone_or_update(
+        config,
+        'git://github.com/markstory/lint-review.git',
+        clone_path,
+        'master')
+    git.apply_cached(clone_path, '')
+
+    # No changes, no diff.
+    diff = git.diff(clone_path)
+    eq_(diff, '')
 
 
+@raises(IOError)
 def test_apply_cached__bad_patch():
-    assert False
+    git.clone_or_update(
+        config,
+        'git://github.com/markstory/lint-review.git',
+        clone_path,
+        'master')
+    git.apply_cached(clone_path, 'not a diff')
 
 
 def test_commit():

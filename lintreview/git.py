@@ -107,6 +107,8 @@ def apply_cached(path, patch):
     without modifying the working tree.
     """
     command = ['git', 'apply', '--cached']
+    if not len(patch):
+        return ''
     return_code, output = _process(command, input_val=patch, chdir=path)
     if return_code:
         log.error("Unable to stage changes: %s", output)
