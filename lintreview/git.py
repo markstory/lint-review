@@ -136,9 +136,20 @@ def commit(path, author, message):
     return output
 
 
-def push(path, branch, remote):
+def push(path, remote, branch):
     """Push a branch to the named remote"""
-    pass
+    command = ['git', 'push', remote, branch]
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        log.error("Unable to push changes to %s:%s. Error %s",
+                  remote,
+                  branch,
+                  output)
+        raise IOError(u"Unable to push changes to {}:{}. {}'".format(
+                      remote,
+                      branch,
+                      output))
+    return output
 
 
 def add_remote(path, name, url):
@@ -146,6 +157,16 @@ def add_remote(path, name, url):
     Generally used to add a push remote to a repo
     for fixer flows.
     """
+    command = ['git', 'remote', 'add', name, url]
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        log.error("Unable to add remote %s. Error %s",
+                  name,
+                  output)
+        raise IOError(u"Unable to add remote {}. {}'".format(
+                      name,
+                      output))
+    return output
 
 
 def destroy(path):

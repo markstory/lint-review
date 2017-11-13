@@ -174,15 +174,31 @@ def test_commit_and_status():
 
 
 @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
-def test_push():
-    assert False, 'not done'
-
-
-@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
-def test_push__fails():
-    assert False, 'not done'
-
-
-@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, teardown_repo)
 def test_add_remote():
-    assert False, 'not done'
+    output = git.add_remote(
+        clone_path,
+        'testing',
+        'git://github.com/markstory/lint-review.git')
+    eq_('', output)
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, teardown_repo)
+def test_add_remote__duplicate():
+    try:
+        git.add_remote(
+            clone_path,
+            'origin',
+            'git://github.com/markstory/lint-review.git')
+    except IOError as e:
+        assert_in('Unable to add remote origin', str(e))
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, teardown_repo)
+def test_push__fails():
+    try:
+        git.push(clone_path, 'origin', 'master')
+    except IOError as e:
+        assert_in('origin:master', str(e))
