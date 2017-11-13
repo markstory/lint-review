@@ -202,3 +202,12 @@ def test_push__fails():
         git.push(clone_path, 'origin', 'master')
     except IOError as e:
         assert_in('origin:master', str(e))
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, teardown_repo)
+def test_create_branch():
+    git.create_branch(clone_path, 'testing')
+    eq_(True, git.branch_exists(clone_path, 'master'))
+    eq_(True, git.branch_exists(clone_path, 'testing'))
+    eq_(False, git.branch_exists(clone_path, 'nope'))

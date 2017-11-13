@@ -149,6 +149,31 @@ def commit(path, author, message):
 
 
 @log_io_error
+def create_branch(path, name):
+    """Create & checkout a local branch based
+    on the currently checked out commit
+    """
+    command = ['git', 'checkout', '-b', name]
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        raise IOError(u"Unable to create branch {}:{}. {}'".format(
+                      name,
+                      output))
+
+
+@log_io_error
+def branch_exists(path, name):
+    """See if a branch exists"""
+    command = ['git', 'branch']
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        raise IOError(u"Unable to read branches {}'".format(output))
+    matching = [branch for branch in output.split('\n')
+                if branch.strip('* ') == name]
+    return len(matching) == 1
+
+
+@log_io_error
 def push(path, remote, branch):
     """Push a branch to the named remote"""
     command = ['git', 'push', remote, branch]
