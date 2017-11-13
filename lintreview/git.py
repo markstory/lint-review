@@ -3,9 +3,21 @@ import os
 import logging
 import shutil
 import subprocess
+from functools import wraps
 from six.moves.urllib.parse import urlparse, urlunparse
 
 log = logging.getLogger(__name__)
+
+
+def log_io_error(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except IOError as e:
+            log.error(str(e))
+            raise
+    return wrapper
 
 
 def get_repo_path(user, repo, number, settings):
@@ -36,24 +48,24 @@ def private_clone(config, url, path):
     clone(url, path)
 
 
+@log_io_error
 def clone(url, path):
     """Clone a repository from `url` into `path`
     """
     command = ['git', 'clone', url, path]
     return_code, _ = _process(command)
     if return_code:
-        log.error("Cloning '%s' repository failed", url)
         raise IOError(u"Unable to clone repository '{}'".format(url))
     return True
 
 
+@log_io_error
 def fetch(path, remote):
     """Run git fetch on a repository
     """
     command = ['git', 'fetch', remote]
     return_code, _ = _process(command, chdir=path)
     if return_code:
-        log.error("Updating '%s' failed.", path)
         raise IOError(u"Unable to fetch new changes '{}'".format(path))
     return True
 
@@ -76,17 +88,18 @@ def clone_or_update(config, url, path, head, private=False):
     checkout(path, head)
 
 
+@log_io_error
 def checkout(path, ref):
     """Check out `ref` in the repo located on `path`
     """
     command = ['git', 'checkout', ref]
     return_code, _ = _process(command, chdir=path)
     if return_code:
-        log.error("Checking out '%s' failed", ref)
-        raise IOError("Unable to checkout '%s'" % (ref, ))
+        raise IOError(u"Unable to checkout '{}'".format(ref))
     return True
 
 
+@log_io_error
 def diff(path):
     """Get a diff of the unstaged changes.
     See lintreview.diff.parse_diff if you need to create
@@ -95,11 +108,11 @@ def diff(path):
     command = ['git', 'diff', '--patience']
     return_code, output = _process(command, chdir=path)
     if return_code:
-        log.error("Unable to create diff: '%s'", output)
         raise IOError(u"Unable to create diff '{}'".format(output))
     return output
 
 
+@log_io_error
 def apply_cached(path, patch):
     """Apply a patch to the index.
 
@@ -111,40 +124,36 @@ def apply_cached(path, patch):
         return ''
     return_code, output = _process(command, input_val=patch, chdir=path)
     if return_code:
-        log.error("Unable to stage changes: %s", output)
         raise IOError(u"Unable to stage changes '{}'".format(output))
     return output
 
 
+@log_io_error
 def status(path):
     """Get the working status of path"""
     command = ['git', 'status', '-s']
     return_code, output = _process(command, chdir=path)
     if return_code:
-        log.error("Unable to get status: %s", output)
         raise IOError(u"Unable to get status '{}'".format(output))
     return output
 
 
+@log_io_error
 def commit(path, author, message):
     """Commit the staged changes in the repository"""
     command = ['git', 'commit', '--author', author, '-m', message]
     return_code, output = _process(command, chdir=path)
     if return_code:
-        log.error("Unable to commit changes: %s", output)
         raise IOError(u"Unable to commit changes '{}'".format(output))
     return output
 
 
+@log_io_error
 def push(path, remote, branch):
     """Push a branch to the named remote"""
     command = ['git', 'push', remote, branch]
     return_code, output = _process(command, chdir=path)
     if return_code:
-        log.error("Unable to push changes to %s:%s. Error %s",
-                  remote,
-                  branch,
-                  output)
         raise IOError(u"Unable to push changes to {}:{}. {}'".format(
                       remote,
                       branch,
@@ -152,6 +161,7 @@ def push(path, remote, branch):
     return output
 
 
+@log_io_error
 def add_remote(path, name, url):
     """Add a remote to the repo at `path`
     Generally used to add a push remote to a repo
@@ -160,15 +170,13 @@ def add_remote(path, name, url):
     command = ['git', 'remote', 'add', name, url]
     return_code, output = _process(command, chdir=path)
     if return_code:
-        log.error("Unable to add remote %s. Error %s",
-                  name,
-                  output)
         raise IOError(u"Unable to add remote {}. {}'".format(
                       name,
                       output))
     return output
 
 
+@log_io_error
 def destroy(path):
     """Blow up a repo and all its contents.
     """
