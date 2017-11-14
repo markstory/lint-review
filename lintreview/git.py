@@ -3,6 +3,7 @@ import os
 import logging
 import shutil
 import subprocess
+import six
 from functools import wraps
 from six.moves.urllib.parse import urlparse, urlunparse
 
@@ -239,7 +240,8 @@ def _process(command, input_val=None, chdir=False):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=False)
-
+    if isinstance(input_val, six.string_types):
+        input_val = input_val.encode()
     output, error = process.communicate(input=input_val)
     return_code = process.returncode
 
@@ -248,4 +250,4 @@ def _process(command, input_val=None, chdir=False):
     if return_code > 0:
         log.error('STDERR output: %s', error)
 
-    return return_code, output + error
+    return return_code, (output + error).decode('utf-8')
