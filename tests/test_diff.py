@@ -1,10 +1,47 @@
 from __future__ import absolute_import
 from . import load_fixture, create_pull_files
-from lintreview.diff import DiffCollection
-from lintreview.diff import Diff
+from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
-from nose.tools import eq_
+from nose.tools import eq_, raises, assert_in, assert_not_in
+
+
+@raises(ParseError)
+def test_parse_diff__no_input():
+    parse_diff('')
+
+
+def test_parse_diff__one_file():
+    data = load_fixture('diff/one_file.txt')
+    out = parse_diff(data)
+
+    assert isinstance(out, DiffCollection)
+    eq_(1, len(out))
+    eq_(['lintreview/diff.py'], out.get_files())
+
+    change = out.all_changes('lintreview/diff.py')
+    eq_(1, len(change))
+    eq_('lintreview/diff.py', change[0].filename)
+    eq_(None, change[0].commit, 'No commit as changes are just a diff')
+
+    # Make sure git diff headers are not in patch
+    assert_not_in('git --diff', change[0].patch)
+    assert_not_in('index', change[0].patch)
+    assert_not_in('--- a', change[0].patch)
+    assert_not_in('+++ b', change[0].patch)
+    assert_in('@@', change[0].patch)
+
+
+def test_parse_diff__multiple_files():
+    assert False, 'not done'
+
+
+def test_parse_diff__bad_input():
+    assert False, 'not done'
+
+
+def test_parse_diff__ignore_no_adds():
+    assert False, 'not done'
 
 
 class TestDiffCollection(TestCase):
@@ -147,7 +184,7 @@ class TestDiff(TestCase):
 
     def setUp(self):
         res = create_pull_files(self.fixture_json)
-        self.diff = Diff(res[0])
+        self.diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
     def test_properties(self):
         eq_("View/Helper/AssetCompressHelper.php", self.diff.filename)
@@ -164,19 +201,37 @@ class TestDiff(TestCase):
 
     def test_has_line_changed__not_find_deletes(self):
         res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0])
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         self.assertTrue(diff.has_line_changed(117))
         # No unchanged lines.
         self.assertFalse(diff.has_line_changed(118))
         self.assertTrue(diff.has_line_changed(119))
         # No deleted lines.
+        self.assertFalse(diff.has_line_changed(147))
         self.assertFalse(diff.has_line_changed(148))
 
     def test_has_line_changed__blocks_offset(self):
         res = create_pull_files(self.block_offset)
-        diff = Diff(res[0])
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         self.assertTrue(diff.has_line_changed(32))
         eq_(26, diff.line_position(23))
         eq_(40, diff.line_position(32))
+
+    def test_added_lines(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        adds = diff.added_lines()
+        eq_(2, len(adds), 'incorrect addition length')
+        eq_(set([117, 119]), adds, 'added line numbers are wrong')
+
+    def test_deleted_lines(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        dels = diff.deleted_lines()
+        eq_(3, len(dels), 'incorrect deleted length')
+        eq_(set([116, 118, 147]), dels,
+            'deleted line numbers are wrong')
