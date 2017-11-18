@@ -33,7 +33,22 @@ def test_parse_diff__one_file():
 
 
 def test_parse_diff__multiple_files():
-    assert False, 'not done'
+    data = load_fixture('diff/two_files.txt')
+    out = parse_diff(data)
+    eq_(2, len(out))
+    eq_(['lintreview/git.py', 'tests/test_git.py'], out.get_files())
+
+    for change in out:
+        assert change.filename, 'has a filename'
+        assert change.commit is None, 'No commit'
+        assert_not_in('git --diff', change.patch)
+        assert_not_in('index', change.patch)
+        assert_not_in('--- a', change.patch)
+        assert_not_in('+++ b', change.patch)
+        assert_in('@@', change.patch)
+    change = out.all_changes('tests/test_git.py')[0]
+    eq_(set([205, 206, 207, 208, 209, 210, 211, 212, 213]),
+        change.added_lines())
 
 
 def test_parse_diff__bad_input():
