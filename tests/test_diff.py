@@ -264,3 +264,6 @@ class TestDiff(TestCase):
         eq_(3, len(dels), 'incorrect deleted length')
         eq_(set([117, 119, 148]), dels,
             'deleted line numbers are wrong')
+
+        overlap = diff.added_lines().intersection(diff.deleted_lines())
+        eq_(set([117, 119]), overlap)
