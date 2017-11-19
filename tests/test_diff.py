@@ -12,17 +12,17 @@ def test_parse_diff__no_input():
     assert_in('No diff', str(ctx.exception))
 
 
-def test_parse_diff__one_file():
+def test_parse_diff__headers_removed():
     data = load_fixture('diff/one_file.txt')
     out = parse_diff(data)
 
     assert isinstance(out, DiffCollection)
     eq_(1, len(out))
-    eq_(['lintreview/diff.py'], out.get_files())
+    eq_(['tests/test_diff.py'], out.get_files())
 
-    change = out.all_changes('lintreview/diff.py')
+    change = out.all_changes('tests/test_diff.py')
     eq_(1, len(change))
-    eq_('lintreview/diff.py', change[0].filename)
+    eq_('tests/test_diff.py', change[0].filename)
     eq_(None, change[0].commit, 'No commit as changes are just a diff')
 
     # Make sure git diff headers are not in patch
@@ -31,6 +31,18 @@ def test_parse_diff__one_file():
     assert_not_in('--- a', change[0].patch)
     assert_not_in('+++ b', change[0].patch)
     assert_in('@@', change[0].patch)
+
+
+def test_parse_diff__changed_lines_parsed():
+    data = load_fixture('diff/one_file.txt')
+    out = parse_diff(data)
+
+    assert isinstance(out, DiffCollection)
+    change = out.all_changes('tests/test_diff.py')
+    eq_(1, len(change))
+
+    expected = set([6, 9, 10, 56])
+    eq_(expected, change[0].deleted_lines())
 
 
 def test_parse_diff__multiple_files():
@@ -250,5 +262,5 @@ class TestDiff(TestCase):
 
         dels = diff.deleted_lines()
         eq_(3, len(dels), 'incorrect deleted length')
-        eq_(set([116, 118, 147]), dels,
+        eq_(set([117, 119, 148]), dels,
             'deleted line numbers are wrong')

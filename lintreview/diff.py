@@ -218,7 +218,7 @@ class Diff(object):
             if not line.startswith('-'):
                 line_num += 1
             if line.startswith('-'):
-                deletions.append(line_num)
+                deletions.append(line_num + 1)
             if line.startswith('+'):
                 additions.append(line_num)
                 line_map[line_num] = i
