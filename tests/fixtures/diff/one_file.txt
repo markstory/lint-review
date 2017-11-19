@@ -1,0 +1,14 @@
+diff --git a/lintreview/diff.py b/lintreview/diff.py
+index 11ce912..1eff317 100644
+--- a/lintreview/diff.py
++++ b/lintreview/diff.py
+@@ -7,6 +7,14 @@ import logging
+ log = logging.getLogger(__name__)
+
+
++def parse_diff(text):
++    """Parse the output of `git diff` into
++    a DiffCollection and set of diff objects
++    """
++    if not text:
++        raise ParseError('No diff provided')

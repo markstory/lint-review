@@ -29,6 +29,10 @@ def parse_diff(text):
         if len(chunk) == 0:
             continue
         diffs.append(parse_file_diff(chunk))
+    if not diffs:
+        msg = u'Could not parse any diffs from provided diff text.'
+        raise ParseError(msg)
+
     return DiffCollection(diffs)
 
 
@@ -42,12 +46,20 @@ def parse_file_diff(chunk):
         if line.startswith('+++'):
             filename = line[6:]
             continue
+        if not filename:
+            continue
         patch.append(line)
+
+    if not patch:
+        msg = u'Could not parse diff for {}'.format(filename)
+        raise ParseError(msg)
+
     return DiffAdapter(
         patch='\n'.join(patch),
         filename=filename,
         sha=None,
         status='modified',
+        # Placeholder values to quack like github data.
         additions=1,
         deletions=1,
         changes=1)

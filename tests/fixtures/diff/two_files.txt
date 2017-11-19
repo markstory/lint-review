@@ -1,0 +1,53 @@
+diff --git a/lintreview/git.py b/lintreview/git.py
+index b2b5fa7..d054976 100644
+--- a/lintreview/git.py
++++ b/lintreview/git.py
+@@ -148,6 +148,31 @@ def commit(path, author, message):
+     return output
+ 
+ 
++@log_io_error
++def create_branch(path, name):
++    """Create & checkout a local branch based
++    on the currently checked out commit
++    """
++    command = ['git', 'checkout', '-b', name]
++    return_code, output = _process(command, chdir=path)
++    if return_code:
++        raise IOError(u"Unable to create branch {}:{}. {}'".format(
++                      name,
++                      output))
++
++
++@log_io_error
++def branch_exists(path, name):
++    """See if a branch exists"""
++    command = ['git', 'branch']
++    return_code, output = _process(command, chdir=path)
++    if return_code:
++        raise IOError(u"Unable to read branches {}'".format(output))
++    matching = [branch for branch in output.split('\n')
++                if branch.strip('* ') == name]
++    return len(matching) == 1
++
++
+ @log_io_error
+ def push(path, remote, branch):
+     """Push a branch to the named remote"""
+diff --git a/tests/test_git.py b/tests/test_git.py
+index 5f8e33a..d99e938 100644
+--- a/tests/test_git.py
++++ b/tests/test_git.py
+@@ -202,3 +202,12 @@ def test_push__fails():
+         git.push(clone_path, 'origin', 'master')
+     except IOError as e:
+         assert_in('origin:master', str(e))
++
++
++@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
++@with_setup(setup_repo, teardown_repo)
++def test_create_branch():
++    git.create_branch(clone_path, 'testing')
++    eq_(True, git.branch_exists(clone_path, 'master'))
++    eq_(True, git.branch_exists(clone_path, 'testing'))
++    eq_(False, git.branch_exists(clone_path, 'nope'))
