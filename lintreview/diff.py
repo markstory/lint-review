@@ -186,7 +186,6 @@ class Diff(object):
     def __init__(self, patch, filename, sha):
         self._filename = filename
         self._sha = sha
-        self._patch = patch
         self._parse_hunks(patch)
 
     def _parse_hunks(self, patch):
