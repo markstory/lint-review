@@ -267,3 +267,22 @@ class TestDiff(TestCase):
 
         overlap = diff.added_lines().intersection(diff.deleted_lines())
         eq_(set([117, 119]), overlap)
+
+    def test_hunk_parsing(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        hunks = diff.hunks
+        eq_(2, len(hunks))
+
+        expected = set([117, 119])
+        eq_(expected, hunks[0].added_lines())
+        eq_(expected, hunks[0].deleted_lines())
+        eq_(expected, diff.added_lines())
+
+        eq_(set([]), hunks[1].added_lines())
+        eq_(set([148]), hunks[1].deleted_lines())
+        eq_(set([117, 119, 148]), diff.deleted_lines())
+
+        eq_(diff.line_position(117), hunks[0].line_position(117))
+        eq_(diff.line_position(119), hunks[0].line_position(119))

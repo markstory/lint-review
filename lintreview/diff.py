@@ -16,6 +16,7 @@ DiffAdapter = namedtuple(
 )
 
 
+
 def parse_diff(text):
     """Parse the output of `git diff` into
     a DiffCollection and set of diff objects
@@ -186,45 +187,39 @@ class Diff(object):
         self._filename = filename
         self._sha = sha
         self._patch = patch
-        self._parse_diff(patch)
+        self._parse_hunks(patch)
 
-    def _parse_diff(self, patch):
-        """
-        Parses the diff data and stores the list of
-        line numbers that were added in this diff.
+    def _parse_hunks(self, patch):
+        """Parse the diff data into a collection of hunks.
 
         We track the 'new' version of the diff, and not the old
         version as we care about the new state of the file when
         applying linters. When applying fixers if an added/modified
         line intersects with the previous change we also care.
         """
-        hunk_pattern = re.compile('\@\@ \-\d+,\d+ \+(\d+),\d+ \@\@')
+        hunks = []
+        hunk_separator = r'(^\@\@ \-\d+,\d+ \+\d+,\d+ \@\@.*?\n)'
+        blocks = re.split(hunk_separator, patch, 0, re.M)
 
-        line_num = 1
+        if len(blocks) and blocks[0] == '':
+            del blocks[0]
 
-        additions = []
-        deletions = []
+        offset = 0
+        header = body = False
+        for block in blocks:
+            if block.startswith('@@'):
+                header = block
+            else:
+                body = block
+            if header and body:
+                hunks.append(Hunk(header, body, offset))
+                offset += 1 + body.count('\n')
+                header = body = False
+        self._hunks = tuple(hunks)
 
-        line_map = {}
-        lines = patch.split("\n")
-        for i, line in enumerate(lines):
-            # Set the line_num at the start of the hunk
-            match = hunk_pattern.match(line)
-            if match:
-                line_num = int(match.group(1)) - 1
-                continue
-            # Increment lines through additions and
-            # unchanged lines.
-            if not line.startswith('-'):
-                line_num += 1
-            if line.startswith('-'):
-                deletions.append(line_num + 1)
-            if line.startswith('+'):
-                additions.append(line_num)
-                line_map[line_num] = i
-        self._additions = set(additions)
-        self._deletions = set(deletions)
-        self._indexes = line_map
+    @property
+    def hunks(self):
+        return self._hunks
 
     @property
     def filename(self):
@@ -232,6 +227,7 @@ class Diff(object):
 
     @property
     def patch(self):
+        # TODO build the patch data from the hunks
         return self._patch
 
     @property
@@ -243,21 +239,103 @@ class Diff(object):
         Find out if a particular line changed in this commit's
         diffs
         """
-        return line in self._additions
+        for hunk in self._hunks:
+            if hunk.has_line_changed(line):
+                return True
+        return False
 
     def added_lines(self):
         """Get the line numbers of lines that were added"""
-        return self._additions
+        adds = set()
+        for hunk in self._hunks:
+            adds = adds.union(hunk.added_lines())
+        return adds
 
     def deleted_lines(self):
         """Get the line numbers of lines that were deleted"""
-        return self._deletions
+        dels = set()
+        for hunk in self._hunks:
+            dels = dels.union(hunk.deleted_lines())
+        return dels
 
-    def line_position(self, line_number):
+    def line_position(self, lineno):
         """
         Find the line number position given a line number in the new
         file content.
         """
-        if line_number in self._indexes:
-            return self._indexes[line_number]
+        for hunk in self._hunks:
+            position = hunk.line_position(lineno)
+            if position:
+                return position
+        return None
+
+
+class Hunk(object):
+    """Provide an interface for interacting with diff hunks
+
+    Each Diff is made of multiple hunks of various sizes.
+    Each Hunk begins with the ``@@`` delimiter.
+    """
+    start_line_pattern = re.compile('\@\@ \-\d+,\d+ \+(\d+),\d+ \@\@')
+
+    def __init__(self, header, patch, offset):
+        self._header = header
+        self._patch = patch
+        self._parse(patch, offset)
+
+    def _parse(self, patch, offset):
+        match = self.start_line_pattern.match(self._header)
+        if not match:
+            msg = u'Could not parse hunk header {}'.format(self._header)
+            raise ParseError(msg)
+
+        # Account for the header
+        offset += 1
+
+        # Compensate for the increment done in the line loop
+        line_num = int(match.group(1)) - 1
+
+        additions = []
+        deletions = []
+        line_map = {}
+        for line in self._patch.split('\n'):
+            # Increment lines through additions and
+            # unchanged lines.
+            if not line.startswith('-'):
+                line_num += 1
+            if line.startswith('-'):
+                deletions.append(line_num + 1)
+            if line.startswith('+'):
+                additions.append(line_num)
+                line_map[line_num] = offset
+            offset += 1
+        self._additions = set(additions)
+        self._deletions = set(deletions)
+        self._positions = line_map
+
+    def contains_line(self, lineno):
+        """Check if a hunk contains the provided lineno
+        in either its deletions or additions"""
+        return lineno in self._additions or lineno in self._deletions
+
+    def has_line_changed(self, lineno):
+        """Check if a line was added"""
+        return lineno in self._additions
+
+    def added_lines(self):
+        """Get the lines added in this hunk"""
+        return self._additions
+
+    def deleted_lines(self):
+        """Get the lines added in this hunk"""
+        return self._deletions
+
+    def line_position(self, line_number):
+        """Find the line position given a line number in the
+        new file content.
+
+        The line position is used to post github comments.
+        """
+        if line_number in self._positions:
+            return self._positions[line_number]
         return None
