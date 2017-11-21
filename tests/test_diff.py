@@ -220,6 +220,12 @@ class TestDiff(TestCase):
         expected = '7f73f381ad3284eeb5a23d3a451b5752c957054c'
         eq_(expected, self.diff.commit)
 
+    def test_patch_property(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        eq_(res[0].patch, diff.patch)
+
     def test_has_line_changed__no_line(self):
         self.assertFalse(self.diff.has_line_changed(None))
 

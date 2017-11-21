@@ -227,8 +227,7 @@ class Diff(object):
 
     @property
     def patch(self):
-        # TODO build the patch data from the hunks
-        return self._patch
+        return "".join([hunk.patch for hunk in self._hunks])
 
     @property
     def commit(self):
@@ -312,6 +311,10 @@ class Hunk(object):
         self._additions = set(additions)
         self._deletions = set(deletions)
         self._positions = line_map
+
+    @property
+    def patch(self):
+        return "".join([self._header, self._patch])
 
     def contains_line(self, lineno):
         """Check if a hunk contains the provided lineno
