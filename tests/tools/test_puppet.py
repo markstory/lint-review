@@ -56,3 +56,14 @@ class TestPuppet(TestCase):
 
         freshly_laundered_filename = abspath(self.fixtures[0])
         eq_([], self.problems.all(freshly_laundered_filename))
+
+    @needs_puppet
+    def test_process_files__with_config(self):
+        config = {
+            'config': 'tests/fixtures/puppet/puppetlint.rc'
+        }
+        tool = Puppet(self.problems, config)
+        tool.process_files([self.fixtures[1]])
+
+        eq_([], self.problems.all(abspath(self.fixtures[1])),
+            'Config file should cause no errors on has_errors.pp')
