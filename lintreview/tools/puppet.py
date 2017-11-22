@@ -34,6 +34,8 @@ class Puppet(Tool):
             command = ['bundle', 'exec', 'puppet-lint']
         command += ['--log-format',
                     '%{path}:%{linenumber}:%{KIND}:%{message}']
+        if self.options.get('config'):
+            command += ['-c', self.apply_base(self.options['config'])]
         command += files
         output = run_command(
             command,
