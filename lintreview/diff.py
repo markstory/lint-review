@@ -341,7 +341,7 @@ class Hunk(object):
         return self._additions
 
     def deleted_lines(self):
-        """Get the lines added in this hunk"""
+        """Get the lines deleted in this hunk"""
         return self._deletions
 
     def line_position(self, line_number):

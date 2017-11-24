@@ -300,4 +300,5 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = original.intersection(updated)
-        eq_(3, len(intersecting))
+        eq_(4, len(updated.hunks))
+        eq_(4, len(intersecting))
