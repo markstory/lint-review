@@ -41,7 +41,7 @@ def test_parse_diff__changed_lines_parsed():
     change = out.all_changes('tests/test_diff.py')
     eq_(1, len(change))
 
-    expected = set([6, 9, 10, 56])
+    expected = set([6, 9, 10, 55])
     eq_(expected, change[0].deleted_lines())
 
 
@@ -294,6 +294,8 @@ class TestDiff(TestCase):
         eq_(diff.line_position(119), hunks[0].line_position(119))
 
     def test_intersection_simple(self):
+        # These two diffs should fully overlap as
+        # the updated diff hunks touch the original hunks.
         original = load_fixture('diff/intersecting_hunks_original.txt')
         updated = load_fixture('diff/intersecting_hunks_updated.txt')
 

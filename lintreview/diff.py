@@ -276,7 +276,9 @@ class Diff(object):
         other_added = other.added_lines()
         for hunk in self._hunks:
             added = hunk.added_lines()
-            if other_added.intersection(added):
+            deleted = hunk.deleted_lines()
+            if other_added.intersection(added) or \
+                    other_added.intersection(deleted):
                 overlapping.append(hunk)
         return overlapping
 
@@ -287,7 +289,7 @@ class Hunk(object):
     Each Diff is made of multiple hunks of various sizes.
     Each Hunk begins with the ``@@`` delimiter.
     """
-    start_line_pattern = re.compile('\@\@ \-\d+,\d+ \+(\d+),\d+ \@\@')
+    start_line_pattern = re.compile('\@\@ \-(\d+),\d+ \+(\d+),\d+ \@\@')
 
     def __init__(self, header, patch, offset):
         self._header = header
@@ -304,7 +306,8 @@ class Hunk(object):
         offset += 1
 
         # Compensate for the increment done in the line loop
-        line_num = int(match.group(1)) - 1
+        line_num = int(match.group(2)) - 1
+        old_line_num = int(match.group(1)) - 1
 
         additions = []
         deletions = []
@@ -314,8 +317,9 @@ class Hunk(object):
             # unchanged lines.
             if not line.startswith('-'):
                 line_num += 1
+                old_line_num += 1
             if line.startswith('-'):
-                deletions.append(line_num + 1)
+                deletions.append(old_line_num + 1)
             if line.startswith('+'):
                 additions.append(line_num)
                 line_map[line_num] = offset
