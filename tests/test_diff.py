@@ -292,3 +292,12 @@ class TestDiff(TestCase):
 
         eq_(diff.line_position(117), hunks[0].line_position(117))
         eq_(diff.line_position(119), hunks[0].line_position(119))
+
+    def test_intersection_simple(self):
+        original = load_fixture('diff/intersecting_hunks_original.txt')
+        updated = load_fixture('diff/intersecting_hunks_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = original.intersection(updated)
+        eq_(3, len(intersecting))

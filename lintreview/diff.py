@@ -121,6 +121,9 @@ class DiffCollection(object):
     def __len__(self):
         return len(self._diffs)
 
+    def __getitem__(self, index):
+        return self._diffs[index]
+
     def __iter__(self):
         i = 0
         length = len(self._diffs)
@@ -265,6 +268,16 @@ class Diff(object):
             if position:
                 return position
         return None
+
+    def intersection(self, other):
+        """Get the intersecting or overlapping hunks from `other`
+        by comparing the hunks in this diff"""
+        overlapping = []
+        self_added = self.added_lines()
+        for hunk in other.hunks:
+            if self_added.intersection(hunk.added_lines()):
+                overlapping.append(hunk)
+        return overlapping
 
 
 class Hunk(object):
