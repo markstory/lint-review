@@ -16,7 +16,6 @@ DiffAdapter = namedtuple(
 )
 
 
-
 def parse_diff(text):
     """Parse the output of `git diff` into
     a DiffCollection and set of diff objects
