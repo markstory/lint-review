@@ -1,0 +1,72 @@
+diff --git a/model.php b/model.php
+index cc46697..ba1ef25 100644
+--- a/model.php
++++ b/model.php
+@@ -1,9 +1,65 @@
+ <?php
+-
++/**
++ * Taken from CakePHP
++ *
++ * Licensed under The MIT License
++ * For full copyright and license information, please see the LICENSE.txt
++ * Redistributions of files must retain the above copyright notice.
++ *
++ * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
++ */
+ function debug($var, $showHtml = null, $showFrom = true) {
+-    if (!Configure::read('debug'))
++    if (!Configure::read('debug')
++    )
+     {
+         return $var;
+     }
++
++        $location = [];
++    if ($showFrom)
++    {
++            $trace = Debugger::trace(['start' => 1, 'depth' => 2, 'format' => 'array']);
++            $location = [
++        'line' => $trace[0]['line'],
++        'file' => $trace[0]['file']
++            ];
++            }
++
++        Debugger::printVar($var, $location, $showHtml);
++
+     return $var;
+ }
++
++
++function stackTrace(array $options = [])
++{
++    if (!Configure::read('debug')) {
++        return;
++    }
++
++    $options += ['start' => 0];
++    $options['start']++;
++    echo Debugger::trace($options);
++}
++
++
++function dd($var, $showHtml = NULL)   {
++    if (!Configure::read('debug')
++    ) {
++        return;
++    }
++
++    $trace = Debugger::trace(
++        ['start' => 1,
++        'depth' => 2, 'format' => 'array'
++    
++    
++    ]);
++    $location = [
++        'line' => $trace[0]['line'],
++        'file' => $trace[0]['file']
++    ];
++
++    Debugger::printVar($var, $location, $showHtml);
++    die(1);
++    }
