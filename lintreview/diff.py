@@ -76,7 +76,7 @@ class DiffCollection(object):
     """
 
     def __init__(self, contents):
-        self._changes = []
+        self._diffs = []
         for change in contents:
             self._add(change)
 
@@ -96,7 +96,7 @@ class DiffCollection(object):
         change = Diff(content.patch,
                       content.filename,
                       content.sha)
-        self._changes.append(change)
+        self._diffs.append(change)
 
     def _has_additions(self, content):
         """
@@ -119,13 +119,13 @@ class DiffCollection(object):
         return '+' in content.patch
 
     def __len__(self):
-        return len(self._changes)
+        return len(self._diffs)
 
     def __iter__(self):
         i = 0
-        length = len(self._changes)
+        length = len(self._diffs)
         while i < length:
-            yield self._changes[i]
+            yield self._diffs[i]
             i += 1
 
     def get_files(self, append_base='', ignore_patterns=None):
@@ -135,7 +135,7 @@ class DiffCollection(object):
         if append_base:
             append_base = os.path.realpath(append_base) + os.sep
         return [append_base + change.filename
-                for change in self._changes
+                for change in self._diffs
                 if not self._ignore_file(change.filename, ignore_patterns)]
 
     def _ignore_file(self, filename, ignore_patterns):
@@ -150,7 +150,7 @@ class DiffCollection(object):
         Get all the changes for a given file independant
         of which commit changed them.
         """
-        return [change for change in self._changes
+        return [change for change in self._diffs
                 if change.filename == filename]
 
     def has_line_changed(self, filename, line):
