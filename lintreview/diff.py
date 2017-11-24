@@ -270,12 +270,13 @@ class Diff(object):
         return None
 
     def intersection(self, other):
-        """Get the intersecting or overlapping hunks from `other`
-        by comparing the hunks in this diff"""
+        """Get the intersecting or overlapping hunks that
+        intersect with hunks in `other`"""
         overlapping = []
-        self_added = self.added_lines()
-        for hunk in other.hunks:
-            if self_added.intersection(hunk.added_lines()):
+        other_added = other.added_lines()
+        for hunk in self._hunks:
+            added = hunk.added_lines()
+            if other_added.intersection(added):
                 overlapping.append(hunk)
         return overlapping
 
