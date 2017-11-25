@@ -1,0 +1,15 @@
+diff --git a/no_overlap.php b/no_overlap.php
+index 2d67827..7b74811 100644
+--- a/no_overlap.php
++++ b/no_overlap.php
+@@ -3,3 +3,10 @@ function output($format, $data)
+ {
+     htmlspecialchars(vsprintf($format, $data));
+ }
++
++function eat($human, $food)
++{
++    $human->prepare($food);
++    $human->cook($food);
++    $human->eat($food);
++}

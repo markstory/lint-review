@@ -293,7 +293,7 @@ class TestDiff(TestCase):
         eq_(diff.line_position(117), hunks[0].line_position(117))
         eq_(diff.line_position(119), hunks[0].line_position(119))
 
-    def test_intersection_simple(self):
+    def test_intersection__simple(self):
         # These two diffs should fully overlap as
         # the updated diff hunks touch the original hunks.
         original = load_fixture('diff/intersecting_hunks_original.txt')
@@ -304,3 +304,15 @@ class TestDiff(TestCase):
         intersecting = updated.intersection(original)
         eq_(4, len(updated.hunks))
         eq_(4, len(intersecting))
+
+    def test_intersection__no_intersect(self):
+        # These two diffs should fully overlap as
+        # the updated diff hunks touch the original hunks.
+        original = load_fixture('diff/no_intersect_original.txt')
+        updated = load_fixture('diff/no_intersect_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(1, len(updated.hunks))
+        eq_(0, len(intersecting))
