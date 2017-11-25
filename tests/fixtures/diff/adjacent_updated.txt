@@ -1,0 +1,26 @@
+diff --git a/adjacent.py b/adjacent.py
+index 7b01ae7..aa67956 100644
+--- a/adjacent.py
++++ b/adjacent.py
+@@ -12,7 +12,10 @@ def test_parse_diff__headers_removed():
+     eq_(None, change[0].commit, 'No commit as changes are just a diff')
+
+     # Make sure git diff headers are not in patch
+-    assert_not_in('git --diff', change[0].patch)
++    # that would be bad
++    assert_not_in(
++        'git --diff',
++        change[0].patch)
+     assert_not_in('index', change[0].patch)
+     assert_not_in('--- a', change[0].patch)
+     assert_not_in('+++ b', change[0].patch)
+@@ -42,7 +45,9 @@ def test_parse_diff__changed_lines_parsed():
+     data = load_fixture('diff/one_file.txt')
+     out = parse_diff(data)
+
+-    assert isinstance(out, DiffCollection)
++    assert isinstance(
++        out,
++        DiffCollection)
+     change = out.all_changes('tests/test_diff.py')
+     eq_(1, len(change))

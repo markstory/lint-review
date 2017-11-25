@@ -306,8 +306,7 @@ class TestDiff(TestCase):
         eq_(4, len(intersecting))
 
     def test_intersection__no_intersect(self):
-        # These two diffs should fully overlap as
-        # the updated diff hunks touch the original hunks.
+        # Diffs have no overlap as updated appends lines.
         original = load_fixture('diff/no_intersect_original.txt')
         updated = load_fixture('diff/no_intersect_updated.txt')
 
@@ -316,3 +315,38 @@ class TestDiff(TestCase):
         intersecting = updated.intersection(original)
         eq_(1, len(updated.hunks))
         eq_(0, len(intersecting))
+
+    def test_intersection__inset_hunks(self):
+        # Updated contains two hunks inside original's changes
+        original = load_fixture('diff/inset_hunks_original.txt')
+        updated = load_fixture('diff/inset_hunks_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(updated.hunks))
+        eq_(2, len(intersecting))
+
+    def test_intersection__staggered_hunks(self):
+        # Updated contains a big hunk in the middle that pushes
+        # the original section down. The bottom hunk of updated
+        # should overlap
+        original = load_fixture('diff/staggered_original.txt')
+        updated = load_fixture('diff/staggered_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(updated.hunks))
+        eq_(2, len(intersecting))
+
+    def test_intersection__adjacent(self):
+        # Updated contains a two hunks that partially overlap
+        # both should be included.
+        original = load_fixture('diff/adjacent_original.txt')
+        updated = load_fixture('diff/adjacent_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(intersecting))
