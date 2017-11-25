@@ -38,8 +38,8 @@ before_script:
   - npm install
 
   # Use ruby2
-  - rvm install 2.0.0
-  - rvm use 2.0.0
+  - rvm install 2.3.0
+  - rvm use 2.3.0
   - bundle install --path ./bundle
 
   # Sample config file
