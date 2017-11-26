@@ -4,6 +4,7 @@ from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
 from nose.tools import eq_, assert_raises, assert_in, assert_not_in
+import re
 
 
 def test_parse_diff__no_input():
@@ -225,6 +226,20 @@ class TestDiff(TestCase):
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         eq_(res[0].patch, diff.patch)
+
+    def test_as_diff__one_hunk(self):
+        data = load_fixture('diff/no_intersect_updated.txt')
+        diff = parse_diff(data)[0]
+        # Method results don't include index line.
+        data = re.sub(r'^index.*?\n', '', data, 0, re.M)
+        eq_(data, diff.as_diff())
+
+    def test_as_diff__multi_hunk(self):
+        data = load_fixture('diff/inset_hunks_updated.txt')
+        diff = parse_diff(data)[0]
+        # Method results don't include index line.
+        data = re.sub(r'^index.*?\n', '', data, 0, re.M)
+        eq_(data, diff.as_diff())
 
     def test_has_line_changed__no_line(self):
         self.assertFalse(self.diff.has_line_changed(None))

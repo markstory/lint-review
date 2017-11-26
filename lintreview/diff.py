@@ -239,6 +239,20 @@ class Diff(object):
     def commit(self):
         return self._sha
 
+    def as_diff(self):
+        """Convert this Diff object into a string
+        that can be used with git apply. The generated diff
+        will be lacking the `index` line as this object doesn't track
+        enough state to preserve that data because it is missing in some
+        of the sources we interact with.
+        """
+        header = u"""diff --git a/{filename} b/{filename}
+--- a/{filename}
++++ b/{filename}
+"""
+        header = header.format(filename=self.filename)
+        return header + self.patch
+
     def has_line_changed(self, line):
         """
         Find out if a particular line changed in this commit's
