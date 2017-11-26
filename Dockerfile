@@ -1,10 +1,10 @@
-FROM python:2.7
+FROM ubuntu:16.04
 ENV REFRESHED_AT 2016-05-21
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1655A0AB68576280 && \
-    echo 'deb http://deb.nodesource.com/node_6.x jessie main' > /etc/apt/sources.list.d/nodesource-jessie.list
+RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 
 RUN apt-get update && apt-get install -y \
+    python2.7 python-pip && \
     php-pear \
     ruby \
     nodejs \
