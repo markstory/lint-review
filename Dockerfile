@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     php-pear \
     ruby \
     nodejs \
-    ruby1.9.1 \
+    ruby \
     ruby-dev \
     shellcheck \
     build-essential && \
