@@ -1,16 +1,22 @@
 FROM ubuntu:16.04
 ENV REFRESHED_AT 2016-05-21
 
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_6.x | bash -
 
-RUN apt-get update && apt-get install -y \
-    python2.7 python-pip && \
+RUN apt-get install -y \
+    python2.7 python-pip \
+    php \
     php-pear \
     ruby \
     nodejs \
     ruby \
     ruby-dev \
     shellcheck \
+    libxml2 \
+    libffi-dev \
+    zlib1g-dev \
     build-essential && \
     apt-get -y autoremove && \
     apt-get -y clean  && \
