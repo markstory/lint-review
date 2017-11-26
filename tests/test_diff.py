@@ -293,6 +293,14 @@ class TestDiff(TestCase):
         eq_(diff.line_position(117), hunks[0].line_position(117))
         eq_(diff.line_position(119), hunks[0].line_position(119))
 
+    def test_construct_with_hunks(self):
+        res = create_pull_files(self.two_files_json)[0]
+        proto = Diff(res.patch, res.filename, res.sha)
+
+        diff = Diff(None, res.filename, res.sha, hunks=proto.hunks)
+        eq_(len(diff.hunks), len(proto.hunks))
+        eq_(diff.hunks[0].patch, proto.hunks[0].patch)
+
     def test_intersection__simple(self):
         # These two diffs should fully overlap as
         # the updated diff hunks touch the original hunks.

@@ -185,10 +185,15 @@ class Diff(object):
     Github's API returns one Diff per file
     in a pull request.
     """
-    def __init__(self, patch, filename, sha):
+    def __init__(self, patch, filename, sha, hunks=None):
         self._filename = filename
         self._sha = sha
-        self._parse_hunks(patch)
+        if hunks:
+            for hunk in hunks:
+                assert isinstance(hunk, Hunk), 'Hunk objects are required.'
+            self._hunks = tuple(hunks)
+        else:
+            self._parse_hunks(patch)
 
     def _parse_hunks(self, patch):
         """Parse the diff data into a collection of hunks.
