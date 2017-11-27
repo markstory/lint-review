@@ -2,28 +2,35 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.3.0)
+    backports (3.10.3)
+    cucumber-core (3.0.0)
+      backports (>= 3.8.0)
+      cucumber-tag_expressions (>= 1.0.1)
+      gherkin (>= 4.1.3)
+    cucumber-tag_expressions (1.0.1)
     erubis (2.7.0)
-    foodcritic (4.0.0)
+    ffi-yajl (2.3.1)
+      libyajl2 (~> 1.2)
+    foodcritic (12.2.1)
+      cucumber-core (>= 1.3)
       erubis
-      gherkin (~> 2.11)
-      nokogiri (~> 1.5)
+      ffi-yajl (~> 2.0)
+      nokogiri (>= 1.5, < 2.0)
       rake
       rufus-lru (~> 1.0)
       treetop (~> 1.4)
-      yajl-ruby (~> 1.1)
-    gherkin (2.12.2)
-      multi_json (~> 1.3)
-    mini_portile (0.6.2)
-    multi_json (1.11.0)
-    nokogiri (1.6.6.2)
-      mini_portile (~> 0.6.0)
+    gherkin (5.0.0)
+    libyajl2 (1.2.0)
+    mini_portile2 (2.3.0)
+    nokogiri (1.8.1)
+      mini_portile2 (~> 2.3.0)
     parser (2.3.3.1)
       ast (~> 2.2)
     polyglot (0.3.5)
     powerpack (0.1.1)
     puppet-lint (1.1.0)
     rainbow (2.1.0)
-    rake (10.4.2)
+    rake (12.3.0)
     rubocop (0.46.0)
       parser (>= 2.3.1.1, < 3.0)
       powerpack (~> 0.1)
@@ -31,11 +38,10 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.8.1)
-    rufus-lru (1.0.5)
-    treetop (1.6.2)
+    rufus-lru (1.1.0)
+    treetop (1.6.8)
       polyglot (~> 0.3)
     unicode-display_width (1.1.1)
-    yajl-ruby (1.2.1)
 
 PLATFORMS
   ruby
@@ -46,4 +52,4 @@ DEPENDENCIES
   rubocop
 
 BUNDLED WITH
-   1.13.1
+   1.15.4

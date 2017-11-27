@@ -4,6 +4,7 @@ from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
 from nose.tools import eq_, assert_raises, assert_in, assert_not_in
+import re
 
 
 def test_parse_diff__no_input():
@@ -41,7 +42,7 @@ def test_parse_diff__changed_lines_parsed():
     change = out.all_changes('tests/test_diff.py')
     eq_(1, len(change))
 
-    expected = set([6, 9, 10, 56])
+    expected = set([6, 9, 10, 55])
     eq_(expected, change[0].deleted_lines())
 
 
@@ -220,6 +221,26 @@ class TestDiff(TestCase):
         expected = '7f73f381ad3284eeb5a23d3a451b5752c957054c'
         eq_(expected, self.diff.commit)
 
+    def test_patch_property(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        eq_(res[0].patch, diff.patch)
+
+    def test_as_diff__one_hunk(self):
+        data = load_fixture('diff/no_intersect_updated.txt')
+        diff = parse_diff(data)[0]
+        # Method results don't include index line.
+        data = re.sub(r'^index.*?\n', '', data, 0, re.M)
+        eq_(data, diff.as_diff())
+
+    def test_as_diff__multi_hunk(self):
+        data = load_fixture('diff/inset_hunks_updated.txt')
+        diff = parse_diff(data)[0]
+        # Method results don't include index line.
+        data = re.sub(r'^index.*?\n', '', data, 0, re.M)
+        eq_(data, diff.as_diff())
+
     def test_has_line_changed__no_line(self):
         self.assertFalse(self.diff.has_line_changed(None))
 
@@ -267,3 +288,88 @@ class TestDiff(TestCase):
 
         overlap = diff.added_lines().intersection(diff.deleted_lines())
         eq_(set([117, 119]), overlap)
+
+    def test_hunk_parsing(self):
+        res = create_pull_files(self.two_files_json)
+        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+        hunks = diff.hunks
+        eq_(2, len(hunks))
+
+        expected = set([117, 119])
+        eq_(expected, hunks[0].added_lines())
+        eq_(expected, hunks[0].deleted_lines())
+        eq_(expected, diff.added_lines())
+
+        eq_(set([]), hunks[1].added_lines())
+        eq_(set([148]), hunks[1].deleted_lines())
+        eq_(set([117, 119, 148]), diff.deleted_lines())
+
+        eq_(diff.line_position(117), hunks[0].line_position(117))
+        eq_(diff.line_position(119), hunks[0].line_position(119))
+
+    def test_construct_with_hunks(self):
+        res = create_pull_files(self.two_files_json)[0]
+        proto = Diff(res.patch, res.filename, res.sha)
+
+        diff = Diff(None, res.filename, res.sha, hunks=proto.hunks)
+        eq_(len(diff.hunks), len(proto.hunks))
+        eq_(diff.hunks[0].patch, proto.hunks[0].patch)
+
+    def test_intersection__simple(self):
+        # These two diffs should fully overlap as
+        # the updated diff hunks touch the original hunks.
+        original = load_fixture('diff/intersecting_hunks_original.txt')
+        updated = load_fixture('diff/intersecting_hunks_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(4, len(updated.hunks))
+        eq_(4, len(intersecting))
+
+    def test_intersection__no_intersect(self):
+        # Diffs have no overlap as updated appends lines.
+        original = load_fixture('diff/no_intersect_original.txt')
+        updated = load_fixture('diff/no_intersect_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(1, len(updated.hunks))
+        eq_(0, len(intersecting))
+
+    def test_intersection__inset_hunks(self):
+        # Updated contains two hunks inside original's changes
+        original = load_fixture('diff/inset_hunks_original.txt')
+        updated = load_fixture('diff/inset_hunks_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(updated.hunks))
+        eq_(2, len(intersecting))
+
+    def test_intersection__staggered_hunks(self):
+        # Updated contains a big hunk in the middle that pushes
+        # the original section down. The bottom hunk of updated
+        # should overlap
+        original = load_fixture('diff/staggered_original.txt')
+        updated = load_fixture('diff/staggered_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(updated.hunks))
+        eq_(2, len(intersecting))
+
+    def test_intersection__adjacent(self):
+        # Updated contains a two hunks that partially overlap
+        # both should be included.
+        original = load_fixture('diff/adjacent_original.txt')
+        updated = load_fixture('diff/adjacent_updated.txt')
+
+        original = parse_diff(original)[0]
+        updated = parse_diff(updated)[0]
+        intersecting = updated.intersection(original)
+        eq_(2, len(intersecting))

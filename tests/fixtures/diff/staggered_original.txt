@@ -1,0 +1,27 @@
+diff --git a/staggered.py b/staggered.py
+index 20b3deb..bc29b9a 100644
+--- a/staggered.py
++++ b/staggered.py
+@@ -11,10 +11,21 @@ def test_parse_diff__headers_removed():
+     eq_('tests/test_diff.py', change[0].filename)
+     eq_(None, change[0].commit, 'No commit as changes are just a diff')
+
++    # Make sure git diff headers are not in patch
++    assert_not_in('git --diff', change[0].patch)
++    assert_not_in('index', change[0].patch)
++    assert_not_in('--- a', change[0].patch)
++    assert_not_in('+++ b', change[0].patch)
++    assert_in('@@', change[0].patch)
++
+
+ def test_parse_diff__changed_lines_parsed():
+     data = load_fixture('diff/one_file.txt')
+     out = parse_diff(data)
+
++    assert isinstance(out, DiffCollection)
++    change = out.all_changes('tests/test_diff.py')
++    eq_(1, len(change))
++
++    expected = set([6, 9, 10, 55])
+     eq_(expected, change[0].deleted_lines())
+     ok_(expected, change[0].added_lines())

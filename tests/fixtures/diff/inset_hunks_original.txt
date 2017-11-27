@@ -1,0 +1,33 @@
+diff --git a/two_inset_hunks.py b/two_inset_hunks.py
+new file mode 100644
+index 0000000..63f722f
+--- /dev/null
++++ b/two_inset_hunks.py
+@@ -0,0 +1,27 @@
++def test_has_line_changed__blocks_offset(self):
++    res = create_pull_files(self.block_offset)
++    diff = Diff(res[0].patch, res[0].filename, res[0].sha)
++
++    self.assertTrue(diff.has_line_changed(32))
++    eq_(26, diff.line_position(23))
++    eq_(40, diff.line_position(32))
++
++def test_added_lines(self):
++    res = create_pull_files(self.two_files_json)
++    diff = Diff(res[0].patch, res[0].filename, res[0].sha)
++
++    adds = diff.added_lines()
++    eq_(2, len(adds), 'incorrect addition length')
++    eq_(set([117, 119]), adds, 'added line numbers are wrong')
++
++def test_deleted_lines(self):
++    res = create_pull_files(self.two_files_json)
++    diff = Diff(res[0].patch, res[0].filename, res[0].sha)
++
++    dels = diff.deleted_lines()
++    eq_(3, len(dels), 'incorrect deleted length')
++    eq_(set([117, 119, 148]), dels,
++        'deleted line numbers are wrong')
++
++    overlap = diff.added_lines().intersection(diff.deleted_lines())
++    eq_(set([117, 119]), overlap)
