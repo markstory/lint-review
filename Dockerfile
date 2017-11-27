@@ -9,6 +9,7 @@ RUN apt-get install -y \
     python2.7 python-pip \
     php \
     php-pear \
+    git \
     ruby \
     nodejs \
     ruby \
