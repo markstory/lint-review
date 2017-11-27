@@ -2,10 +2,8 @@ from __future__ import absolute_import
 import os
 import logging
 
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
-from lintreview.utils import bundle_exists
+from lintreview.tools import Tool, run_command
+from lintreview.utils import in_path, bundle_exists
 
 log = logging.getLogger(__name__)
 
@@ -24,10 +22,11 @@ class Foodcritic(Tool):
         command = ['foodcritic']
         if bundle_exists('foodcritic'):
             command = ['bundle', 'exec', 'foodcritic']
+        command.append('--no-progress')
         # if no directory is set, assume the root
         path = os.path.join(self.base_path, self.options.get('path', ''))
         command += [path]
-        output = run_command(command, split=True, ignore_error=False)
+        output = run_command(command, split=True, ignore_error=True)
 
         if output[0] == '\n':
             log.debug('No foodcritic errors found.')
