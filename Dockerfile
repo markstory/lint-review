@@ -15,6 +15,7 @@ RUN apt-get install -y \
     ruby \
     ruby-dev \
     shellcheck \
+    luarocks \
     libxml2 \
     libffi-dev \
     zlib1g-dev \
@@ -25,6 +26,7 @@ RUN apt-get install -y \
 
 WORKDIR /code
 RUN pear install PHP_CodeSniffer
+RUN luarocks install luacheck
 RUN gem install bundler
 
 ADD package.json /code/

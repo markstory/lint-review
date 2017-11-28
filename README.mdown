@@ -432,3 +432,14 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 *Options*
 
 * `min_confidence` Set the confidence level of a problem before it is reported.
+
+### Lua
+
+#### Luacheck
+
+Uses [luacheck](https://github.com/mpeterv/luacheck) to lint Lua code.
+
+*Options*
+
+* None currently supported
+
