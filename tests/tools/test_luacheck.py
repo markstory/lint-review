@@ -71,3 +71,14 @@ class Testluacheck(TestCase):
             '(W213) unused loop variable \'a\'\n'
             '(W113) accessing undefined variable \'sometable\'')
         eq_(expected, problems[1])
+
+    @needs_luacheck
+    def test_process_files_with_config(self):
+        config = {
+            'config': 'tests/fixtures/luacheck/luacheckrc'
+        }
+        tool = Luacheck(self.problems, config)
+        tool.process_files(self.fixtures)
+
+        problems = self.problems.all(self.fixtures[2])
+        eq_(1, len(problems), 'Config file should lower error count.')

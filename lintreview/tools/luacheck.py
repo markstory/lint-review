@@ -45,5 +45,7 @@ class Luacheck(Tool):
         command = ['luacheck']
         command += ['--formatter=plain']
         command += ['--codes']
+        if self.options.get('config'):
+            command += ['--config', self.apply_base(self.options['config'])]
         command += files
         return command
