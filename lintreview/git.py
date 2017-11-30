@@ -203,6 +203,17 @@ def add_remote(path, name, url):
 
 
 @log_io_error
+def reset_hard(path):
+    """Do a hard reset on git repo
+    """
+    command = ['git', 'reset', '--hard']
+    return_code, _ = _process(command, chdir=path)
+    if return_code:
+        raise IOError(u"Unable to reset repository '{}'".format(path))
+    return True
+
+
+@log_io_error
 def destroy(path):
     """Blow up a repo and all its contents.
     """
