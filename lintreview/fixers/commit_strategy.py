@@ -13,14 +13,14 @@ class CommitStrategy(object):
     def __init__(self, context):
         self.path = context['repo_path']
         self.author = context['author']
-        self.remote_url = context['remote_url']
         self.remote_branch = context['remote_branch']
 
     def execute(self, diffs):
-        git.add_remote(self.path, 'upstream', self.remote_url)
         git.create_branch(self.path, 'stylefixes')
         git.checkout(self.path, 'stylefixes')
         for diff in diffs:
-            git.apply_cached(self.path, diff.patch)
+            git.apply_cached(self.path, diff.as_diff())
         git.commit(self.path, self.author, 'Fixing style errors.')
-        git.push(self.path, 'upstream', 'stylefixes:' + self.remote_branch)
+        git.push(self.path, 'origin', 'stylefixes:' + self.remote_branch)
+        # TODO raise an error that is converted into
+        # a review error when pushing fails due to access/auth issues.
