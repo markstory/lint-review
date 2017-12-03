@@ -41,7 +41,7 @@ def process_pull_request(user, repo_name, number, lintrc):
         target_branch = pull_request.target_branch
 
         if target_branch in review_config.ignore_branches():
-            log.info('Pull request into ignored branch %s, skipping processing.' %
+            log.info('Pull request into ignored branch %s, skipping review.',
                      target_branch)
             return
 
