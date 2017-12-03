@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import lintreview.github as github
 import lintreview.git as git
 import logging
 

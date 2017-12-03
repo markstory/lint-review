@@ -100,6 +100,11 @@ class GithubPullRequest(object):
         data = self.pull.as_dict()
         return data['base']['ref']
 
+    @property
+    def head_branch(self):
+        data = self.pull.as_dict()
+        return data['head']['ref']
+
     def commits(self):
         return self.pull.commits()
 
