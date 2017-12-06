@@ -115,6 +115,15 @@ def test_diff():
 
 
 @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, teardown_repo)
+def test_diff__files_list():
+    with open(clone_path + '/README.mdown', 'w') as f:
+        f.write('New readme')
+    result = git.diff(clone_path, ['LICENSE'])
+    eq_('', result)
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
 @raises(IOError)
 def test_diff__non_git_path():
     git.diff(settings['WORKSPACE'] + '/../../')
