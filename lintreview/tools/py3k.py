@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import os
 import logging
 import functools
-from lintreview.tools import Tool, run_command, process_quickfix
+from lintreview.tools import Tool, run_command, process_quickfix, stringify
 from lintreview.utils import in_path
 
 log = logging.getLogger(__name__)
@@ -57,7 +57,13 @@ class Py3k(Tool):
             '--msg-template',
             msg_template,
         ]
+        accepted_options = ('ignore')
+        if 'ignore' in self.options:
+            command.extend(['-d', stringify(self.options['ignore'])])
+
         for option in self.options:
+            if option in accepted_options:
+                continue
             log.warning('Set non-existent py3k option: %s', option)
         command.extend(files)
         return command
