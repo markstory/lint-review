@@ -17,14 +17,18 @@ class StrategyError(RuntimeError):
 def run_fixers(tools, base_path, files):
     """Run fixer mode of each tool on each file
     Return a DiffCollection based on the parsed diff
-    from the fixer changes."""
+    from the fixer changes.
+
+    If no diff is generated an empty list will be returned"""
     log.info('Running fixers on %d files', len(files))
 
     for tool in tools:
         if tool.has_fixer():
             tool.execute_fixer(files)
-    diff = git.diff(base_path)
-    return parse_diff(diff)
+    diff = git.diff(base_path, files)
+    if diff:
+        return parse_diff(diff)
+    return []
 
 
 def find_intersecting_diffs(original, fixed):
@@ -47,7 +51,6 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
     changes and delegate to the requested workflow strategy
     to apply and commit the changes.
     """
-    changes_to_apply = find_intersecting_diffs(original_diffs, fixer_diff)
     if 'strategy' not in strategy_context:
         raise StrategyError('Missing `strategy` name')
     strategy = strategy_context['strategy']
@@ -63,6 +66,7 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
             e)
         raise StrategyError(msg)
 
+    changes_to_apply = find_intersecting_diffs(original_diffs, fixer_diff)
     try:
         workflow.execute(changes_to_apply)
     except:

@@ -4,10 +4,13 @@ import json
 from github3.pulls import PullFile
 from github3.repos.commit import RepoCommit
 
+fixtures_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'fixtures')
+
 
 def load_fixture(filename):
-    path = os.path.dirname(os.path.abspath(__file__))
-    filename = os.path.join(path, 'fixtures', filename)
+    filename = os.path.join(fixtures_path, filename)
     fh = open(filename, 'r')
     return fh.read()
 

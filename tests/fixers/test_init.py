@@ -1,13 +1,21 @@
 from __future__ import absolute_import
 import lintreview.fixers as fixers
 import lintreview.git as git
+from lintreview.diff import parse_diff, Diff
 from mock import Mock
-from nose.tools import raises
+from nose.tools import assert_raises, assert_in, eq_
+from .. import load_fixture, fixtures_path
 
 
 def test_run_fixers():
     # Test that fixers are executed if fixer is enabled
-    assert False, 'not done'
+    mock_tool = Mock()
+    mock_tool.has_fixer.return_value = False
+    files = ['diff/adjacent_original.txt']
+
+    out = fixers.run_fixers([mock_tool], fixtures_path, files)
+    eq_(0, mock_tool.execute_fixer.call_count)
+    eq_(0, len(out))
 
 
 def test_run_fixers__no_fixer_mode():
@@ -21,21 +29,46 @@ def test_run_fixers__integration():
 
 
 def test_find_intersecting_diffs():
-    # Test intersection of two diff collections.
-    assert False, 'not done'
+    original = load_fixture('diff/intersecting_hunks_original.txt')
+    updated = load_fixture('diff/intersecting_hunks_updated.txt')
+    original = parse_diff(original)
+    updated = parse_diff(updated)
+    result = fixers.find_intersecting_diffs(original, updated)
+
+    eq_(1, len(result))
+    assert isinstance(result[0], Diff)
+    eq_('model.php', result[0].filename)
+    eq_('00000', result[0].commit)
 
 
-@raises(fixers.StrategyError)
+def test_find_intersecting_diffs__no_intersect():
+    original = load_fixture('diff/intersecting_hunks_original.txt')
+    updated = load_fixture('diff/adjacent_original.txt')
+    original = parse_diff(original)
+    updated = parse_diff(updated)
+    result = fixers.find_intersecting_diffs(original, updated)
+
+    eq_(0, len(result))
+
+
 def test_apply_fixer_diff__missing_strategy_key():
-    assert False, 'not done'
+    original = Mock()
+    changed = Mock()
+    context = {}
+    with assert_raises(fixers.StrategyError) as err:
+        fixers.apply_fixer_diff(original, changed, context)
+    assert_in('Missing', str(err.exception))
 
 
-@raises(fixers.StrategyError)
 def test_apply_fixer_diff__invalid_strategy():
-    assert False, 'not done'
+    original = Mock()
+    changed = Mock()
+    context = {'strategy': 'bad stategy'}
+    with assert_raises(fixers.StrategyError) as err:
+        fixers.apply_fixer_diff(original, changed, context)
+    assert_in('Unknown', str(err.exception))
 
 
-@raises(fixers.StrategyError)
 def test_apply_fixer_diff__missing_strategy_context():
     assert False, 'not done'
 
