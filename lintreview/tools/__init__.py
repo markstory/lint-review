@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import logging
 import os
 import subprocess
+import collections
 from xml.etree import ElementTree
 from six.moves import map
 import six
@@ -256,3 +257,16 @@ def process_checkstyle(problems, xml, filename_converter):
             else:
                 lines = [int(line)]
             list(map(lambda x: problems.add(filename, x, message), lines))
+
+
+def stringify(value):
+    """
+    PHPCS uses a , separated strings in many places
+    because of how it handles options we have to do bad things
+    with string concatenation.
+    """
+    if isinstance(value, six.string_types):
+        return value
+    if isinstance(value, collections.Iterable):
+        return ','.join(value)
+    return str(value)

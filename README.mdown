@@ -223,7 +223,7 @@ issues.
 
 *Options* 
 
-* No options are supported.
+* `ignore` A comma separated list of error codes you wish to ignore.
 
 ### PHP
 

@@ -48,6 +48,20 @@ class TestPy3k(TestCase):
         ], problems)
 
     @needs_py2
+    def test_process_files__config_option_str(self):
+        tool = Py3k(self.problems, {'ignore': 'W1638,E1601'})
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        eq_(0, len(problems))
+
+    @needs_py2
+    def test_process_files__config_option_list(self):
+        tool = Py3k(self.problems, {'ignore': ['W1638', 'E1601']})
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        eq_(0, len(problems))
+
+    @needs_py2
     def test_process_files_two_files(self):
         self.tool.process_files([self.fixtures.no_errors,
                                  self.fixtures.has_errors])

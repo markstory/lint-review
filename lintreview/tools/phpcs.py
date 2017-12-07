@@ -2,26 +2,16 @@ from __future__ import absolute_import
 import logging
 import os
 import functools
-import collections
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_checkstyle, run_command
+from lintreview.tools import (
+    Tool,
+    process_checkstyle,
+    run_command,
+    stringify
+)
 from lintreview.utils import composer_exists, in_path
-import six
 
 log = logging.getLogger(__name__)
-
-
-def stringify(value):
-    """
-    PHPCS uses a , separated strings in many places
-    because of how it handles options we have to do bad things
-    with string concatenation.
-    """
-    if isinstance(value, six.string_types):
-        return value
-    if isinstance(value, collections.Iterable):
-        return ','.join(value)
-    return str(value)
 
 
 class Phpcs(Tool):
