@@ -1,0 +1,26 @@
+diff --git a/two_inset_hunks.py b/two_inset_hunks.py
+index 63f722f..2f53fa3 100644
+--- a/two_inset_hunks.py
++++ b/two_inset_hunks.py
+@@ -1,6 +1,6 @@
+ def test_has_line_changed__blocks_offset(self):
+-    res = create_pull_files(self.block_offset)
+-    diff = Diff(res[0].patch, res[0].filename, res[0].sha)
++    result = create_pull_files(self.block_offset)
++    diff = Diff(result[0].patch, result[0].filename, result[0].sha)
+
+     self.assertTrue(diff.has_line_changed(32))
+     eq_(26, diff.line_position(23))
+@@ -10,9 +10,9 @@ def test_added_lines(self):
+     res = create_pull_files(self.two_files_json)
+     diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+
+-    adds = diff.added_lines()
+-    eq_(2, len(adds), 'incorrect addition length')
+-    eq_(set([117, 119]), adds, 'added line numbers are wrong')
++    added = diff.added_lines()
++    eq_(2, len(added), 'incorrect addition length')
++    eq_(set([117, 119]), added, 'added line numbers are wrong')
+
+ def test_deleted_lines(self):
+     res = create_pull_files(self.two_files_json)

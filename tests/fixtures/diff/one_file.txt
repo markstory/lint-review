@@ -1,0 +1,39 @@
+diff --git a/tests/test_diff.py b/tests/test_diff.py
+index 1f65acd..caab2e0 100644
+--- a/tests/test_diff.py
++++ b/tests/test_diff.py
+@@ -3,12 +3,13 @@ from . import load_fixture, create_pull_files
+ from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
+ from unittest import TestCase
+ from mock import patch
+-from nose.tools import eq_, raises, assert_in, assert_not_in
++from nose.tools import eq_, assert_raises, assert_in, assert_not_in
+
+
+-@raises(ParseError)
+ def test_parse_diff__no_input():
+-    parse_diff('')
++    with assert_raises(ParseError) as ctx:
++        parse_diff('')
++    assert_in('No diff', str(ctx.exception))
+
+
+ def test_parse_diff__one_file():
+@@ -52,11 +53,12 @@ def test_parse_diff__multiple_files():
+
+
+ def test_parse_diff__bad_input():
+-    assert False, 'not done'
+-
+-
+-def test_parse_diff__ignore_no_adds():
+-    assert False, 'not done'
++    data = """
++    some dumb stuff
++    """
++    with assert_raises(ParseError) as ctx:
++        parse_diff(data)
++    assert_in('Could not parse', str(ctx.exception))
+
+
+ class TestDiffCollection(TestCase):

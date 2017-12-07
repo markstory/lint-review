@@ -1,16 +1,24 @@
-FROM python:2.7
+FROM ubuntu:16.04
 ENV REFRESHED_AT 2016-05-21
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1655A0AB68576280 && \
-    echo 'deb http://deb.nodesource.com/node_6.x jessie main' > /etc/apt/sources.list.d/nodesource-jessie.list
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_6.x | bash -
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
+    python2.7 python-pip \
+    php \
     php-pear \
+    git \
     ruby \
     nodejs \
-    ruby1.9.1 \
+    ruby \
     ruby-dev \
     shellcheck \
+    luarocks \
+    libxml2 \
+    libffi-dev \
+    zlib1g-dev \
     build-essential && \
     apt-get -y autoremove && \
     apt-get -y clean  && \
@@ -18,6 +26,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /code
 RUN pear install PHP_CodeSniffer
+RUN luarocks install luacheck
 RUN gem install bundler
 
 ADD package.json /code/

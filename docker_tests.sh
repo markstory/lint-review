@@ -1,6 +1,6 @@
 #!/bin/bash
-git config --global user.name 'lintreview'
-git config --global user.email 'lintbot@localhost'
+git config --global user.name dockerbot
+git config --global user.email dockerbot@example.com
 
 pip install -r requirements-dev.txt
 pip install codecov coverage

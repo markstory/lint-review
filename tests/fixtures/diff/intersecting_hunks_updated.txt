@@ -1,0 +1,58 @@
+diff --git a/model.php b/model.php
+index ba1ef25..f46d9c4 100644
+--- a/model.php
++++ b/model.php
+@@ -8,22 +8,21 @@
+  *
+  * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+  */
+-function debug($var, $showHtml = null, $showFrom = true) {
++function debug($var, $showHtml = null, $showFrom = true)
++{
+     if (!Configure::read('debug')
+-    )
+-    {
++    ) {
+         return $var;
+     }
+ 
+         $location = [];
+-    if ($showFrom)
+-    {
++    if ($showFrom) {
+             $trace = Debugger::trace(['start' => 1, 'depth' => 2, 'format' => 'array']);
+             $location = [
+         'line' => $trace[0]['line'],
+         'file' => $trace[0]['file']
+             ];
+-            }
++    }
+ 
+         Debugger::printVar($var, $location, $showHtml);
+ 
+@@ -43,7 +42,8 @@ function stackTrace(array $options = [])
+ }
+ 
+ 
+-function dd($var, $showHtml = NULL)   {
++function dd($var, $showHtml = null)
++{
+     if (!Configure::read('debug')
+     ) {
+         return;
+@@ -54,7 +54,8 @@ function dd($var, $showHtml = NULL)   {
+         'depth' => 2, 'format' => 'array'
+     
+     
+-    ]);
++        ]
++    );
+     $location = [
+         'line' => $trace[0]['line'],
+         'file' => $trace[0]['file']
+@@ -62,4 +63,4 @@ function dd($var, $showHtml = NULL)   {
+ 
+     Debugger::printVar($var, $location, $showHtml);
+     die(1);
+-    }
++}

@@ -1,8 +1,12 @@
 name             'noerror'
 maintainer       'Foodcritic'
 maintainer_email 'email@address'
-license          'All rights reserved'
+license          'MIT'
 description      'No errors for tests'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '0.0.1'
 depends          'apache2'
+source_url       'http://example.com'
+issues_url       'http://example.com'
+chef_version     '1.0'
+supports         'ubuntu'

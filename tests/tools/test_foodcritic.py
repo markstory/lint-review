@@ -2,12 +2,12 @@ from __future__ import absolute_import
 from lintreview.review import Comment
 from lintreview.review import Problems
 from lintreview.tools.foodcritic import Foodcritic
-from lintreview.utils import in_path
+from lintreview.utils import in_path, bundle_exists
 from unittest import TestCase, skipIf
 from nose.tools import eq_
 
 
-critic_missing = not(in_path('foodcritic'))
+critic_missing = not(in_path('foodcritic') or bundle_exists('foodcritic'))
 
 
 class TestFoodcritic(TestCase):
