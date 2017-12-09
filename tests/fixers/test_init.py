@@ -1,13 +1,32 @@
 from __future__ import absolute_import
+import os
 import lintreview.fixers as fixers
-import lintreview.git as git
 from lintreview.diff import parse_diff, Diff
-from mock import Mock
-from nose.tools import assert_raises, assert_in, eq_
+from lintreview.tools.phpcs import Phpcs
+from mock import Mock, patch
+from nose.tools import (
+    assert_raises,
+    assert_in,
+    eq_,
+    with_setup
+)
 from .. import load_fixture, fixtures_path
+from ..test_git import setup_repo, teardown_repo, clone_path
 
 
 def test_run_fixers():
+    # Test that fixers are executed if fixer is enabled
+    mock_tool = Mock()
+    mock_tool.has_fixer.return_value = True
+    files = ['diff/adjacent_original.txt']
+
+    out = fixers.run_fixers([mock_tool], fixtures_path, files)
+    eq_(1, mock_tool.execute_fixer.call_count)
+    eq_(0, len(out))
+
+
+def test_run_fixers__no_fixer_mode():
+    # Test that fixers are skipped when has_fixer fails
     # Test that fixers are executed if fixer is enabled
     mock_tool = Mock()
     mock_tool.has_fixer.return_value = False
@@ -18,14 +37,16 @@ def test_run_fixers():
     eq_(0, len(out))
 
 
-def test_run_fixers__no_fixer_mode():
-    # Test that fixers are skipped when has_fixer fails
-    assert False, 'not done'
-
-
+@with_setup(setup_repo, teardown_repo)
 def test_run_fixers__integration():
     # Test fixer integration with phpcs.
-    assert False, 'not done'
+    tail_path = 'tests/fixtures/phpcs/has_errors.php'
+    file_path = os.path.abspath(clone_path + '/' + tail_path)
+    phpcs = Phpcs(Mock(), {'fixer': True})
+
+    diff = fixers.run_fixers([phpcs], clone_path, [file_path])
+    eq_(1, len(diff))
+    eq_(tail_path, diff[0].filename)
 
 
 def test_find_intersecting_diffs():
@@ -70,12 +91,45 @@ def test_apply_fixer_diff__invalid_strategy():
 
 
 def test_apply_fixer_diff__missing_strategy_context():
-    assert False, 'not done'
+    original = Mock()
+    changed = Mock()
+    context = {'strategy': 'commit'}
+    with assert_raises(fixers.StrategyError) as err:
+        fixers.apply_fixer_diff(original, changed, context)
+    assert_in('Could not create strategy', str(err.exception))
 
 
 def test_apply_fixer_diff__strategy_execution_fails():
-    assert False, 'not done'
+    strategy_factory = Mock()
+    strategy = Mock()
+    strategy.execute.side_effect = RuntimeError
+    strategy_factory.return_value = strategy
+
+    fixers.add_strategy('mock', strategy_factory)
+
+    original = load_fixture('diff/intersecting_hunks_original.txt')
+    updated = load_fixture('diff/intersecting_hunks_updated.txt')
+    original = parse_diff(original)
+    updated = parse_diff(updated)
+
+    context = {'strategy': 'mock'}
+    out = fixers.apply_fixer_diff(original, updated, context)
+    eq_(1, strategy.execute.call_count)
+    eq_(out, None, 'No output and no exception')
 
 
 def test_apply_fixer_diff__calls_execute():
-    assert False, 'not done'
+    strategy_factory = Mock()
+    strategy = Mock()
+    strategy_factory.return_value = strategy
+
+    fixers.add_strategy('mock', strategy_factory)
+
+    original = load_fixture('diff/intersecting_hunks_original.txt')
+    updated = load_fixture('diff/intersecting_hunks_updated.txt')
+    original = parse_diff(original)
+    updated = parse_diff(updated)
+
+    context = {'strategy': 'mock'}
+    fixers.apply_fixer_diff(original, updated, context)
+    eq_(1, strategy.execute.call_count)
