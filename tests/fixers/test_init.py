@@ -3,6 +3,8 @@ import os
 import lintreview.fixers as fixers
 from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
+from lintreview.utils import composer_exists
+from unittest import skipIf
 from mock import Mock
 from nose.tools import (
     assert_raises,
@@ -12,6 +14,9 @@ from nose.tools import (
 )
 from .. import load_fixture, fixtures_path
 from ..test_git import setup_repo, teardown_repo, clone_path
+
+
+phpcs_missing = not(composer_exists('phpcs'))
 
 
 def test_run_fixers():
@@ -37,6 +42,7 @@ def test_run_fixers__no_fixer_mode():
     eq_(0, len(out))
 
 
+@skipIf(phpcs_missing, 'Needs phpcs')
 @with_setup(setup_repo, teardown_repo)
 def test_run_fixers__integration():
     # Test fixer integration with phpcs.
