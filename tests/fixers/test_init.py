@@ -3,7 +3,7 @@ import os
 import lintreview.fixers as fixers
 from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
-from mock import Mock, patch
+from mock import Mock
 from nose.tools import (
     assert_raises,
     assert_in,
