@@ -72,5 +72,5 @@ class TestRubocop(TestCase):
             linty_filename,
             4,
             4,
-            'C: Style/TrailingWhitespace: Trailing whitespace detected.')
+            'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
         eq_(expected, problems[1])

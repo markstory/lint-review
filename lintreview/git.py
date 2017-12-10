@@ -101,12 +101,14 @@ def checkout(path, ref):
 
 
 @log_io_error
-def diff(path):
+def diff(path, files=None):
     """Get a diff of the unstaged changes.
     See lintreview.diff.parse_diff if you need to create
     more useful objects from the diff.
     """
     command = ['git', 'diff', '--patience']
+    if files:
+        command.extend(files)
     return_code, output = _process(command, chdir=path)
     if return_code:
         raise IOError(u"Unable to create diff '{}'".format(output))
@@ -200,6 +202,17 @@ def add_remote(path, name, url):
                       name,
                       output))
     return output
+
+
+@log_io_error
+def reset_hard(path):
+    """Do a hard reset on git repo
+    """
+    command = ['git', 'reset', '--hard']
+    return_code, _ = _process(command, chdir=path)
+    if return_code:
+        raise IOError(u"Unable to reset repository '{}'".format(path))
+    return True
 
 
 @log_io_error
