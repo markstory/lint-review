@@ -80,9 +80,9 @@ into docker using:
 
     docker-compose up -d broker worker web
 
-Edit docker-composer.yml and customise your configuration by setting keys under environment for the
-web and worker processes. For the most basic installation you'll need to set at least `GITHUB_USERNAME`
-and `GITHUB_PASSWORD` (or `GITHUB_OAUTH_TOKEN`), and `LINTREVIEW_SERVER_NAME`.
+Edit docker-composer.yml and customise your configuration by setting keys under
+environment for the web and worker processes. For the most basic installation
+you'll need to set `GITHUB_OAUTH_TOKEN`, and `LINTREVIEW_SERVER_NAME`.
 
 ## Lint Review Configuration
 

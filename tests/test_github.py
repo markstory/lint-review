@@ -11,13 +11,13 @@ import json
 
 config = {
     'GITHUB_URL': 'https://api.github.com/',
-    'GITHUB_USER': 'octocat',
-    'GITHUB_PASSWORD': 'secrets'
 }
 
 
 def test_get_client():
-    gh = github.get_client(config)
+    conf = config.copy()
+    conf['GITHUB_OAUTH_TOKEN'] = 'an-oauth-token'
+    gh = github.get_client(conf)
     assert isinstance(gh, GitHub)
 
 

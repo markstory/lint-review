@@ -71,15 +71,6 @@ WORKSPACE = env('LINTREVIEW_WORKSPACE', '/tmp/workspace')
 # Use GITHUB_URL when working with github:e
 GITHUB_URL = env('GITHUB_URL', 'https://api.github.com/')
 
-# Github username + password
-# This is the user that lintreview will use
-# to fetch repositories and leave review comments.
-# Set the GITHUB_PASSWORD environment variable first.
-# example: $ export GITHUB_PASSWORD=mygithubpassword
-GITHUB_USER = env('GITHUB_USERNAME', 'octocat')
-if os.environ.get('GITHUB_PASSWORD') is not None:
-    GITHUB_PASSWORD = env('GITHUB_PASSWORD')
-
 # You can also use an Oauth token for github, if you do
 # uncomment this line. Using a token will take precedence
 # over a username and password.
