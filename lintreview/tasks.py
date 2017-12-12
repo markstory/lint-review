@@ -36,7 +36,6 @@ def process_pull_request(user, repo_name, number, lintrc):
 
         head_repo = pull_request.clone_url
 
-        private_repo = pull_request.is_private
         pr_head = pull_request.head
         target_branch = pull_request.target_branch
 
@@ -51,8 +50,7 @@ def process_pull_request(user, repo_name, number, lintrc):
 
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo_name, number, config)
-        git.clone_or_update(config, head_repo, target_path, pr_head,
-                            private_repo)
+        git.clone_or_update(config, head_repo, target_path, pr_head)
 
         processor = Processor(repo, pull_request,
                               target_path, config)
@@ -62,6 +60,9 @@ def process_pull_request(user, repo_name, number, lintrc):
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo, number))
+
+        git.destroy(target_path)
+        log.info('Cleaned up pull request %s/%s/%s', user, repo, number)
     except BaseException as e:
         log.exception(e)
 
@@ -69,11 +70,6 @@ def process_pull_request(user, repo_name, number, lintrc):
 @celery.task(ignore_result=True)
 def cleanup_pull_request(user, repo, number):
     """
-    Cleans up a pull request once its been closed.
+    No-op for backwards compat.
     """
-    log.info("Cleaning up pull request %s/%s/%s", user, repo, number)
-    path = git.get_repo_path(user, repo, number, config)
-    try:
-        git.destroy(path)
-    except:
-        log.warning("Cannot cleanup '%s' path does not exist.", path)
+    log.info("Doing nothing cleanup happens after review now.")

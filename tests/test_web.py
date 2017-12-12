@@ -47,7 +47,7 @@ class WebTest(TestCase):
         res = self.app.get('/review/start')
         eq_(405, res.status_code)
 
-    def test_start_request_json_fail(self):
+    def test_start_request__json_fail(self):
         data = {'herp': 'derp'}
         data = json.dumps(data)
         res = self.app.post('/review/start',
@@ -55,13 +55,17 @@ class WebTest(TestCase):
         eq_(403, res.status_code)
 
     @patch('lintreview.web.process_pull_request')
-    def test_start_request_unknown_action(self, task):
-        data = json.dumps(test_data)
-        res = self.app.post('/review/start',
-                            content_type='application/json', data=data)
-        eq_(204, res.status_code)
-        eq_('', res.data.decode('utf-8'))
-        assert not(task.called)
+    def test_start_request__ignore_unknown_action(self, task):
+        cases = ('closed', 'labeled', 'assigned')
+        for action in cases:
+            payload = test_data.copy()
+            payload['action'] = action
+            data = json.dumps(payload)
+            res = self.app.post('/review/start',
+                                content_type='application/json', data=data)
+            eq_(204, res.status_code)
+            eq_('', res.data.decode('utf-8'))
+            assert not(task.called)
 
     @patch('lintreview.web.get_lintrc')
     @patch('lintreview.web.process_pull_request')
@@ -72,18 +76,6 @@ class WebTest(TestCase):
         self.app.post('/review/start',
                       content_type='application/json', data=data)
         assert not(task.called), 'No task should have been queued'
-
-    @patch('lintreview.web.cleanup_pull_request')
-    def test_start_review_closing_request(self, task):
-        close = test_data.copy()
-        close['action'] = 'closed'
-        data = json.dumps(close)
-
-        res = self.app.post('/review/start',
-                            content_type='application/json', data=data)
-        assert task.delay.called, 'Cleanup task should be scheduled'
-        eq_(204, res.status_code)
-        eq_('', res.data.decode('utf-8'))
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -108,8 +100,8 @@ linters = pep8"""
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
     @patch('lintreview.web.process_pull_request')
-    def test_start_review_schedule_job__on_reopend(self, task, lintrc,
-                                                   get_repo):
+    def test_start_review_schedule_job__on_reopened(self, task, lintrc,
+                                                    get_repo):
         get_repo.return_value = Mock()
         reopened = test_data.copy()
         reopened['action'] = 'reopened'
