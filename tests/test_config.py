@@ -40,7 +40,7 @@ derp=derplily
 
 def test_load_config():
     res = load_config()
-    assert res['GITHUB_OAUTH_TOKEN'].endswith, 'Exists and is stringy'
+    assert res['GITHUB_URL'].endswith, 'Exists and is stringy'
 
 
 def test_get_lintrc_defaults():
