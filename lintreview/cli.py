@@ -38,10 +38,9 @@ def process_hook(func, args):
     Generic helper for processing hook commands.
     """
     credentials = None
-    if args.login_user and args.login_pass:
+    if args.login_user:
         credentials = {
-            'GITHUB_USER': args.login_user,
-            'GITHUB_PASSWORD': args.login_pass
+            'GITHUB_OAUTH_TOKEN': args.login_user,
         }
 
     with app.app_context():
@@ -102,15 +101,10 @@ def create_parser():
     remove.add_argument(
         '-u', '--user',
         dest='login_user',
-        help="The user that has admin rights to the repo you "
-             "are removing hooks from. Useful when the "
+        help="The OAuth token of the user that has admin rights to the repo "
+             "you are removing hooks from. Useful when the "
              "user in settings is not the administrator of "
              "your repositories.")
-    remove.add_argument(
-        '-p',
-        '--password',
-        dest='login_pass',
-        help="The password of the admin user.")
     remove.add_argument('user',
                         help="The user or organization the repo is under.")
     remove.add_argument('repo',
@@ -118,6 +112,7 @@ def create_parser():
     remove.set_defaults(func=remove_hook)
 
     return parser
+
 
 if __name__ == '__main__':
     main()

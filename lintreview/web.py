@@ -4,10 +4,8 @@ import pkg_resources
 
 from flask import Flask, request, Response
 from lintreview.config import load_config
-from lintreview.github import get_repository
-from lintreview.github import get_lintrc
+from lintreview.github import get_repository, get_lintrc
 from lintreview.tasks import process_pull_request
-from lintreview.tasks import cleanup_pull_request
 
 config = load_config()
 app = Flask("lintreview")
@@ -48,12 +46,9 @@ def start_review():
              "%s %s, (%s) from: %s",
              base_repo_url, number, action, head_repo_url)
 
-    if action not in ("opened", "synchronize", "reopened", "closed"):
+    if action not in ("opened", "synchronize", "reopened"):
         log.info("Ignored '%s' action." % action)
         return Response(status=204)
-
-    if action == "closed":
-        return close_review(user, repo, pull_request)
 
     gh = get_repository(app.config, head_user, head_repo)
     try:
@@ -70,14 +65,4 @@ def start_review():
     except:
         log.error('Could not publish job to celery. Make sure its running.')
         return Response(status=500)
-    return Response(status=204)
-
-
-def close_review(user, repo, pull_request):
-    try:
-        log.info("Scheduling cleanup for %s/%s", user, repo)
-        cleanup_pull_request.delay(user, repo, pull_request['number'])
-    except:
-        log.error('Could not publish job to celery. '
-                  'Make sure its running.')
     return Response(status=204)

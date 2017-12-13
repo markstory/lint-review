@@ -11,7 +11,7 @@ golint_missing = not(go_bin_path('golint'))
 
 class TestGolint(TestCase):
 
-    needs_golint = skipIf(golint_missing, 'Needs phpcs')
+    needs_golint = skipIf(golint_missing, 'Needs golint installed')
 
     fixtures = [
         'tests/fixtures/golint/no_errors.go',

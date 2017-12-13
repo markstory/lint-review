@@ -15,11 +15,10 @@ def get_client(config):
     login = github3.login
     if config.get('GITHUB_URL', GITHUB_BASE_URL) != GITHUB_BASE_URL:
         login = partial(github3.enterprise_login, url=config['GITHUB_URL'])
-    if 'GITHUB_OAUTH_TOKEN' in config:
-        return login(username=config['GITHUB_USER'],
-                     token=config['GITHUB_OAUTH_TOKEN'])
-    return login(username=config['GITHUB_USER'],
-                 password=config['GITHUB_PASSWORD'])
+    if 'GITHUB_OAUTH_TOKEN' not in config:
+        raise KeyError('Missing GITHUB_OAUTH_TOKEN in application config. '
+                       'Update your settings.py file.')
+    return login(token=config['GITHUB_OAUTH_TOKEN'])
 
 
 def get_repository(config, user, repo):
