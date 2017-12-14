@@ -123,6 +123,18 @@ class ReviewConfig(object):
         except:
             return {}
 
+    def fixers_enabled(self):
+        try:
+            return bool(self._data['fixers']['enabled'])
+        except:
+            return False
+
+    def fixer_workflow(self):
+        try:
+            return self._data['fixers']['workflow']
+        except:
+            return 'commit'
+
     def ignore_patterns(self):
         try:
             return self._data['files']['ignore']
@@ -148,6 +160,7 @@ class ReviewConfig(object):
             'linters': {},
             'files': {},
             'branches': {},
+            'fixers': {},
         }
         if parser.has_section('files'):
             ignore = parser.get('files', 'ignore')
@@ -159,6 +172,9 @@ class ReviewConfig(object):
         linters = []
         if parser.has_section('tools'):
             linters = comma_value(parser.get('tools', 'linters'))
+
+        if parser.has_section('fixers'):
+            data['fixers'] = dict(parser.items('fixers'))
         # Setup empty config sections
         for linter in linters:
             data['linters'][linter] = {}
