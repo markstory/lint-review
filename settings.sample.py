@@ -86,6 +86,9 @@ SSL_CA_BUNDLE = None
 # prevent really noisy reviews from slowing down github.
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
+# Used as the author information when making commits
+GITHUB_AUTHOR = 'lintreview <lintreview@example.com>'
+
 # Status Configuration
 ######################
 # Customize the build status integration name. Defaults to lintreview.
