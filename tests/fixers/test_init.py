@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import os
 import lintreview.fixers as fixers
+from lintreview.config import build_review_config
 from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
 from lintreview.utils import composer_exists
@@ -15,6 +16,21 @@ from nose.tools import (
 from .. import load_fixture, fixtures_path
 from ..test_git import setup_repo, teardown_repo, clone_path
 
+
+fixer_ini = """
+[tools]
+linters = phpcs, eslint
+
+[tool_phpcs]
+fixer = true
+
+[fixers]
+enabled = true
+"""
+
+app_config = {
+    'GITHUB_AUTHOR': 'bot <bot@example.com>'
+}
 
 phpcs_missing = not(composer_exists('phpcs'))
 
@@ -139,3 +155,19 @@ def test_apply_fixer_diff__calls_execute():
     context = {'strategy': 'mock'}
     fixers.apply_fixer_diff(original, updated, context)
     eq_(1, strategy.execute.call_count)
+
+
+def test_create_context():
+    config = build_review_config(fixer_ini)
+    context = fixers.create_context(config, app_config, clone_path, 'fixes')
+    eq_('commit', context['strategy'])
+    eq_(app_config['GITHUB_AUTHOR'], context['author'])
+    eq_(clone_path, context['repo_path'])
+    eq_('fixes', context['remote_branch'])
+
+
+def test_create_context__missing_key_raises():
+    config = build_review_config(fixer_ini)
+    with assert_raises(KeyError):
+        empty = {}
+        fixers.create_context(config, empty, clone_path, 'fixes')
