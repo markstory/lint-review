@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 import logging
 import lintreview.tools as tools
+import lintreview.fixers as fixers
 
 from lintreview.diff import DiffCollection
-from lintreview.review import Problems
-from lintreview.review import Review
+from lintreview.review import Problems, Review
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class Processor(object):
     _review = None
     _config = None
 
-    def __init__(self, repository, pull_request, target_path, config=None):
+    def __init__(self, repository, pull_request, target_path, config):
         config = config if config else {}
         self._config = config
         self._repository = repository
@@ -42,12 +42,34 @@ class Processor(object):
             append_base=self._target_path,
             ignore_patterns=review_config.ignore_patterns())
         commits_to_check = self._pull_request.commits()
-        tools.run(
+
+        tool_list = tools.factory(
             review_config,
             self._problems,
-            files_to_check,
-            commits_to_check,
             self._target_path)
+        if review_config.fixers_enabled():
+            self.apply_fixers(review_config, tool_list, files_to_check)
+
+        tools.run(tool_list, files_to_check, commits_to_check)
+
+    def apply_fixers(self, review_config, tool_list, files_to_check):
+        try:
+            fixer_context = fixers.create_context(
+                review_config,
+                self._config,
+                self._target_path,
+                self._pull_request.head_branch
+            )
+            fixer_diff = fixers.run_fixers(
+                tool_list,
+                self._target_path,
+                files_to_check)
+            fixers.apply_fixer_diff(
+                self._changes,
+                fixer_diff,
+                fixer_context)
+        except Exception as e:
+            log.warn('Unable to apply fixers %s', e)
 
     def publish(self):
         self._problems.limit_to_changes()
