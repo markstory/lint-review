@@ -13,20 +13,9 @@ from nose.tools import (
     eq_,
     with_setup
 )
-from .. import load_fixture, fixtures_path
+from .. import load_fixture, fixtures_path, fixer_ini
 from ..test_git import setup_repo, teardown_repo, clone_path
 
-
-fixer_ini = """
-[tools]
-linters = phpcs, eslint
-
-[tool_phpcs]
-fixer = true
-
-[fixers]
-enabled = true
-"""
 
 app_config = {
     'GITHUB_AUTHOR': 'bot <bot@example.com>'
