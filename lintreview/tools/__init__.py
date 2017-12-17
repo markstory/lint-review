@@ -175,11 +175,12 @@ def run_command(
     return data
 
 
-def factory(problems, config, base_path):
+def factory(config, problems, base_path):
     """
     Consumes a lintreview.config.ReviewConfig object
     and creates a list of linting tools based on it.
     """
+    log.debug('Generating tool list from repository configuration')
     tools = []
     for linter in config.linters():
         linter_config = config.linter_config(linter)
@@ -196,16 +197,13 @@ def factory(problems, config, base_path):
     return tools
 
 
-def run(config, problems, files, commits, base_path):
+def run(lint_tools, files, commits):
     """
     Create and run tools.
 
     Uses the ReviewConfig, problemset, and list of files to iteratively
     run each tool across the various files in a pull request.
     """
-    log.debug('Generating tool list from repository configuration')
-    lint_tools = factory(problems, config, base_path)
-
     log.info('Running lint tools on %d files', len(files))
     for tool in lint_tools:
         log.debug('Runnning %s', tool)

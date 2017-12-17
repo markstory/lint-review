@@ -32,6 +32,15 @@ simple_ini = """
 linters = jshint
 """
 
+fixer_ini = """
+[tools]
+linters = phps
+
+[fixers]
+enabled = True
+workflow = pull_request
+"""
+
 bad_ini = """
 [herp]
 derp=derplily
@@ -115,3 +124,17 @@ class ReviewConfigTest(TestCase):
             'config': '/etc/jshint.json',
         }
         eq_(res, expected)
+
+    def test_fixers_enabled(self):
+        config = build_review_config(sample_ini)
+        eq_(False, config.fixers_enabled())
+
+        config = build_review_config(fixer_ini)
+        eq_(True, config.fixers_enabled())
+
+    def test_fixer_workflow(self):
+        config = build_review_config(sample_ini)
+        eq_('commit', config.fixer_workflow())
+
+        config = build_review_config(fixer_ini)
+        eq_('pull_request', config.fixer_workflow())

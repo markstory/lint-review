@@ -51,3 +51,15 @@ def setup_repo():
 def teardown_repo():
     if git.exists(clone_path):
         git.destroy(clone_path)
+
+
+fixer_ini = """
+[tools]
+linters = phpcs, eslint
+
+[tool_phpcs]
+fixer = true
+
+[fixers]
+enabled = true
+"""

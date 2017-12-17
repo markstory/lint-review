@@ -45,13 +45,13 @@ def test_factory_raises_error_on_bad_linter():
     config = build_review_config(bad_ini)
     config = ReviewConfig()
     config.load_ini(bad_ini)
-    tools.factory(Review(gh, None), config, '')
+    tools.factory(config, Review(gh, None), '')
 
 
 def test_factory_generates_tools():
     gh = Mock(spec=github3.GitHub)
     config = build_review_config(sample_ini)
-    linters = tools.factory(Review(gh, None), config, '')
+    linters = tools.factory(config, Review(gh, None), '')
     eq_(2, len(linters))
     assert isinstance(linters[0], tools.pep8.Pep8)
     assert isinstance(linters[1], tools.jshint.Jshint)
@@ -113,7 +113,8 @@ def test_run():
     config = build_review_config(simple_ini)
     problems = Problems()
     files = ['./tests/fixtures/pep8/has_errors.py']
-    tools.run(config, problems, files, [], '')
+    tool_list = tools.factory(config, problems, '')
+    tools.run(tool_list, files, [])
     eq_(7, len(problems))
 
 
@@ -124,5 +125,6 @@ def test_run__filter_files():
         './tests/fixtures/pep8/has_errors.py',
         './tests/fixtures/phpcs/has_errors.php'
     ]
-    tools.run(config, problems, files, [], '')
+    tool_list = tools.factory(config, problems, '')
+    tools.run(tool_list, files, [])
     eq_(7, len(problems))

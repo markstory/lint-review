@@ -14,6 +14,19 @@ class StrategyError(RuntimeError):
     pass
 
 
+def create_context(review_config, app_config, repo_path, branch):
+    """Create the context used for running fixers"""
+    # TODO Consider making a namedtuple?
+    context = {
+        'strategy': review_config.fixer_workflow(),
+        'enabled': review_config.fixers_enabled(),
+        'author': app_config['GITHUB_AUTHOR'],
+        'repo_path': repo_path,
+        'remote_branch': branch
+    }
+    return context
+
+
 def run_fixers(tools, base_path, files):
     """Run fixer mode of each tool on each file
     Return a DiffCollection based on the parsed diff
