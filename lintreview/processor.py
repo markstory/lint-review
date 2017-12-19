@@ -70,7 +70,8 @@ class Processor(object):
                 fixer_diff,
                 fixer_context)
         except StrategyError as e:
-            self.problems.add(IssueComment(str(e)))
+            message = u'Unable to apply fixers. {}'.format(e)
+            self.problems.add(IssueComment(message))
         except Exception as e:
             log.warn('Unable to apply fixers. Got %s', e)
             fixers.rollback_changes(self._target_path)

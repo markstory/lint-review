@@ -146,7 +146,8 @@ class ProcessorTest(TestCase):
             fixer_stub.rollback_changes.called,
             'No rollback on strategy failure')
         eq_(1, len(subject.problems), 'strategy error adds pull comment')
-        eq_(error_message, subject.problems.all()[0].body)
+        eq_('Unable to apply fixers. ' + error_message,
+            subject.problems.all()[0].body)
 
     def test_publish(self):
         pull = self.get_pull_request()
