@@ -61,5 +61,5 @@ linters = phpcs, eslint
 fixer = true
 
 [fixers]
-enabled = true
+enable = true
 """

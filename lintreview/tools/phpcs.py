@@ -99,11 +99,9 @@ class Phpcs(Tool):
         """
         return bool(self.options.get('fixer', False))
 
-    def execute_fixer(self, files):
+    def process_fixer(self, files):
+        """Run PHPCS in the fixer mode.
         """
-        Run PHPCS in the fixer mode.
-        """
-        log.debug('Fixing %s files with %s', files, self.name)
         command = self.create_fixer_command(files)
         output = run_command(
             command,

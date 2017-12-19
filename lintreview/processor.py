@@ -4,7 +4,8 @@ import lintreview.tools as tools
 import lintreview.fixers as fixers
 
 from lintreview.diff import DiffCollection
-from lintreview.review import Problems, Review
+from lintreview.fixers import StrategyError
+from lintreview.review import Problems, Review, IssueComment
 
 log = logging.getLogger(__name__)
 
@@ -15,9 +16,9 @@ class Processor(object):
     _pull_request = None
     _target_path = None
     _changes = None
-    _problems = None
     _review = None
     _config = None
+    problems = None
 
     def __init__(self, repository, pull_request, target_path, config):
         config = config if config else {}
@@ -25,14 +26,14 @@ class Processor(object):
         self._repository = repository
         self._pull_request = pull_request
         self._target_path = target_path
-        self._problems = Problems(target_path)
+        self.problems = Problems(target_path)
         self._review = Review(repository, pull_request, config)
 
     def load_changes(self):
         log.info('Loading pull request patches from github.')
         files = self._pull_request.files()
         self._changes = DiffCollection(files)
-        self._problems.set_changes(self._changes)
+        self.problems.set_changes(self._changes)
 
     def run_tools(self, review_config):
         if self._changes is None:
@@ -45,7 +46,7 @@ class Processor(object):
 
         tool_list = tools.factory(
             review_config,
-            self._problems,
+            self.problems,
             self._target_path)
         if review_config.fixers_enabled():
             self.apply_fixers(review_config, tool_list, files_to_check)
@@ -68,12 +69,15 @@ class Processor(object):
                 self._changes,
                 fixer_diff,
                 fixer_context)
+        except StrategyError as e:
+            self.problems.add(IssueComment(str(e)))
         except Exception as e:
-            log.warn('Unable to apply fixers %s', e)
+            log.warn('Unable to apply fixers. Got %s', e)
+            fixers.rollback_changes(self._target_path)
 
     def publish(self):
-        self._problems.limit_to_changes()
+        self.problems.limit_to_changes()
         self._review.publish(
-            self._problems,
+            self.problems,
             self._pull_request.head,
             self._config.get('SUMMARY_THRESHOLD'))

@@ -92,3 +92,7 @@ def add_strategy(name, implementation):
     """
     log.info('Adding %s fixer strategy', name)
     workflow_strategies[name] = implementation
+
+
+def rollback_changes(path):
+    git.reset_hard(path)

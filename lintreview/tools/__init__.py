@@ -43,9 +43,6 @@ class Tool(object):
             log.debug('No matching files for %s', self.name)
             return
 
-        if self.has_fixer():
-            log.info('Running %s fixer on %d files', self.name, num_files)
-            self.execute_fixer(matching_files)
         log.info('Running %s on %d files', self.name, num_files)
         self.process_files(matching_files)
 
@@ -64,8 +61,16 @@ class Tool(object):
     def execute_fixer(self, files):
         """
         Execute the fixer on all of the provided files.
+
+        Files will be filtered by match_file() before applying
+        the fixer.
         """
-        pass
+        matching_files = [f for f in files if self.match_file(f)]
+        num_files = len(matching_files)
+        if not num_files:
+            return
+        log.info('Running fixer %s on %d files', self.name, num_files)
+        self.process_fixer(matching_files)
 
     def has_fixer(self):
         """
@@ -86,6 +91,12 @@ class Tool(object):
     def process_files(self, files):
         """
         Used to process all files. Overridden by tools
+        """
+        return False
+
+    def process_fixer(self, files):
+        """
+        Used to process fixers. Overridden by tools.
         """
         return False
 
