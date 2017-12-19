@@ -37,7 +37,7 @@ fixer_ini = """
 linters = phps
 
 [fixers]
-enabled = True
+enable = True
 workflow = pull_request
 """
 

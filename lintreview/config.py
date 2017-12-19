@@ -125,7 +125,7 @@ class ReviewConfig(object):
 
     def fixers_enabled(self):
         try:
-            return bool(self._data['fixers']['enabled'])
+            return bool(self._data['fixers']['enable'])
         except:
             return False
 
