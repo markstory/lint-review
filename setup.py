@@ -13,7 +13,7 @@ setup(
                 "& a variety of code checking tools.",
     author="Mark story",
     author_email="mark@mark-story.com",
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests*']),
     entry_points={
         'console_scripts': [
             'lintreview = lintreview.cli:main',
