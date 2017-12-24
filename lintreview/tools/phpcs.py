@@ -107,7 +107,7 @@ class Phpcs(Tool):
             command,
             ignore_error=True,
             include_errors=False)
-        log.error(output)
+        log.debug(output)
 
     def create_fixer_command(self, files):
         command = ['phpcbf']
