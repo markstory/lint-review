@@ -14,15 +14,16 @@ class StrategyError(RuntimeError):
     pass
 
 
-def create_context(review_config, app_config, repo_path, branch):
+def create_context(review_config, app_config, repo_path,
+                   repository, pull_request):
     """Create the context used for running fixers"""
-    # TODO Consider making a namedtuple?
     context = {
         'strategy': review_config.fixer_workflow(),
         'enabled': review_config.fixers_enabled(),
         'author': app_config['GITHUB_AUTHOR'],
         'repo_path': repo_path,
-        'remote_branch': branch
+        'pull_request': pull_request,
+        'repository': repository,
     }
     return context
 
@@ -83,6 +84,7 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
     try:
         workflow.execute(changes_to_apply)
     except:
+        # TODO rollback changes.
         log.exception('Failed to push fixer diff.')
 
 

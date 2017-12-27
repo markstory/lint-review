@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from json import dumps
 import lintreview.github as github
 import logging
 
@@ -12,6 +13,7 @@ class GithubRepository(object):
     This will make swapping in other hosting systems
     a tiny bit easier in the future.
     """
+    repo = None
 
     def __init__(self, config, user, repo_name):
         self.config = config
@@ -21,10 +23,11 @@ class GithubRepository(object):
     def repository(self):
         """Get the underlying repository model
         """
-        self.repo = github.get_repository(
-            self.config,
-            self.user,
-            self.repo_name)
+        if not self.repo:
+            self.repo = github.get_repository(
+                self.config,
+                self.user,
+                self.repo_name)
         return self.repo
 
     def pull_request(self, number):
@@ -54,6 +57,36 @@ class GithubRepository(object):
             None,
             description,
             context)
+
+    def create_blob(self, *args, **kwargs):
+        """Create a blob object
+        """
+        return self.repository().create_blob(*args, **kwargs)
+
+    def create_tree(self, *args, **kwargs):
+        """Create a tree object
+        """
+        log.info('Creating new tree object')
+        return self.repository().create_tree(*args, **kwargs)
+
+    def create_commit(self, *args, **kwargs):
+        """Create a commit object
+        """
+        log.info('Creating commit for tree %s', kwargs['tree'])
+        return self.repository().create_commit(*args, **kwargs)
+
+    def update_branch(self, branch, sha):
+        """Update a branch
+
+        There is no github3 wrapper API for this.
+        """
+        log.info('Updating %s to %s', branch, sha)
+
+        repo = self.repository()
+        ref = u"heads/{}".format(branch)
+        url = repo._build_url('git', 'refs', ref, base_url=repo._api)
+        data = {'sha': sha}
+        return repo._json(repo._patch(url, data=dumps(data)), 201)
 
 
 class GithubPullRequest(object):
@@ -104,6 +137,15 @@ class GithubPullRequest(object):
     def head_branch(self):
         data = self.pull.as_dict()
         return data['head']['ref']
+
+    def head_repository(self, app_config):
+        """Get a GithubRepository for the head side of the pull request.
+        """
+        data = self.pull.as_dict()
+        return GithubRepository(
+            app_config,
+            data['head']['repo']['owner']['login'],
+            data['head']['repo']['name'])
 
     def commits(self):
         return self.pull.commits()

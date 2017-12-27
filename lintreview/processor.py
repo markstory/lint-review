@@ -55,11 +55,15 @@ class Processor(object):
 
     def apply_fixers(self, review_config, tool_list, files_to_check):
         try:
+            # TODO use the head repo here,
+            # as fixers need to push/operate on the
+            # head repository.
             fixer_context = fixers.create_context(
                 review_config,
                 self._config,
                 self._target_path,
-                self._pull_request.head_branch
+                self._repository,
+                self._pull_request,
             )
             fixer_diff = fixers.run_fixers(
                 tool_list,

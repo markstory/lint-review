@@ -52,6 +52,11 @@ def process_pull_request(user, repo_name, number, lintrc):
         target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, head_repo, target_path, pr_head)
 
+        # TODO perhaps remove repo from here.
+        # For updating pull requests we need the head
+        # repo, because the pull request
+        # could be coming from a fork.
+        # Currently `repo` is the base repo.
         processor = Processor(repo, pull_request,
                               target_path, config)
         processor.load_changes()
