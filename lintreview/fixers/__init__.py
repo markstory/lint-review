@@ -83,8 +83,8 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
     try:
         workflow.execute(changes_to_apply)
     except:
-        # TODO rollback changes.
-        log.exception('Failed to push fixer diff.')
+        rollback_changes(strategy_context['repo_path'])
+        log.exception('Failed to push fixer changes')
 
 
 def add_strategy(name, implementation):
