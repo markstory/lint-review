@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-from stat import ST_MODE
 from datetime import datetime
+from lintreview.fixers.error import FixerError
 import os
 import lintreview.git as git
-from lintreview.fixers import StrategyError
 import logging
 
 log = logging.getLogger(__name__)
@@ -38,24 +37,19 @@ class CommitStrategy(object):
             path = self.path + os.sep + diff.filename
             f = open(path, 'r')
 
-            log.info('Creating blob for %s', diff.filename)
-            blob_sha = self.repository.create_blob(f.read(), 'utf-8')
-            if not blob_sha:
-                raise StrategyError('Could not create blob')
-
             stat = os.stat(path)
             treedata.append({
                 'path': diff.filename,
                 'mode': str(oct(stat.st_mode))[1:],
                 'type': 'blob',
-                'sha': blob_sha
+                'content': f.read()
             })
 
         new_tree = self.repository.create_tree(
             tree=treedata,
             base_tree=head_tree_sha)
         if not new_tree:
-            raise StrategyError('Could not create tree')
+            raise FixerError('Could not create tree')
 
         # Add a new commit for the tree
         new_commit = self.repository.create_commit(
@@ -68,7 +62,7 @@ class CommitStrategy(object):
             },
             message='Fixing style errors.')
         if not new_commit:
-            raise StrategyError('Could not create commit')
+            raise FixerError('Could not create commit')
 
         # Update the remote branch.
         self.repository.update_branch(

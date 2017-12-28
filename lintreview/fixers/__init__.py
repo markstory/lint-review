@@ -1,17 +1,16 @@
 from __future__ import absolute_import
 from lintreview.diff import parse_diff, Diff
 from lintreview.fixers.commit_strategy import CommitStrategy
+from lintreview.fixers.error import StrategyError
 import lintreview.git as git
 import logging
 
 log = logging.getLogger(__name__)
+
+
 workflow_strategies = {
     'commit': CommitStrategy
 }
-
-
-class StrategyError(RuntimeError):
-    pass
 
 
 def create_context(review_config, app_config, repo_path,
