@@ -6,7 +6,7 @@ from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
 from lintreview.utils import composer_exists
 from unittest import skipIf
-from mock import Mock, sentinel, patch
+from mock import Mock, sentinel
 from nose.tools import (
     assert_raises,
     assert_in,
