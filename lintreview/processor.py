@@ -55,9 +55,6 @@ class Processor(object):
 
     def apply_fixers(self, review_config, tool_list, files_to_check):
         try:
-            # TODO use the head repo here,
-            # as fixers need to push/operate on the
-            # head repository.
             fixer_context = fixers.create_context(
                 review_config,
                 self._config,

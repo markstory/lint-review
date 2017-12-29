@@ -15,56 +15,19 @@ class CommitStrategy(object):
 
     def __init__(self, context):
         self.path = context['repo_path']
-        self.author = context['author']
-        self.pull_request = context['pull_request']
+        self.author_name = context['author_name']
+        self.author_email = context['author_email']
         self.repository = context['repository']
+        self.pull_request = context['pull_request']
 
     def execute(self, diffs):
-        # Reset working tree.
-        git.reset_hard(self.path)
-
-        # Get current commit & tree shas
-        head_commit_sha = self.pull_request.head
-        head_tree_sha = git.tree_sha(self.path, head_commit_sha)
-        treedata = []
-
-        # Apply patches to get new target state.
-        # Use local file system state to create
-        # required git data.
+        git.create_branch(self.path, 'stylefixes')
+        git.checkout(self.path, 'stylefixes')
         for diff in diffs:
-            git.apply(self.path, diff.as_diff())
+            git.apply_cached(self.path, diff.as_diff())
 
-            path = self.path + os.sep + diff.filename
-            f = open(path, 'r')
+        author = u'{} <{}>'.format(self.author_name, self.author_email)
+        remote_branch = self.pull_request.head_branch
 
-            stat = os.stat(path)
-            treedata.append({
-                'path': diff.filename,
-                'mode': str(oct(stat.st_mode))[1:],
-                'type': 'blob',
-                'content': f.read()
-            })
-
-        new_tree = self.repository.create_tree(
-            tree=treedata,
-            base_tree=head_tree_sha)
-        if not new_tree:
-            raise FixerError('Could not create tree')
-
-        # Add a new commit for the tree
-        new_commit = self.repository.create_commit(
-            tree=new_tree.sha,
-            parents=[head_commit_sha],
-            author={
-                'name': 'lintbot',
-                'email': 'lintbot@mark-story.com',
-                'date': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-            },
-            message='Fixing style errors.')
-        if not new_commit:
-            raise FixerError('Could not create commit')
-
-        # Update the remote branch.
-        self.repository.update_branch(
-            self.pull_request.head_branch,
-            new_commit.sha)
+        git.commit(self.path, author, 'Fixing style errors.')
+        git.push(self.path, 'origin', 'stylefixes:' + remote_branch)

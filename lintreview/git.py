@@ -124,32 +124,6 @@ def apply_cached(path, patch):
 
 
 @log_io_error
-def apply(path, patch):
-    """Apply a patch to the working tree.
-    """
-    command = ['git', 'apply']
-    if not len(patch):
-        return ''
-    return_code, output = _process(command, input_val=patch, chdir=path)
-    if return_code:
-        raise IOError(u"Unable to apply changes '{}'".format(output))
-    return output
-
-
-@log_io_error
-def tree_sha(path, commit_sha):
-    """Get the tree sha for a given commit.
-    """
-    command = ['git', 'cat-file', '-p', commit_sha]
-    return_code, output = _process(command, chdir=path)
-    if return_code:
-        raise IOError(u"Unable to apply changes '{}'".format(output))
-    tree_line = output.split('\n')[0]
-    assert tree_line.startswith('tree'), 'Should start with tree'
-    return tree_line.split(' ')[1]
-
-
-@log_io_error
 def status(path):
     """Get the working status of path"""
     command = ['git', 'status', '-s']
