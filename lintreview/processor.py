@@ -4,7 +4,7 @@ import lintreview.tools as tools
 import lintreview.fixers as fixers
 
 from lintreview.diff import DiffCollection
-from lintreview.fixers import StrategyError
+from lintreview.fixers.error import ConfigurationError, WorkflowError
 from lintreview.review import Problems, Review, IssueComment
 
 log = logging.getLogger(__name__)
@@ -70,11 +70,13 @@ class Processor(object):
                 self._changes,
                 fixer_diff,
                 fixer_context)
-        except StrategyError as e:
+        except (ConfigurationError, WorkflowError) as e:
+            log.warn('Fixer application failed. Got %s', e)
             message = u'Unable to apply fixers. {}'.format(e)
             self.problems.add(IssueComment(message))
         except Exception as e:
-            log.warn('Unable to apply fixers. Got %s', e)
+            log.warn('Fixer application failed, '
+                     'rolling back working tree. Got %s', e)
             fixers.rollback_changes(self._target_path)
 
     def publish(self):

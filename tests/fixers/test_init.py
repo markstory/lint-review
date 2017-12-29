@@ -88,7 +88,7 @@ def test_apply_fixer_diff__missing_strategy_key():
     original = Mock()
     changed = Mock()
     context = {}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
     assert_in('Missing', str(err.exception))
 
@@ -97,7 +97,7 @@ def test_apply_fixer_diff__invalid_strategy():
     original = Mock()
     changed = Mock()
     context = {'strategy': 'bad stategy'}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
     assert_in('Unknown', str(err.exception))
 
@@ -106,30 +106,9 @@ def test_apply_fixer_diff__missing_strategy_context():
     original = Mock()
     changed = Mock()
     context = {'strategy': 'commit'}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
-    assert_in('Could not create strategy', str(err.exception))
-
-
-@patch('lintreview.fixers.rollback_changes')
-def test_apply_fixer_diff__strategy_execution_fails(mock_rollback):
-    strategy_factory = Mock()
-    strategy = Mock()
-    strategy.execute.side_effect = RuntimeError
-    strategy_factory.return_value = strategy
-
-    fixers.add_strategy('mock', strategy_factory)
-
-    original = load_fixture('diff/intersecting_hunks_original.txt')
-    updated = load_fixture('diff/intersecting_hunks_updated.txt')
-    original = parse_diff(original)
-    updated = parse_diff(updated)
-
-    context = {'strategy': 'mock', 'repo_path': '/tmp/things'}
-    out = fixers.apply_fixer_diff(original, updated, context)
-    eq_(1, strategy.execute.call_count)
-    eq_(out, None, 'No output and no exception')
-    assert mock_rollback.called, 'Should rollback on failure'
+    assert_in('Could not create commit workflow', str(err.exception))
 
 
 def test_apply_fixer_diff__calls_execute():

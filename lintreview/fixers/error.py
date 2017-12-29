@@ -3,6 +3,12 @@ class FixerError(RuntimeError):
     pass
 
 
-class StrategyError(FixerError):
-    """Strategy configuration error"""
+class ConfigurationError(FixerError):
+    """Workflow/fixer configuration error"""
+    pass
+
+
+class WorkflowError(FixerError):
+    """Workflow execution error error.
+    Will be reported as an issue comment."""
     pass

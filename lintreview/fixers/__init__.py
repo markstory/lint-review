@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from lintreview.diff import parse_diff, Diff
 from lintreview.fixers.commit_strategy import CommitStrategy
-from lintreview.fixers.error import StrategyError
+from lintreview.fixers.error import ConfigurationError
 import lintreview.git as git
 import logging
 
@@ -66,26 +66,21 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
     to apply and commit the changes.
     """
     if 'strategy' not in strategy_context:
-        raise StrategyError('Missing `strategy` name')
+        raise ConfigurationError('Missing `workflow` configuration.')
+
     strategy = strategy_context['strategy']
     if strategy not in workflow_strategies:
-        raise StrategyError(u'Unknown strategy {}'.format(strategy))
+        raise ConfigurationError(u'Unknown workflow `{}`'.format(strategy))
 
     try:
-        log.info('Using %s strategy to apply fixer changes', strategy)
+        log.info('Using %s workflow to apply fixer changes', strategy)
         workflow = workflow_strategies[strategy](strategy_context)
     except Exception as e:
-        msg = u'Could not create strategy {}. Got {}'.format(
-            strategy,
-            e)
-        raise StrategyError(msg)
+        msg = u'Could not create {} workflow. Got {}'.format(strategy, e)
+        raise ConfigurationError(msg)
 
     changes_to_apply = find_intersecting_diffs(original_diffs, fixer_diff)
-    try:
-        workflow.execute(changes_to_apply)
-    except:
-        rollback_changes(strategy_context['repo_path'])
-        log.exception('Failed to push fixer changes')
+    workflow.execute(changes_to_apply)
 
 
 def add_strategy(name, implementation):

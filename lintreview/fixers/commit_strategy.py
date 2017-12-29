@@ -1,7 +1,5 @@
 from __future__ import absolute_import
-from datetime import datetime
-from lintreview.fixers.error import FixerError
-import os
+from lintreview.fixers.error import WorkflowError
 import lintreview.git as git
 import logging
 
@@ -17,10 +15,14 @@ class CommitStrategy(object):
         self.path = context['repo_path']
         self.author_name = context['author_name']
         self.author_email = context['author_email']
-        self.repository = context['repository']
         self.pull_request = context['pull_request']
 
     def execute(self, diffs):
+        if not self.pull_request.maintainer_can_modify:
+            msg = ('Cannot apply automatic fixing, '
+                   'as this pull request cannot be '
+                   'modified by maintainers.')
+            raise WorkflowError(msg)
         git.create_branch(self.path, 'stylefixes')
         git.checkout(self.path, 'stylefixes')
         for diff in diffs:
