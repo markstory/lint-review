@@ -34,7 +34,7 @@ def process_pull_request(user, repo_name, number, lintrc):
         repo = GithubRepository(config, user, repo_name)
         pull_request = repo.pull_request(number)
 
-        head_repo = pull_request.clone_url
+        clone_url = pull_request.clone_url
 
         pr_head = pull_request.head
         target_branch = pull_request.target_branch
@@ -50,13 +50,8 @@ def process_pull_request(user, repo_name, number, lintrc):
 
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo_name, number, config)
-        git.clone_or_update(config, head_repo, target_path, pr_head)
+        git.clone_or_update(config, clone_url, target_path, pr_head)
 
-        # TODO perhaps remove repo from here.
-        # For updating pull requests we need the head
-        # repo, because the pull request
-        # could be coming from a fork.
-        # Currently `repo` is the base repo.
         processor = Processor(repo, pull_request,
                               target_path, config)
         processor.load_changes()
