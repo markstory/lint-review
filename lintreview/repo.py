@@ -138,6 +138,11 @@ class GithubPullRequest(object):
         data = self.pull.as_dict()
         return data['head']['ref']
 
+    @property
+    def maintainer_can_modify(self):
+        data = self.pull.as_dict()
+        return data['maintainer_can_modify']
+
     def head_repository(self, app_config):
         """Get a GithubRepository for the head side of the pull request.
         """

@@ -179,6 +179,17 @@ class TestGithubPullRequest(TestCase):
             data=review)
         assert self.model._json.called
 
+    def test_maintainer_can_modify(self):
+        pull = GithubPullRequest(self.model)
+        eq_(True, pull.maintainer_can_modify)
+
+        fixture = load_fixture('pull_request.json')
+        data = json.loads(fixture)['pull_request']
+        data['maintainer_can_modify'] = False
+
+        model = PullRequest(data)
+        eq_(False, model.maintainer_can_modify)
+
 
 @contextmanager
 def add_ok_label(pull_request, *labels, **kw):
