@@ -12,6 +12,7 @@ class GithubRepository(object):
     This will make swapping in other hosting systems
     a tiny bit easier in the future.
     """
+    repo = None
 
     def __init__(self, config, user, repo_name):
         self.config = config
@@ -21,10 +22,11 @@ class GithubRepository(object):
     def repository(self):
         """Get the underlying repository model
         """
-        self.repo = github.get_repository(
-            self.config,
-            self.user,
-            self.repo_name)
+        if not self.repo:
+            self.repo = github.get_repository(
+                self.config,
+                self.user,
+                self.repo_name)
         return self.repo
 
     def pull_request(self, number):
@@ -104,6 +106,11 @@ class GithubPullRequest(object):
     def head_branch(self):
         data = self.pull.as_dict()
         return data['head']['ref']
+
+    @property
+    def maintainer_can_modify(self):
+        data = self.pull.as_dict()
+        return data['maintainer_can_modify']
 
     def commits(self):
         return self.pull.commits()

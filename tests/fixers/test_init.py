@@ -6,7 +6,7 @@ from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
 from lintreview.utils import composer_exists
 from unittest import skipIf
-from mock import Mock
+from mock import Mock, sentinel
 from nose.tools import (
     assert_raises,
     assert_in,
@@ -18,7 +18,8 @@ from ..test_git import setup_repo, teardown_repo, clone_path
 
 
 app_config = {
-    'GITHUB_AUTHOR': 'bot <bot@example.com>'
+    'GITHUB_AUTHOR_NAME': 'bot',
+    'GITHUB_AUTHOR_EMAIL': 'bot@example.com'
 }
 
 phpcs_missing = not(composer_exists('phpcs'))
@@ -87,7 +88,7 @@ def test_apply_fixer_diff__missing_strategy_key():
     original = Mock()
     changed = Mock()
     context = {}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
     assert_in('Missing', str(err.exception))
 
@@ -96,7 +97,7 @@ def test_apply_fixer_diff__invalid_strategy():
     original = Mock()
     changed = Mock()
     context = {'strategy': 'bad stategy'}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
     assert_in('Unknown', str(err.exception))
 
@@ -105,28 +106,9 @@ def test_apply_fixer_diff__missing_strategy_context():
     original = Mock()
     changed = Mock()
     context = {'strategy': 'commit'}
-    with assert_raises(fixers.StrategyError) as err:
+    with assert_raises(fixers.ConfigurationError) as err:
         fixers.apply_fixer_diff(original, changed, context)
-    assert_in('Could not create strategy', str(err.exception))
-
-
-def test_apply_fixer_diff__strategy_execution_fails():
-    strategy_factory = Mock()
-    strategy = Mock()
-    strategy.execute.side_effect = RuntimeError
-    strategy_factory.return_value = strategy
-
-    fixers.add_strategy('mock', strategy_factory)
-
-    original = load_fixture('diff/intersecting_hunks_original.txt')
-    updated = load_fixture('diff/intersecting_hunks_updated.txt')
-    original = parse_diff(original)
-    updated = parse_diff(updated)
-
-    context = {'strategy': 'mock'}
-    out = fixers.apply_fixer_diff(original, updated, context)
-    eq_(1, strategy.execute.call_count)
-    eq_(out, None, 'No output and no exception')
+    assert_in('Could not create commit workflow', str(err.exception))
 
 
 def test_apply_fixer_diff__calls_execute():
@@ -148,15 +130,22 @@ def test_apply_fixer_diff__calls_execute():
 
 def test_create_context():
     config = build_review_config(fixer_ini)
-    context = fixers.create_context(config, app_config, clone_path, 'fixes')
+    context = fixers.create_context(
+        config, app_config, clone_path,
+        sentinel.repo, sentinel.pull_request)
+
     eq_('commit', context['strategy'])
-    eq_(app_config['GITHUB_AUTHOR'], context['author'])
+    eq_(app_config['GITHUB_AUTHOR_EMAIL'], context['author_email'])
+    eq_(app_config['GITHUB_AUTHOR_NAME'], context['author_name'])
     eq_(clone_path, context['repo_path'])
-    eq_('fixes', context['remote_branch'])
+    eq_(sentinel.repo, context['repository'])
+    eq_(sentinel.pull_request, context['pull_request'])
 
 
 def test_create_context__missing_key_raises():
     config = build_review_config(fixer_ini)
     with assert_raises(KeyError):
         empty = {}
-        fixers.create_context(config, empty, clone_path, 'fixes')
+        fixers.create_context(
+            config, empty, clone_path,
+            sentinel.repo, sentinel.pull_request)

@@ -248,6 +248,7 @@
         "html_url": "https://github.com/markstory/lint-test/pull/1",
         "id": 4050302,
         "issue_url": "https://github.com/markstory/lint-test/issues/1",
+        "maintaier_can_modify": true,
         "merge_commit_sha": "c491264ceb8403941f7222c42e311169be928224",
         "mergeable": true,
         "mergeable_state": "clean",

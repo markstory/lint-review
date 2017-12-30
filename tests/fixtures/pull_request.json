@@ -240,6 +240,7 @@
         "html_url": "https://github.com/markstory/lint-test/pull/1",
         "id": 4050302,
         "issue_url": "https://github.com/markstory/lint-test/issues/1",
+        "maintainer_can_modify": true,
         "merge_commit_sha": null,
         "mergeable": null,
         "mergeable_state": "unknown",

@@ -87,7 +87,8 @@ SSL_CA_BUNDLE = None
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
 # Used as the author information when making commits
-GITHUB_AUTHOR = 'lintreview <lintreview@example.com>'
+GITHUB_AUTHOR_NAME = 'lintreview'
+GITHUB_AUTHOR_EMAIL = 'lintreview@example.com'
 
 # Status Configuration
 ######################

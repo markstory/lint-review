@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from lintreview.fixers.error import WorkflowError
 import lintreview.git as git
 import logging
 
@@ -12,15 +13,23 @@ class CommitStrategy(object):
 
     def __init__(self, context):
         self.path = context['repo_path']
-        self.author = context['author']
-        self.remote_branch = context['remote_branch']
+        self.author_name = context['author_name']
+        self.author_email = context['author_email']
+        self.pull_request = context['pull_request']
 
     def execute(self, diffs):
+        if not self.pull_request.maintainer_can_modify:
+            msg = ('Cannot apply automatic fixing, '
+                   'as this pull request cannot be '
+                   'modified by maintainers.')
+            raise WorkflowError(msg)
         git.create_branch(self.path, 'stylefixes')
         git.checkout(self.path, 'stylefixes')
         for diff in diffs:
             git.apply_cached(self.path, diff.as_diff())
-        git.commit(self.path, self.author, 'Fixing style errors.')
-        git.push(self.path, 'origin', 'stylefixes:' + self.remote_branch)
-        # TODO raise an error that is converted into
-        # a review error when pushing fails due to access/auth issues.
+
+        author = u'{} <{}>'.format(self.author_name, self.author_email)
+        remote_branch = self.pull_request.head_branch
+
+        git.commit(self.path, author, 'Fixing style errors.')
+        git.push(self.path, 'origin', 'stylefixes:' + remote_branch)

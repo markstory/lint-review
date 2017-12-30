@@ -1,28 +1,29 @@
 from __future__ import absolute_import
 from lintreview.diff import parse_diff, Diff
 from lintreview.fixers.commit_strategy import CommitStrategy
+from lintreview.fixers.error import ConfigurationError
 import lintreview.git as git
 import logging
 
 log = logging.getLogger(__name__)
+
+
 workflow_strategies = {
     'commit': CommitStrategy
 }
 
 
-class StrategyError(RuntimeError):
-    pass
-
-
-def create_context(review_config, app_config, repo_path, branch):
+def create_context(review_config, app_config, repo_path,
+                   head_repository, pull_request):
     """Create the context used for running fixers"""
-    # TODO Consider making a namedtuple?
     context = {
         'strategy': review_config.fixer_workflow(),
         'enabled': review_config.fixers_enabled(),
-        'author': app_config['GITHUB_AUTHOR'],
+        'author_name': app_config['GITHUB_AUTHOR_NAME'],
+        'author_email': app_config['GITHUB_AUTHOR_EMAIL'],
         'repo_path': repo_path,
-        'remote_branch': branch
+        'pull_request': pull_request,
+        'repository': head_repository,
     }
     return context
 
@@ -65,25 +66,21 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
     to apply and commit the changes.
     """
     if 'strategy' not in strategy_context:
-        raise StrategyError('Missing `strategy` name')
+        raise ConfigurationError('Missing `workflow` configuration.')
+
     strategy = strategy_context['strategy']
     if strategy not in workflow_strategies:
-        raise StrategyError(u'Unknown strategy {}'.format(strategy))
+        raise ConfigurationError(u'Unknown workflow `{}`'.format(strategy))
 
     try:
-        log.info('Using %s strategy to apply fixer changes', strategy)
+        log.info('Using %s workflow to apply fixer changes', strategy)
         workflow = workflow_strategies[strategy](strategy_context)
     except Exception as e:
-        msg = u'Could not create strategy {}. Got {}'.format(
-            strategy,
-            e)
-        raise StrategyError(msg)
+        msg = u'Could not create {} workflow. Got {}'.format(strategy, e)
+        raise ConfigurationError(msg)
 
     changes_to_apply = find_intersecting_diffs(original_diffs, fixer_diff)
-    try:
-        workflow.execute(changes_to_apply)
-    except:
-        log.exception('Failed to push fixer diff.')
+    workflow.execute(changes_to_apply)
 
 
 def add_strategy(name, implementation):
