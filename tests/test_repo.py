@@ -179,7 +179,7 @@ class TestGithubPullRequest(TestCase):
             data=review)
         assert self.model._json.called
 
-    def test_maintainer_can_modify(self):
+    def test_maintainer_can_modify__same_repo(self):
         pull = GithubPullRequest(self.model)
         eq_(True, pull.maintainer_can_modify)
 
@@ -188,7 +188,26 @@ class TestGithubPullRequest(TestCase):
         data['maintainer_can_modify'] = False
 
         model = PullRequest(data)
-        eq_(False, model.maintainer_can_modify)
+        pull = GithubPullRequest(model)
+        eq_(True, pull.maintainer_can_modify)
+
+    def test_maintainer_can_modify__forked_repo(self):
+        fixture = load_fixture('pull_request.json')
+        data = json.loads(fixture)['pull_request']
+
+        # Make repo different
+        data['head']['repo']['full_name'] = 'contributor/lint-test'
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(True, pull.maintainer_can_modify, 'reflects flag')
+
+        # Different repo reflects flag data
+        data['maintainer_can_modify'] = False
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(False, pull.maintainer_can_modify)
+
+        data['maintainer_can_modify'] = True
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(True, pull.maintainer_can_modify)
 
 
 @contextmanager

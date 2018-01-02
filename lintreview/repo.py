@@ -109,7 +109,15 @@ class GithubPullRequest(object):
 
     @property
     def maintainer_can_modify(self):
+        """Whether or not the maintainers can update this pull
+        request.
+
+        Maintainers can always edit pulls from the head repo.
+        """
         data = self.pull.as_dict()
+        if data['base']['repo']['full_name'] == \
+                data['head']['repo']['full_name']:
+            return True
         return data['maintainer_can_modify']
 
     def commits(self):
