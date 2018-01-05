@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from lintreview.diff import parse_diff, Diff
+from lintreview.diff import parse_diff, Diff, DiffCollection
 from lintreview.fixers.commit_strategy import CommitStrategy
 from lintreview.fixers.error import ConfigurationError
 import lintreview.git as git
@@ -47,6 +47,9 @@ def run_fixers(tools, base_path, files):
 
 def find_intersecting_diffs(original, fixed):
     intersection = []
+    if not original or not fixed:
+        return intersection
+
     for name in fixed.get_files():
         original_diff = original.all_changes(name)
         if not len(original_diff):

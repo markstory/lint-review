@@ -84,6 +84,17 @@ def test_find_intersecting_diffs__no_intersect():
     eq_(0, len(result))
 
 
+def test_find_intersecting_diffs__list():
+    diff = load_fixture('diff/intersecting_hunks_original.txt')
+    diffs = parse_diff(diff)
+
+    result = fixers.find_intersecting_diffs(diffs, [])
+    eq_(0, len(result))
+
+    result = fixers.find_intersecting_diffs([], diff)
+    eq_(0, len(result))
+
+
 def test_apply_fixer_diff__missing_strategy_key():
     original = Mock()
     changed = Mock()
