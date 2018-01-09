@@ -139,6 +139,23 @@ def test_apply_fixer_diff__calls_execute():
     eq_(1, strategy.execute.call_count)
 
 
+def test_apply_fixer_diff__no_intersection():
+    strategy_factory = Mock()
+    strategy = Mock()
+    strategy_factory.return_value = strategy
+
+    fixers.add_strategy('mock', strategy_factory)
+
+    original = load_fixture('diff/no_intersect_original.txt')
+    updated = load_fixture('diff/no_intersect_updated.txt')
+    original = parse_diff(original)
+    updated = parse_diff(updated)
+
+    context = {'strategy': 'mock'}
+    fixers.apply_fixer_diff(original, updated, context)
+    eq_(0, strategy.execute.call_count)
+
+
 def test_create_context():
     config = build_review_config(fixer_ini)
     context = fixers.create_context(

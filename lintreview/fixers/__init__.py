@@ -57,7 +57,8 @@ def find_intersecting_diffs(original, fixed):
             continue
         fixed_diff = fixed.all_changes(name)[0]
         hunks = fixed_diff.intersection(original_diff[0])
-        intersection.append(Diff(None, name, '00000', hunks=hunks))
+        if len(hunks):
+            intersection.append(Diff(None, name, '00000', hunks=hunks))
     return intersection
 
 
@@ -83,6 +84,9 @@ def apply_fixer_diff(original_diffs, fixer_diff, strategy_context):
         raise ConfigurationError(msg)
 
     changes_to_apply = find_intersecting_diffs(original_diffs, fixer_diff)
+    if len(changes_to_apply) == 0:
+        log.info('No intersecting changes found. Skipping fixer workflow.')
+        return
     workflow.execute(changes_to_apply)
 
 
