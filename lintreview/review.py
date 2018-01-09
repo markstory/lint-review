@@ -132,9 +132,6 @@ class Review(object):
         to new problems. Once the new unique problems
         are distilled new comments are published.
         """
-        log.info('Publishing review of %s',
-                 self._pr.display_name)
-
         if not problems.has_changes():
             return self.publish_empty_comment()
 
@@ -261,6 +258,7 @@ class Review(object):
             self._pr.create_comment(comment)
 
     def publish_empty_comment(self):
+        log.info('Publishing empty comment.')
         self.remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
@@ -274,8 +272,11 @@ class Review(object):
             )
 
     def publish_summary(self, problems):
+        num_comments = len(problems)
+        log.info('Publishing summary comment for %s errors', num_comments)
+
         self.remove_ok_label()
-        body = "There are {0} errors:\n\n".format(len(problems))
+        body = "There are {0} errors:\n\n".format(num_comments)
         for problem in problems:
             body += "* {0.filename}, line {0.line} - {0.body}\n".format(
                 problem)
