@@ -188,7 +188,7 @@ class Diff(object):
     def __init__(self, patch, filename, sha, hunks=None):
         self._filename = filename
         self._sha = sha
-        if hunks:
+        if hunks is not None:
             for hunk in hunks:
                 assert isinstance(hunk, Hunk), 'Hunk objects are required.'
             self._hunks = tuple(hunks)
