@@ -70,8 +70,8 @@ class GithubPullRequest(object):
     @property
     def display_name(self):
         data = self.pull.as_dict()
-        return u'%s#%s' % (data['head']['repo']['full_name'],
-                           data['number'])
+        return u'%s/pull/%s' % (data['head']['repo']['full_name'],
+                                data['number'])
 
     @property
     def number(self):

@@ -89,7 +89,7 @@ class TestGithubPullRequest(TestCase):
 
     def test_display_name(self):
         pull = GithubPullRequest(self.model)
-        assert 'markstory/lint-test#1' == pull.display_name
+        assert 'markstory/lint-test/pull/1' == pull.display_name
 
     def test_number(self):
         pull = GithubPullRequest(self.model)
