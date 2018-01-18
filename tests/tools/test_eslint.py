@@ -2,17 +2,17 @@ from __future__ import absolute_import
 from unittest import TestCase
 from unittest import skipIf
 
-from lintreview.review import Problems
-from lintreview.review import Comment, IssueComment
+from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+from lintreview.utils import in_path, npm_exists
 from nose.tools import eq_, ok_
+from tests import read_file, read_and_restore_file
 
 eslint_missing = not(in_path('eslint') or npm_exists('eslint'))
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/eslint/no_errors.js',
 FILE_WITH_ERRORS = 'tests/fixtures/eslint/has_errors.js'
+FILE_WITH_FIXER_ERRORS = 'tests/fixtures/eslint/fixer_errors.js'
 
 
 class TestEslint(TestCase):
@@ -116,3 +116,39 @@ class TestEslint(TestCase):
                "Missing semicolon. (semi)")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
         eq_(expected, problems)
+
+    def test_has_fixer__not_enabled(self):
+        tool = Eslint(self.problems, {})
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Eslint(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    @needs_eslint
+    def test_execute_fixer(self):
+        tool = Eslint(self.problems, {
+            'config': 'tests/fixtures/eslint/recommended_config.json',
+            'fixer': True,
+        })
+        original = read_file(FILE_WITH_FIXER_ERRORS)
+        tool.execute_fixer([FILE_WITH_FIXER_ERRORS])
+
+        updated = read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
+    @needs_eslint
+    def test_execute_fixer__no_problems_remain(self):
+        tool = Eslint(self.problems, {
+            'config': 'tests/fixtures/eslint/recommended_config.json',
+            'fixer': True
+        })
+
+        # The fixture file can have all problems fixed by eslint
+        original = read_file(FILE_WITH_FIXER_ERRORS)
+        tool.execute_fixer([FILE_WITH_FIXER_ERRORS])
+        tool.process_files([FILE_WITH_FIXER_ERRORS])
+
+        read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
+        eq_(0, len(self.problems.all()), 'All errors should be autofixed')
