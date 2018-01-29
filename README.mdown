@@ -29,6 +29,22 @@ of lint-review, [stickler-ci.com provides a hosted version of
 lint-review](https://stickler-ci.com) featuring all the linters installed, and
 an easier to use YAML config file.
 
+In the free version of Stickler-CI you will have access to:
+- Hosted service
+- Connection to public repositories
+- Commenting on style errors
+- Auto fixing for style errors
+- Clean user interface; and
+- Robust documentation
+
+In the paid version of Stickler-ci you will have access to:
+- Hosted service
+- Connection to public and private repositories
+- Commenting on style errors
+- Auto fixing for style errors
+- Custom user account (adding Stickler-CI to an anonymous GitHub collaborator seat)
+- Clean user interface; and
+- Robust documentation
 
 ## Installation
 
