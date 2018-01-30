@@ -29,12 +29,7 @@ class Rubocop(Tool):
         Run code checks with rubocop
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['rubocop']
-        if bundle_exists('rubocop'):
-            command = ['bundle', 'exec', 'rubocop']
-        command += ['--format', 'emacs']
-        if self.options.get('display_cop_names', '').lower() == 'true':
-            command += ['--display-cop-names']
+        command = self._create_command()
         command += files
         output = run_command(
             command,
@@ -51,6 +46,15 @@ class Rubocop(Tool):
             filename, line, error = self._parse_line(line)
             self.problems.add(filename, line, error)
 
+    def _create_command(self):
+        command = ['rubocop']
+        if bundle_exists('rubocop'):
+            command = ['bundle', 'exec', 'rubocop']
+        command += ['--format', 'emacs']
+        if self.options.get('display_cop_names', '').lower() == 'true':
+            command.append('--display-cop-names')
+        return command
+
     def _parse_line(self, line):
         """
         `rubocop --format emacs` lines look like this:
@@ -59,3 +63,25 @@ class Rubocop(Tool):
         parts = line.split(':', 3)
         message = parts[3].strip()
         return (parts[0], int(parts[1]), message)
+
+    def has_fixer(self):
+        """
+        Rubocop has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
+    def process_fixer(self, files):
+        """Run Rubocop in the fixer mode.
+        """
+        command = self.create_fixer_command(files)
+        output = run_command(
+            command,
+            ignore_error=True,
+            include_errors=False)
+        log.debug(output)
+
+    def create_fixer_command(self, files):
+        command = self._create_command()
+        command.append('--auto-correct')
+        command += files
+        return command
