@@ -118,4 +118,5 @@ class TestPep8(TestCase):
 
         read_and_restore_file(self.fixtures[1], original)
         assert len(self.problems.all()) > 0, 'Most errors should be fixed'
-        assert_in("'<>' is deprecated", self.problems.all().pop().body)
+        text = [c.body for c in self.problems.all()]
+        assert_in("'<>' is deprecated", ' '.join(text))
