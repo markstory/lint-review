@@ -106,5 +106,5 @@ class TestFlake8(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        eq_(3, len(self.problems.all()), 'Most errors should be fixed')
-        assert_in("'os' imported", self.problems.all()[0].body)
+        assert 1 < len(self.problems.all()), 'Most errors should be fixed'
+        assert_in("'<>' is deprecated", self.problems.all().pop().body)
