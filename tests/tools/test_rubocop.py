@@ -1,12 +1,11 @@
 from __future__ import absolute_import
 from os.path import abspath
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Comment, Problems
 from lintreview.utils import in_path, bundle_exists
 from lintreview.tools.rubocop import Rubocop
-from unittest import TestCase
-from unittest import skipIf
-from nose.tools import eq_
+from tests import read_file, read_and_restore_file
+from unittest import TestCase, skipIf
+from nose.tools import eq_, assert_in
 
 
 rubocop_missing = not(in_path('rubocop') or bundle_exists('rubocop'))
@@ -74,3 +73,35 @@ class TestRubocop(TestCase):
             4,
             'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
         eq_(expected, problems[1])
+
+    def test_has_fixer__not_enabled(self):
+        tool = Rubocop(self.problems, {})
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Rubocop(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    @needs_rubocop
+    def test_execute_fixer(self):
+        tool = Rubocop(self.problems, {'fixer': True})
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
+    @needs_rubocop
+    def test_execute_fixer__fewer_problems_remain(self):
+        tool = Rubocop(self.problems, {'fixer': True})
+
+        # The fixture file can have all problems fixed by rubocop
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+        tool.process_files(self.fixtures)
+
+        read_and_restore_file(self.fixtures[1], original)
+        eq_(1, len(self.problems.all()), 'Most errors should be fixed')
+        assert_in('too long', self.problems.all()[0].body)
