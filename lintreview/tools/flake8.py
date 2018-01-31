@@ -24,6 +24,13 @@ class Flake8(Tool):
         'snippet',
     ]
 
+    AUTOPEP8_OPTIONS = [
+        'exclude',
+        'max-line-length',
+        'select',
+        'ignore',
+    ]
+
     def check_dependencies(self):
         """
         See if flake8 is on the PATH
@@ -58,8 +65,39 @@ class Flake8(Tool):
                     '--%s' % option,
                     self.options.get(option)
                 ])
-            else:
-                log.warning('Set non-existent flake8 option: %s', option)
 
+        command += files
+        return command
+
+    def has_fixer(self):
+        """
+        flake8 has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
+    def process_fixer(self, files):
+        """Run autopep8, as flake8 has no fixer mode.
+        """
+        command = self.create_fixer_command(files)
+        run_command(
+            command,
+            ignore_error=True,
+            include_errors=False)
+
+    def create_fixer_command(self, files):
+        command = [
+            'autopep8',
+            '--in-place',
+            '--ignore-local-config',
+            '--pep8-passes', '5'
+        ]
+        for option in self.options:
+            if option in self.AUTOPEP8_OPTIONS:
+                command.extend([
+                    '--%s' % option,
+                    self.options.get(option)
+                ])
+        if 'config' in self.options:
+            command.extend(['--global-config', self.options.get('config')])
         command += files
         return command

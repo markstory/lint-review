@@ -1,9 +1,9 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.pep8 import Pep8
 from unittest import TestCase
 from nose.tools import eq_, assert_in, assert_not_in
+from tests import read_file, read_and_restore_file
 
 
 class TestPep8(TestCase):
@@ -89,3 +89,33 @@ class TestPep8(TestCase):
         eq_(1, len(problems))
         for p in problems:
             assert_in('W603', p.body)
+
+    def test_has_fixer__not_enabled(self):
+        tool = Pep8(self.problems, {})
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Pep8(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    def test_execute_fixer(self):
+        tool = Pep8(self.problems, {'fixer': True})
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
+    def test_execute_fixer__fewer_problems_remain(self):
+        tool = Pep8(self.problems, {'fixer': True})
+
+        # The fixture file can have all problems fixed by autopep8
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+        tool.process_files(self.fixtures)
+
+        read_and_restore_file(self.fixtures[1], original)
+        eq_(2, len(self.problems.all()), 'Most errors should be fixed')
+        assert_in("'<>' is deprecated", self.problems.all()[1].body)
