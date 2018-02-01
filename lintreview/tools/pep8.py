@@ -11,6 +11,13 @@ class Pep8(Tool):
 
     name = 'pep8'
 
+    AUTOPEP8_OPTIONS = [
+        'exclude',
+        'max-line-length',
+        'select',
+        'ignore',
+    ]
+
     def check_dependencies(self):
         """
         See if pep8 is on the PATH
@@ -38,8 +45,6 @@ class Pep8(Tool):
         for option, value in self.options.items():
             if option in pep8_options:
                 command += [u'--{}'.format(option), value]
-            else:
-                log.error('%s is not a valid option to pep8', option)
         command += files
         output = run_command(command, split=True, ignore_error=True)
         if not output:
@@ -47,3 +52,36 @@ class Pep8(Tool):
             return False
 
         process_quickfix(self.problems, output, lambda name: name)
+
+    def has_fixer(self):
+        """
+        pep8 has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
+    def process_fixer(self, files):
+        """Run autopep8, as pep8 has no fixer mode.
+        """
+        command = self.create_fixer_command(files)
+        run_command(
+            command,
+            ignore_error=True,
+            include_errors=False)
+
+    def create_fixer_command(self, files):
+        command = [
+            'autopep8',
+            '--in-place',
+            '--ignore-local-config',
+            '--pep8-passes', '5'
+        ]
+        for option in self.options:
+            if option in self.AUTOPEP8_OPTIONS:
+                command.extend([
+                    '--%s' % option,
+                    self.options.get(option)
+                ])
+        if 'config' in self.options:
+            command.extend(['--global-config', self.options.get('config')])
+        command += files
+        return command

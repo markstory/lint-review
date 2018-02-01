@@ -74,11 +74,10 @@ class Rubocop(Tool):
         """Run Rubocop in the fixer mode.
         """
         command = self.create_fixer_command(files)
-        output = run_command(
+        run_command(
             command,
             ignore_error=True,
             include_errors=False)
-        log.debug(output)
 
     def create_fixer_command(self, files):
         command = self._create_command()
