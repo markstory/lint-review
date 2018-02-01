@@ -108,6 +108,20 @@ class TestPep8(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
+    def test_execute_fixer__options(self):
+        tool = Pep8(self.problems, {
+            'fixer': True,
+            'max-line-length': 120,
+            'exclude': 'W201'
+        })
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
     def test_execute_fixer__fewer_problems_remain(self):
         tool = Pep8(self.problems, {'fixer': True})
 
