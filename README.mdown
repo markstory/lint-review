@@ -173,6 +173,20 @@ linters your project uses.  Each tool can also have a section prefixed with `too
 to define additional configuration options for each tool. The documentation for
 each tool outlines which options are supported.
 
+You can list multiple `tool_` sections as follows (**note the _# suffixes**):
+
+    [tool_eslint_#client]
+    config = client/.eslintrc
+    working_dir = client
+    install = true
+
+    [tool_eslint_#server]
+    config = server/.eslintrc.json
+    working_dir = server
+    install = true
+
+Each section must have a unique name, but anything after and including `_#` is ignored when determining the linter for which it applies. This allows you to run the same linter multiple times with different settings for each run. The documentation for each linter outlines which settings are available.
+
 The `[files]` section is optional and allows you to define ignore patterns. These patterns
 are used to find and exclude files when doing a review. Ignore patterns use glob expressions
 to find files. The patterns start at the reviewed repository root. If you need to ignore mulitple
