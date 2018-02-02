@@ -41,13 +41,14 @@ class Eslint(Tool):
         working_dir = self.options.get('working_dir')
         if working_dir:
             path = os.path.join(self.base_path, working_dir)
-            log.debug("CURRENT WORKING DIRECTORY: %s", path)
+            log.debug('Working in directory %s', path)
             os.chdir(path)
-            if self.options.get('install'):
-                try:
-                    output = run_command(['npm', 'install'])
-                except Exception as e:
-                    log.debug(e)
+
+        if self.options.get('install'):
+            try:
+                output = run_command(['npm', 'install'])
+            except Exception as e:
+                log.error('Error running composer install: %s', str(e))
 
         command = self._create_command()
 
