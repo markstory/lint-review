@@ -196,6 +196,7 @@ def factory(config, problems, base_path):
     for linter in config.linters():
         linter_config = config.linter_config(linter)
         try:
+            linter = linter.split('_#')[0]
             classname = linter.capitalize()
             log.debug("Attempting to import 'lintreview.tools.%s'", linter)
             mod = __import__('lintreview.tools.' + linter, fromlist='*')
