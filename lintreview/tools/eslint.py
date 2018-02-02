@@ -36,12 +36,28 @@ class Eslint(Tool):
         """Run code checks with ESLint.
         """
         log.debug('Processing %s files with %s', files, self.name)
+
+        app_dir = os.getcwd()
+        working_dir = self.options.get('working_dir')
+        if working_dir:
+            path = os.path.join(self.base_path, working_dir)
+            log.debug("CURRENT WORKING DIRECTORY: %s", path)
+            os.chdir(path)
+            if self.options.get('install'):
+                try:
+                    output = run_command(['npm', 'install'])
+                except Exception as e:
+                    log.debug(e)
+
         command = self._create_command()
 
         command += files
         output = run_command(
             command,
             ignore_error=True)
+
+        if working_dir:
+            os.chdir(app_dir)
         self._process_output(output, files)
 
     def process_fixer(self, files):
