@@ -6,7 +6,7 @@ RUN apk add --no-cache \
         libxml2=2.9.5-r0 \
         musl-dev=1.1.16-r14 \
         openssl-dev=1.0.2n-r0 \
-        php7=7.1.9-r0 \
+        openssl=1.0.2n-r0 \
         python2=2.7.13-r1 \
         python-dev=2.7.13-r1 \
         py-pip=9.0.1-r1 \
@@ -16,4 +16,5 @@ WORKDIR /code
 ADD requirements.txt ./
 RUN pip install -r requirements.txt
 ADD . ./
-RUN cp settings.sample.py settings.py
+RUN pip install . \
+ && cp settings.sample.py settings.py
