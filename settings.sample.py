@@ -87,13 +87,13 @@ SSL_CA_BUNDLE = None
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
 # Used as the author information when making commits
-GITHUB_AUTHOR_NAME = 'lintreview'
-GITHUB_AUTHOR_EMAIL = 'lintreview@example.com'
+GITHUB_AUTHOR_NAME = env('LINTREVIEW_GITHUB_AUTHOR_NAME', 'lintreview')
+GITHUB_AUTHOR_EMAIL = env('LINTREVIEW_GITHUB_AUTHOR_EMAIL', 'lintreview@example.com')
 
 # Status Configuration
 ######################
 # Customize the build status integration name. Defaults to lintreview.
-# APP_NAME = 'lintreview'
+APP_NAME = env('LINTREVIEW_APP_NAME', 'lintreview')
 
 # Publish result to a pull requests status
 PULLREQUEST_STATUS = env('LINTREVIEW_PULLREQUEST_STATUS', True, bool)

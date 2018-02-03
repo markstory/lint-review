@@ -17,7 +17,7 @@ class Eslint(Tool):
     def check_dependencies(self):
         """See if ESLint is on the system path.
         """
-        return in_path('eslint') or npm_exists('eslint')
+        return in_path('eslint') or npm_exists('eslint', cwd=self.get_working_dir())
 
     def match_file(self, filename):
         """Check if a file should be linted using ESLint.
@@ -37,18 +37,12 @@ class Eslint(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
 
-        app_dir = os.getcwd()
-        working_dir = self.options.get('working_dir')
-        if working_dir:
-            path = os.path.join(self.base_path, working_dir)
-            log.debug('Working in directory %s', path)
-            os.chdir(path)
-
         if self.options.get('install'):
-            try:
-                output = run_command(['npm', 'install'])
-            except Exception as e:
-                log.error('Error running composer install: %s', str(e))
+            output = run_command(
+                ['npm', 'install'],
+                ignore_error=True,
+                cwd=self.get_working_dir())
+            log.debug('Install output: %s', e)
 
         command = self._create_command()
 
@@ -57,8 +51,6 @@ class Eslint(Tool):
             command,
             ignore_error=True)
 
-        if working_dir:
-            os.chdir(app_dir)
         self._process_output(output, files)
 
     def process_fixer(self, files):
@@ -79,8 +71,8 @@ class Eslint(Tool):
 
     def _create_command(self):
         cmd = 'eslint'
-        if npm_exists('eslint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'eslint')
+        if npm_exists('eslint', cwd=self.get_working_dir()):
+            cmd = os.path.join(self.get_working_dir(), 'node_modules', '.bin', 'eslint')
         command = [cmd, '--format', 'checkstyle']
 
         # Add config file or default to recommended linters

@@ -23,6 +23,12 @@ class Tool(object):
         if isinstance(options, dict):
             self.options = options
 
+    def get_working_dir(self):
+        working_dir = self.options.get('working_dir')
+        if working_dir:
+            return os.path.join(self.base_path, working_dir)
+        return os.getcwd()
+
     def check_dependencies(self):
         """
         Used to check for a tools commandline

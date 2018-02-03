@@ -22,7 +22,7 @@ class Phpcs(Tool):
         """
         See if PHPCS is on the system path.
         """
-        return in_path('phpcs') or composer_exists('phpcs')
+        return in_path('phpcs') or composer_exists('phpcs', cwd=self.get_working_dir())
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -37,27 +37,18 @@ class Phpcs(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
 
-        app_dir = os.getcwd()
-        working_dir = self.options.get('working_dir')
-        if working_dir:
-            path = os.path.join(self.base_path, working_dir)
-            log.debug('Changing directory to %s', path)
-            os.chdir(path)
-
         if self.options.get('install'):
-            try:
-                output = run_command(['composer', 'install'])
-            except Exception as e:
-                log.error('Error running composer install: %s', str(e))
+            output = run_command(
+                ['composer', 'install'],
+                ignore_error=True,
+                cwd=self.get_working_dir())
+            log.debug('Install output: %s', e)
 
         command = self.create_command(files)
         output = run_command(
             command,
             ignore_error=True,
             include_errors=False)
-
-        if working_dir:
-            os.chdir(app_dir)
 
         filename_converter = functools.partial(
             self._relativize_filename,
@@ -84,7 +75,7 @@ class Phpcs(Tool):
 
     def create_command(self, files):
         command = ['phpcs']
-        if composer_exists('phpcs'):
+        if composer_exists('phpcs', cwd=self.get_working_dir()):
             command = ['vendor/bin/phpcs']
         command += ['--report=checkstyle']
         command = self._apply_options(command)
@@ -128,7 +119,7 @@ class Phpcs(Tool):
 
     def create_fixer_command(self, files):
         command = ['phpcbf']
-        if composer_exists('phpcbf'):
+        if composer_exists('phpcbf', cwd=self.get_working_dir()):
             command = ['vendor/bin/phpcbf']
         command = self._apply_options(command)
         command += files
