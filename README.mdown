@@ -273,10 +273,10 @@ to do style checks on PHP, Javascript and or CSS files.
 
 `working_dir` and `install` can be used together to avoid having to install linting packages globally inside this linter. Instead, set `working_dir` to the location of your project's package.json and set `install = true`.
 
-**NOTE** If `install` isn't specified, you'll need to install the eslint npm package:
+**NOTE** If `install` isn't specified, you'll need to install the PHPCS globall:
 
     cd path/to/lintreview
-    npm install eslint
+    composer require "squizlabs/php_codesniffer=*"
 
 ### Javascript:
 
@@ -312,6 +312,7 @@ Uses the [eslint](http://eslint.org/) npm module to check javascript files.
 *Options*
 
 * `config` Provide a path to the json config file for eslint.
+* `extensions` The extensions to check. By default only `.js` and `.jsx` files will be checked.
 * `working_dir` Change the working directory before linting. 
 * `install` Run npm install before linting. Runs in `working_dir`, if specified. Otherwise, runs in the root directory of this linter. Any non-empty value for this option will trigger an install.
 
