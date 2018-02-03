@@ -22,7 +22,8 @@ class Phpcs(Tool):
         """
         See if PHPCS is on the system path.
         """
-        return in_path('phpcs') or composer_exists('phpcs', cwd=self.get_working_dir())
+        working_dir = self.get_working_dir()
+        return in_path('phpcs') or composer_exists('phpcs', cwd=working_dir)
 
     def match_file(self, filename):
         base = os.path.basename(filename)
