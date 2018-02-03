@@ -18,7 +18,8 @@ class Eslint(Tool):
     def check_dependencies(self):
         """See if ESLint is on the system path.
         """
-        return in_path('eslint') or npm_exists('eslint', cwd=self.get_working_dir())
+        working_dir = self.get_working_dir()
+        return in_path('eslint') or npm_exists('eslint', cwd=working_dir)
 
     def match_file(self, filename):
         """Check if a file should be linted using ESLint.
@@ -74,8 +75,9 @@ class Eslint(Tool):
 
     def _create_command(self):
         cmd = 'eslint'
-        if npm_exists('eslint', cwd=self.get_working_dir()):
-            cmd = os.path.join(self.get_working_dir(), 'node_modules', '.bin', 'eslint')
+        working_dir = self.get_working_dir()
+        if npm_exists('eslint', cwd=working_dir):
+            cmd = os.path.join(working_dir, 'node_modules', '.bin', 'eslint')
         command = [cmd, '--format', 'checkstyle']
 
         # Add config file or default to recommended linters
