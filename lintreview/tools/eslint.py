@@ -6,6 +6,7 @@ import re
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, run_command, process_checkstyle
 from lintreview.utils import in_path, npm_exists
+from lintreview.config import comma_value
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +25,9 @@ class Eslint(Tool):
         """
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.js' or ext == '.jsx'
+        extensions = comma_value(self.options.get('extensions', '.js,.jsx'))
+        log.debug('Using extensions %s', extensions)
+        return ext in extensions
 
     def has_fixer(self):
         """Eslint has a fixer that can be enabled
