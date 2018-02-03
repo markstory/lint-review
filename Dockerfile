@@ -36,8 +36,8 @@ ENV BUNDLE_SILENCE_ROOT_WARNING 1
 ADD Gemfile Gemfile.lock /code/
 RUN bundler install --system
 
-ADD requirements.txt /code/
-RUN pip install -r requirements.txt
+ADD requirements.txt requirements-linters.txt /code/
+RUN pip install -r requirements.txt -r requirements-linters.txt
 ADD . /code
 RUN pip install .
 RUN cp /code/settings.sample.py /code/settings.py
