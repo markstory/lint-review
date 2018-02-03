@@ -276,9 +276,9 @@ class Review(object):
         log.info('Publishing summary comment for %s errors', num_comments)
 
         self.remove_ok_label()
-        body = "There are {0} errors:\n\n".format(num_comments)
+        body = u"There are {0} errors:\n\n".format(num_comments)
         for problem in problems:
-            body += "* {0.filename}, line {0.line} - {0.body}\n".format(
+            body += u"* {0.filename}, line {0.line} - {0.body}\n".format(
                 problem)
         self._pr.create_comment(body)
 
