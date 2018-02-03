@@ -42,7 +42,7 @@ class Eslint(Tool):
                 ['npm', 'install'],
                 ignore_error=True,
                 cwd=self.get_working_dir())
-            log.debug('Install output: %s', e)
+            log.debug('Install output: %s', output)
 
         command = self._create_command()
 

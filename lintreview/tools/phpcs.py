@@ -42,7 +42,7 @@ class Phpcs(Tool):
                 ['composer', 'install'],
                 ignore_error=True,
                 cwd=self.get_working_dir())
-            log.debug('Install output: %s', e)
+            log.debug('Install output: %s', output)
 
         command = self.create_command(files)
         output = run_command(
