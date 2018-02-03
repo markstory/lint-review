@@ -271,7 +271,7 @@ to do style checks on PHP, Javascript and or CSS files.
 * `working_dir` Change the working directory before linting. 
 * `install` Run composer install before linting. Runs in `working_dir`, if specified. Otherwise, runs in the root directory of this linter. Any non-empty value for this option will trigger an install.
 
-`working_dir` and `install` can be used together to avoid having to install linting packages globally inside this linter. Instead, set `working_dir` to the location of your project's package.json and set `install = true`.
+`working_dir` and `install` can be used together to avoid having to pre-install linting packages inside this linter. Instead, set `working_dir` to the location of your project's composer.json and set `install = true`.
 
 **NOTE** If `install` isn't specified, you'll need to install the PHPCS globall:
 
@@ -316,7 +316,7 @@ Uses the [eslint](http://eslint.org/) npm module to check javascript files.
 * `working_dir` Change the working directory before linting. 
 * `install` Run npm install before linting. Runs in `working_dir`, if specified. Otherwise, runs in the root directory of this linter. Any non-empty value for this option will trigger an install.
 
-`working_dir` and `install` can be used together to avoid having to install linting packages globally inside this linter. For example, if one of your projects requires `eslint-plugin-vue` while the other needs `eslint-plugin-react`, you don't need to install them both inside the linter. Instead, set `working_dir` to the location of your project's package.json and set `install = true`. This will also help if you're having problems with the linter being unable to resolve required packages.
+`working_dir` and `install` can be used together to avoid having to pre-install linting packages inside this linter. For example, if one of your projects requires `eslint-plugin-vue` while the other needs `eslint-plugin-react`, you don't need to install them both inside the linter. Instead, set `working_dir` to the location of your project's package.json and set `install = true`. This will also help if you're having problems with the linter being unable to resolve required packages.
 
 **NOTE** If `install` isn't specified, you'll need to install the eslint npm package:
 
