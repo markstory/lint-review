@@ -267,7 +267,7 @@ class Review(object):
         if self.config.get('PULLREQUEST_STATUS', True):
             self._repo.create_status(
                 self._pr.head,
-                'error',
+                'success',
                 body
             )
 
