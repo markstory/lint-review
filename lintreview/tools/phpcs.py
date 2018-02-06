@@ -38,18 +38,21 @@ class Phpcs(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
 
+        working_dir = self.get_working_dir()
+
         if self.options.get('install'):
             output = run_command(
                 ['composer', 'install'],
                 ignore_error=True,
-                cwd=self.get_working_dir())
+                cwd=working_dir)
             log.debug('Install output: %s', output)
 
         command = self.create_command(files)
         output = run_command(
             command,
             ignore_error=True,
-            include_errors=False)
+            include_errors=False,
+            cwd=working_dir)
 
         filename_converter = functools.partial(
             self._relativize_filename,
@@ -116,7 +119,8 @@ class Phpcs(Tool):
         run_command(
             command,
             ignore_error=True,
-            include_errors=False)
+            include_errors=False,
+            cwd=self.get_working_dir())
 
     def create_fixer_command(self, files):
         command = ['phpcbf']

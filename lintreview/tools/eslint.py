@@ -41,11 +41,12 @@ class Eslint(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
 
+        working_dir = self.get_working_dir
         if self.options.get('install'):
             output = run_command(
                 ['npm', 'install'],
                 ignore_error=True,
-                cwd=self.get_working_dir())
+                cwd=working_dir)
             log.debug('Install output: %s', output)
 
         command = self._create_command()
@@ -53,7 +54,8 @@ class Eslint(Tool):
         command += files
         output = run_command(
             command,
-            ignore_error=True)
+            ignore_error=True,
+            cwd=working_dir)
 
         self._process_output(output, files)
 
@@ -64,7 +66,8 @@ class Eslint(Tool):
         output = run_command(
             command,
             ignore_error=True,
-            include_errors=False)
+            include_errors=False,
+            cwd=working_dir)
         log.debug(output)
 
     def create_fixer_command(self, files):
