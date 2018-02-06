@@ -1,4 +1,4 @@
-FROM node:8.9.4-alpine
+FROM alpine:3.7
 RUN apk add --no-cache \
         gcc=6.3.0-r4 \
         git=2.13.5-r0 \
