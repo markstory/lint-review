@@ -270,6 +270,8 @@ def process_checkstyle(problems, xml, filename_converter):
             message = err.get('message')
             if ',' in line:
                 lines = [int(x) for x in line.split(',')]
+            elif not line.isdigit():
+                continue
             else:
                 lines = [int(line)]
             list(map(lambda x: problems.add(filename, x, message), lines))
