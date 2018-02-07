@@ -39,6 +39,7 @@ class Phpcs(Tool):
         log.debug('Processing %s files with %s', files, self.name)
 
         working_dir = self.get_working_dir()
+        log.debug('Working in dir %s', working_dir)
 
         if self.options.get('install'):
             output = run_command(
