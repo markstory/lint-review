@@ -284,7 +284,7 @@ class TestReview(TestCase):
 
         self.repo.create_status.assert_called_with(
             self.pr.head,
-            'error',
+            'success',
             msg)
 
         self.pr.create_comment.assert_called_with(msg)
