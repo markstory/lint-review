@@ -1,11 +1,11 @@
 FROM alpine:3.7
 RUN apk add --no-cache \
-        curl=7.57.0-r0 \
+        curl=7.58.0-r0 \
         gcc=6.4.0-r5 \
         git=2.15.0-r1 \
         libffi-dev=3.2.1-r4 \
         libxml2=2.9.7-r0 \
-        musl-dev=1.1.18-r2 \
+        musl-dev=1.1.18-r3 \
         openssl-dev=1.0.2n-r0 \
         openssl=1.0.2n-r0 \
         python2=2.7.14-r2 \
