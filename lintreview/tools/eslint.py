@@ -91,6 +91,7 @@ class Eslint(Tool):
         return command
 
     def _process_output(self, output, files):
+        log.debug("Linting output:\n%s", output)
         if '<?xml' not in output:
             return self._config_error(output)
 
