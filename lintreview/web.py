@@ -54,6 +54,8 @@ def start_review():
     try:
         lintrc = get_lintrc(gh, head_repo_ref)
         log.debug("lintrc file contents '%s'", lintrc)
+        if not lintrc:
+            raise Exception('lintrc does not exist or is empty')
     except Exception as e:
         log.warn("Cannot download .lintrc file for '%s', "
                  "skipping lint checks.", base_repo_url)
