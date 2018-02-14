@@ -154,7 +154,7 @@ def run_command(
         env=None,
         cwd=None):
     """
-    Execute subprocesses.
+    Execute subprocesses using local tools.
     """
     command = list(map(six.text_type, command))
     log.info('Running %s', u' '.join(command))
@@ -183,6 +183,49 @@ def run_command(
     return_code = process.wait()
     if return_code and not ignore_error:
         raise Exception('Failed to execute %s', command)
+    return data
+
+
+def run_docker_command(
+        image,
+        command,
+        source_dir,
+        env=None,
+        timeout=None):
+    """
+    Execute tool commands in docker containers.
+
+    All output from the container will be treated as tool output
+    to be parsed by the tool adapter.
+
+    The source_dir will be mounted at `/src` in the container
+    for tool execution.
+    """
+    log.info('Running %s container', image)
+
+    env_args = []
+    if isinstance(env, dict):
+        for key, val in env:
+            env_args.append(u"-e {key}={val}".format(key=key, val=val))
+    elif env:
+        raise ValueError('env argument should be a dict')
+
+    command = ['docker', 'run', '--rm', '-v', u'{}:/src'.format(source_dir)]
+    command.extend(env_args)
+    command.extend(list(map(six.text_type, command)))
+
+    log.debug('Running %s', command)
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True)
+
+    data = process.stdout.read()
+    return_code = process.wait()
+    if return_code != 0:
+        raise Exception('Failed to execute %s %s', command, data)
     return data
 
 
