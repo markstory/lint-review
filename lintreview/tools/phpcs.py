@@ -6,10 +6,9 @@ from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
     process_checkstyle,
-    run_command,
     stringify
 )
-from lintreview.utils import composer_exists, in_path
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class Phpcs(Tool):
         """
         See if PHPCS is on the system path.
         """
-        return in_path('phpcs') or composer_exists('phpcs')
+        return docker.image_exists('phpcs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -37,13 +36,10 @@ class Phpcs(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
-        output = run_command(
+        output = docker.run(
+            'phpcs',
             command,
-            ignore_error=True,
-            include_errors=False)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
+            source_dir=self.base_path)
 
         # Check for errors from PHPCS
         if output.startswith('ERROR'):
@@ -53,7 +49,7 @@ class Phpcs(Tool):
                    '```')
             error = '\n'.join(output.split('\n')[0:1])
             return self.problems.add(IssueComment(msg.format(error)))
-        process_checkstyle(self.problems, output, filename_converter)
+        process_checkstyle(self.problems, output, docker.strip_base)
 
     def apply_base(self, path):
         """
@@ -62,15 +58,13 @@ class Phpcs(Tool):
         """
         if os.sep not in path:
             return path
-        return super(Phpcs, self).apply_base(path)
+        return docker.apply_base(path)
 
     def create_command(self, files):
         command = ['phpcs']
-        if composer_exists('phpcs'):
-            command = ['vendor/bin/phpcs']
         command += ['--report=checkstyle']
         command = self._apply_options(command)
-        command += files
+        command += docker.replace_basedir(self.base_path, files)
         return command
 
     def _apply_options(self, command):
@@ -103,15 +97,13 @@ class Phpcs(Tool):
         """Run PHPCS in the fixer mode.
         """
         command = self.create_fixer_command(files)
-        run_command(
+        docker.run(
+            'phpcs',
             command,
-            ignore_error=True,
-            include_errors=False)
+            source_dir=self.base_path)
 
     def create_fixer_command(self, files):
         command = ['phpcbf']
-        if composer_exists('phpcbf'):
-            command = ['vendor/bin/phpcbf']
         command = self._apply_options(command)
-        command += files
+        command += docker.replace_basedir(self.base_path, files)
         return command

@@ -5,6 +5,7 @@ import lintreview.git as git
 from github3.pulls import PullFile
 from github3.repos.commit import RepoCommit
 
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 test_dir = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(test_dir, 'fixtures')
 

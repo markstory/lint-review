@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs
-from lintreview.utils import composer_exists
+import lintreview.docker as docker
 from unittest import TestCase, skipIf
 from nose.tools import eq_, ok_
-from tests import read_file, read_and_restore_file
+from tests import root_dir, read_file, read_and_restore_file
 
-phpcs_missing = not(composer_exists('phpcs'))
+phpcs_missing = not(docker.image_exists('phpcs'))
 
 
 class Testphpcs(TestCase):
@@ -20,7 +20,7 @@ class Testphpcs(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Phpcs(self.problems)
+        self.tool = Phpcs(self.problems, base_path=root_dir)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.php'))
@@ -73,7 +73,7 @@ class Testphpcs(TestCase):
         config = {
             'standard': 'Zend'
         }
-        tool = Phpcs(self.problems, config)
+        tool = Phpcs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -86,7 +86,7 @@ class Testphpcs(TestCase):
             'standard': 'PSR2',
             'ignore': 'tests/fixtures/phpcs/*'
         }
-        tool = Phpcs(self.problems, config)
+        tool = Phpcs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -99,7 +99,7 @@ class Testphpcs(TestCase):
             'standard': 'PSR2',
             'exclude': 'Generic.WhiteSpace.DisallowTabIndent'
         }
-        tool = Phpcs(self.problems, config)
+        tool = Phpcs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -112,7 +112,7 @@ class Testphpcs(TestCase):
             'standard': 'PSR2',
             'exclude': 'Derpity.Derp'
         }
-        tool = Phpcs(self.problems, config)
+        tool = Phpcs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all()
@@ -123,42 +123,36 @@ class Testphpcs(TestCase):
         ok_('Derpity.Derp' in error)
 
     def test_create_command__with_builtin_standard(self):
-        command = 'vendor/bin/phpcs'
-        if phpcs_missing:
-            command = 'phpcs'
         config = {
             'standard': 'Zend',
             'tab_width': 4,
         }
-        tool = Phpcs(self.problems, config, '/some/path')
+        tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
         expected = [
-            command,
+            'phpcs',
             '--report=checkstyle',
             '--standard=Zend',
             '--extensions=php',
             '--tab-width=4',
-            'some/file.php'
+            '/src/some/file.php'
         ]
         eq_(result, expected)
 
     def test_create_command__with_path_based_standard(self):
-        command = 'vendor/bin/phpcs'
-        if phpcs_missing:
-            command = 'phpcs'
         config = {
             'standard': 'test/CodeStandards',
             'tab_width': 4,
         }
-        tool = Phpcs(self.problems, config, '/some/path')
+        tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
         expected = [
-            command,
+            'phpcs',
             '--report=checkstyle',
-            '--standard=/some/path/test/CodeStandards',
+            '--standard=/src/test/CodeStandards',
             '--extensions=php',
             '--tab-width=4',
-            'some/file.php'
+            '/src/some/file.php'
         ]
         eq_(result, expected)
 
@@ -169,19 +163,16 @@ class Testphpcs(TestCase):
             'exclude': ['rule1', 'rule2'],
             'ignore': ['tests/fixtures/phpcs/*', 'tests/fixtures/eslint/*']
         }
-        tool = Phpcs(self.problems, config)
+        tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
-        command = 'vendor/bin/phpcs'
-        if phpcs_missing:
-            command = 'phpcs'
         expected = [
-            command,
+            'phpcs',
             '--report=checkstyle',
             '--standard=PSR2',
             '--ignore=tests/fixtures/phpcs/*,tests/fixtures/eslint/*',
             '--exclude=rule1,rule2',
             '--extensions=php,ctp',
-            'some/file.php'
+            '/src/some/file.php'
         ]
         eq_(result, expected)
 
@@ -195,7 +186,7 @@ class Testphpcs(TestCase):
 
     @needs_phpcs
     def test_execute_fixer(self):
-        tool = Phpcs(self.problems, {'fixer': True})
+        tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 
         original = read_file(self.fixtures[1])
         tool.execute_fixer(self.fixtures)
@@ -206,7 +197,7 @@ class Testphpcs(TestCase):
 
     @needs_phpcs
     def test_execute_fixer__no_problems_remain(self):
-        tool = Phpcs(self.problems, {'fixer': True})
+        tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 
         # The fixture file can have all problems fixed by phpcs
         original = read_file(self.fixtures[1])
