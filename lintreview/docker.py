@@ -74,23 +74,22 @@ def run(image, command, source_dir, env=None, timeout=None):
         raise ValueError('env argument should be a dict')
 
     # TODO add timeout support
-    command = [
+    cmd = [
         'docker', 'run', '--rm',
         '-v', u'{}:{}'.format(source_dir, DOCKER_BASE)
     ]
-    command += env_args
-    command += list(map(six.text_type, command))
+    cmd += env_args
+    cmd.append(image)
+    cmd += list(map(six.text_type, command))
 
-    log.debug('Running %s', command)
+    log.debug('Running %s', ' '.join(cmd))
     process = subprocess.Popen(
-        command,
+        cmd,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True)
 
-    data = process.stdout.read()
-    return_code = process.wait()
-    if return_code != 0:
-        raise Exception('Failed to execute %s %s', command, data)
-    return data
+    output, error = process.communicate()
+
+    return output + error
