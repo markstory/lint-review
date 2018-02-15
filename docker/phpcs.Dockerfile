@@ -19,6 +19,7 @@ RUN cd /composer \
   && php /composer/composer.phar install \
   # make phpcs quack like a system binary
   && ln -s /composer/vendor/bin/phpcs /usr/bin/phpcs \
+  && ln -s /composer/vendor/bin/phpcbf /usr/bin/phpcbf \
   # Add coding standards to phpcs
   && vendor/bin/phpcs --config-set installed_paths /composer/vendor/wp-coding-standards/wpcs/,/composer/vendor/cakephp/cakephp-codesniffer \
   # cleanup
