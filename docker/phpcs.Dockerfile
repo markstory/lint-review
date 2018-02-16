@@ -21,7 +21,7 @@ RUN cd /composer \
   && ln -s /composer/vendor/bin/phpcs /usr/bin/phpcs \
   && ln -s /composer/vendor/bin/phpcbf /usr/bin/phpcbf \
   # Add coding standards to phpcs
-  && vendor/bin/phpcs --config-set installed_paths /composer/vendor/wp-coding-standards/wpcs/,/composer/vendor/cakephp/cakephp-codesniffer \
+  && vendor/bin/phpcs --config-set installed_paths /composer/vendor/cakephp/cakephp-codesniffer \
   # cleanup
   && rm /composer/composer.phar /composer/composer-setup.php /composer/composer.json /composer/composer.lock
 
