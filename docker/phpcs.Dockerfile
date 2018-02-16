@@ -1,14 +1,12 @@
-FROM php:7.2-stretch
+FROM php:7.2-alpine
 
 RUN mkdir /src \
   && mkdir /tool
 
-RUN apt-get update \
-  && apt-get install -y zip libzip-dev \
+RUN apk update \
+  && apk install -y zip libzip-dev \
   && docker-php-ext-install zip \
-  && apt-get -y autoremove \
-  && apt-get -y clean \
-  && rm -rf /var/lib/apt/lists/*
+  && apk cache clean
 
 COPY composer.json /tool
 

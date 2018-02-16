@@ -1,4 +1,4 @@
-FROM node:8-stretch
+FROM node:8-alpine
 
 RUN mkdir /src \
   && mkdir /tool
