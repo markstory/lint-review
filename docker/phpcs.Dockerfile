@@ -4,9 +4,9 @@ RUN mkdir /src \
   && mkdir /tool
 
 RUN apk update \
-  && apk install -y zip libzip-dev \
+  && apk add zip libzip-dev \
   && docker-php-ext-install zip \
-  && apk cache clean
+  && rm -rf /var/cache/apk/*
 
 COPY composer.json /tool
 
