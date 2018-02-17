@@ -92,4 +92,4 @@ def run(image, command, source_dir, env=None, timeout=None):
 
     output, error = process.communicate()
 
-    return output + error
+    return error + output
