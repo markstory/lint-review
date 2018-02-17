@@ -2,13 +2,12 @@ from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jscs import Jscs
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 from nose.tools import eq_
+from tests import root_dir
+import lintreview.docker as docker
 
-jscs_missing = not(in_path('jscs') or npm_exists('jscs'))
+jscs_missing = not(docker.image_exists('nodejs'))
 
 
 class TestJscs(TestCase):
@@ -22,7 +21,7 @@ class TestJscs(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Jscs(self.problems)
+        self.tool = Jscs(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -68,7 +67,7 @@ class TestJscs(TestCase):
         config = {
             'preset': 'airbnb'
         }
-        tool = Jscs(self.problems, config)
+        tool = Jscs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[0]])
 
         problems = self.problems.all(self.fixtures[0])

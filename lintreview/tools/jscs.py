@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import logging
 import os
 from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class Jscs(Tool):
         """
         See if jscs is on the system path.
         """
-        return in_path('jscs') or npm_exists('jscs')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -30,19 +30,18 @@ class Jscs(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
-        output = run_command(
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
+            source_dir=self.base_path)
         process_checkstyle(self.problems, output, None)
 
     def create_command(self, files):
-        cmd = 'jscs'
-        if npm_exists('jscs'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'jscs')
-        command = [cmd, '--reporter=checkstyle']
+        command = ['jscs', '--reporter=checkstyle']
         # Add config file if its present
         if self.options.get('config'):
-            command += ['--config', self.apply_base(self.options['config'])]
+            command += ['--config',
+                        docker.apply_base(self.options['config'])]
         else:
             command += ['--preset', self.options.get('preset', 'google')]
         command += files
