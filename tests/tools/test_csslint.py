@@ -1,14 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+from lintreview.review import Problems, Comment
 from lintreview.tools.csslint import Csslint
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 from nose.tools import eq_
+import lintreview.docker as docker
+from tests import root_dir
 
-csslint_missing = not(in_path('csslint') or npm_exists('csslint'))
+csslint_missing = not(docker.image_exists('nodejs'))
 
 
 class TestCsslint(TestCase):
@@ -22,7 +20,7 @@ class TestCsslint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Csslint(self.problems)
+        self.tool = Csslint(self.problems, base_path=root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -50,11 +48,9 @@ class TestCsslint(TestCase):
         expected = Comment(fname, 1, 1, "Don't use IDs in selectors.")
         eq_(expected, problems[0])
 
-        expected = Comment(
-            fname,
-            2,
-            2,
-            "Using width with padding can sometimes make elements larger than you expect.")
+        expected = Comment(fname, 2, 2,
+                           "Using width with padding can"
+                           " sometimes make elements larger than you expect.")
         eq_(expected, problems[1])
 
     @needs_csslint
@@ -71,7 +67,7 @@ class TestCsslint(TestCase):
         config = {
             'ignore': 'box-model'
         }
-        tool = Csslint(self.problems, config)
+        tool = Csslint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -79,11 +75,11 @@ class TestCsslint(TestCase):
         eq_(1, len(problems), 'Config file should lower error count.')
 
     @needs_csslint
-    def test_process_files_with_config_from_evil_jerk(self):
+    def test_process_files_with_config_with_shell_injection(self):
         config = {
             'ignore': '`cat /etc/passwd`'
         }
-        tool = Csslint(self.problems, config)
+        tool = Csslint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
