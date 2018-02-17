@@ -4,11 +4,11 @@ from unittest import skipIf
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
-from lintreview.utils import in_path, npm_exists
 from nose.tools import eq_, ok_
-from tests import read_file, read_and_restore_file
+from tests import root_dir, read_file, read_and_restore_file
+import lintreview.docker as docker
 
-eslint_missing = not(in_path('eslint') or npm_exists('eslint'))
+eslint_missing = not(docker.image_exists('nodejs'))
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/eslint/no_errors.js',
 FILE_WITH_ERRORS = 'tests/fixtures/eslint/has_errors.js'
@@ -24,7 +24,7 @@ class TestEslint(TestCase):
         options = {
             'config': 'tests/fixtures/eslint/recommended_config.json'
         }
-        self.tool = Eslint(self.problems, options)
+        self.tool = Eslint(self.problems, options, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -60,7 +60,9 @@ class TestEslint(TestCase):
 
     @needs_eslint
     def test_process_files__config_file_missing(self):
-        tool = Eslint(self.problems, options={'config': 'invalid-file'})
+        tool = Eslint(self.problems,
+                      options={'config': 'invalid-file'},
+                      base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config returns 1 error')
@@ -71,15 +73,15 @@ class TestEslint(TestCase):
 
     @needs_eslint
     def test_process_files_uses_default_config(self):
-        tool = Eslint(self.problems, options={})
+        tool = Eslint(self.problems, options={}, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
-        eq_(2, len(problems), 'With no config file there should be no errors.')
+        eq_(2, len(problems), 'With no config file there should be errors.')
 
     @needs_eslint
     def test_process_files__invalid_config(self):
         options = {'config': 'tests/fixtures/eslint/invalid.json'}
-        tool = Eslint(self.problems, options)
+        tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config should report an error')
@@ -91,7 +93,7 @@ class TestEslint(TestCase):
     @needs_eslint
     def test_process_files__missing_plugin(self):
         options = {'config': 'tests/fixtures/eslint/missingplugin.json'}
-        tool = Eslint(self.problems, options)
+        tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config should report an error')
@@ -106,7 +108,7 @@ class TestEslint(TestCase):
         options = {
             'config': 'tests/fixtures/eslint/config.json'
         }
-        tool = Eslint(self.problems, options)
+        tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
 
         problems = self.problems.all(FILE_WITH_ERRORS)
@@ -122,7 +124,7 @@ class TestEslint(TestCase):
         eq_(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
-        tool = Eslint(self.problems, {'fixer': True})
+        tool = Eslint(self.problems, {'fixer': True}, root_dir)
         eq_(True, tool.has_fixer())
 
     @needs_eslint
@@ -130,7 +132,7 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, {
             'config': 'tests/fixtures/eslint/recommended_config.json',
             'fixer': True,
-        })
+        }, root_dir)
         original = read_file(FILE_WITH_FIXER_ERRORS)
         tool.execute_fixer([FILE_WITH_FIXER_ERRORS])
 
@@ -143,7 +145,7 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, {
             'config': 'tests/fixtures/eslint/recommended_config.json',
             'fixer': True
-        })
+        }, root_dir)
 
         # The fixture file can have all problems fixed by eslint
         original = read_file(FILE_WITH_FIXER_ERRORS)
