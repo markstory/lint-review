@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_checkstyle
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -13,9 +13,9 @@ class Jshint(Tool):
 
     def check_dependencies(self):
         """
-        See if jshint is on the system path.
+        See if the nodejs docker image exists
         """
-        return in_path('jshint') or npm_exists('jshint')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -30,18 +30,17 @@ class Jshint(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
-        output = run_command(
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
+            source_dir=self.base_path)
         process_checkstyle(self.problems, output, False)
 
     def create_command(self, files):
-        cmd = 'jshint'
-        if npm_exists('jshint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'jshint')
-        command = [cmd, '--checkstyle-reporter']
+        command = ['jshint', '--checkstyle-reporter']
         # Add config file if its present
         if self.options.get('config'):
-            command += ['--config', self.apply_base(self.options['config'])]
+            command += ['--config',
+                        docker.apply_base(self.options['config'])]
         command += files
         return command

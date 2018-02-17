@@ -2,13 +2,12 @@ from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jshint import Jshint
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 from nose.tools import eq_
+import lintreview.docker as docker
+from tests import root_dir
 
-jshint_missing = not(in_path('jshint') or npm_exists('jshint'))
+jshint_missing = not(docker.image_exists('nodejs'))
 
 
 class TestJshint(TestCase):
@@ -23,7 +22,7 @@ class TestJshint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Jshint(self.problems)
+        self.tool = Jshint(self.problems, base_path=root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -82,7 +81,7 @@ class TestJshint(TestCase):
         config = {
             'config': 'tests/fixtures/jshint/config.json'
         }
-        tool = Jshint(self.problems, config)
+        tool = Jshint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -93,11 +92,11 @@ class TestJshint(TestCase):
         config = {
             'config': 'test/jshint.json'
         }
-        tool = Jshint(self.problems, config, '/some/path')
+        tool = Jshint(self.problems, config, root_dir)
         result = tool.create_command(['some/file.js'])
         expected = [
             '--checkstyle-reporter',
-            '--config', '/some/path/test/jshint.json',
+            '--config', '/src/test/jshint.json',
             'some/file.js'
         ]
         assert 'jshint' in result[0], 'jshint is in command name'
