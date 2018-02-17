@@ -1,15 +1,12 @@
 from __future__ import absolute_import
-from unittest import TestCase
-from unittest import skipIf
-
-from lintreview.review import Problems
-from lintreview.review import Comment
+from unittest import skipIf, TestCase
+from lintreview.review import Comment, Problems
 from lintreview.tools.xo import Xo
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
 from nose.tools import eq_
+from tests import root_dir
+import lintreview.docker as docker
 
-xo_missing = not(in_path('xo') or npm_exists('xo'))
+xo_missing = not(docker.image_exists('nodejs'))
 
 FILE_WITH_NO_ERRORS = 'tests/samples/xo/no_errors.js',
 FILE_WITH_ERRORS = 'tests/samples/xo/has_errors.js'
@@ -24,7 +21,7 @@ class TestXo(TestCase):
         options = {
             'ignore': ''
         }
-        self.tool = Xo(self.problems, options)
+        self.tool = Xo(self.problems, options, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))

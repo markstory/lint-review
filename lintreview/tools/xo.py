@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_checkstyle
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +15,7 @@ class Xo(Tool):
         """
         See if XO is on the system path.
         """
-        return in_path('xo') or npm_exists('xo')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         """
@@ -31,17 +30,11 @@ class Xo(Tool):
         Run code checks with XO.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        cmd = self.name
-        if npm_exists('xo'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'xo')
-        command = [cmd, '--reporter', 'checkstyle']
+        command = ['xo', '--reporter', 'checkstyle']
 
         command += files
-        output = run_command(command, ignore_error=True)
-        self._process_output(output, files)
-
-    def _process_output(self, output, files):
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+        output = docker.run(
+            'nodejs',
+            command,
+            source_dir=self.base_path)
+        process_checkstyle(self.problems, output, docker.strip_base)
