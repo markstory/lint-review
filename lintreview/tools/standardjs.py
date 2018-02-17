@@ -2,8 +2,8 @@ from __future__ import absolute_import
 import functools
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_quickfix
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_quickfix
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class Standardjs(Tool):
         """
         See if standard is on the system path.
         """
-        return in_path('standard') or npm_exists('standard')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         """
@@ -31,19 +31,12 @@ class Standardjs(Tool):
         Run code checks with standard.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        cmd = self.name
-        if npm_exists('standard'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'standard')
-
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-
-        command = [cmd] + list(files)
-        output = run_command(
+        command = ['standard'] + list(files)
+        output = docker.run(
+            'nodejs',
             command,
-            split=True,
-            ignore_error=True)
+            source_dir=self.base_path)
 
+        output = output.split("\n")
         output = [line for line in output if not line.startswith('standard')]
-        process_quickfix(self.problems, output, filename_converter)
+        process_quickfix(self.problems, output, docker.strip_base)

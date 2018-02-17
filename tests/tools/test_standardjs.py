@@ -1,15 +1,13 @@
 from __future__ import absolute_import
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.standardjs import Standardjs
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
 from nose.tools import eq_
+from tests import root_dir
+import lintreview.docker as docker
 
-standardjs_missing = not(in_path('standard') or npm_exists('standard'))
+standardjs_missing = not(docker.image_exists('nodejs'))
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/standardjs/no_errors.js',
 FILE_WITH_ERRORS = 'tests/fixtures/standardjs/has_errors.js'
@@ -22,7 +20,7 @@ class TestStandardjs(TestCase):
     def setUp(self):
         self.problems = Problems()
         options = {}
-        self.tool = Standardjs(self.problems, options)
+        self.tool = Standardjs(self.problems, options, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
