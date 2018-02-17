@@ -1,14 +1,13 @@
 from __future__ import absolute_import
 import os
 from unittest import TestCase, skipIf
-from lintreview.review import Problems
-from lintreview.review import Comment, IssueComment
+from lintreview.review import Comment, IssueComment, Problems
 from lintreview.tools.tslint import Tslint
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
 from nose.tools import eq_
+from tests import root_dir
+import lintreview.docker as docker
 
-tslint_missing = not(in_path('tslint') or npm_exists('tslint'))
+tslint_missing = not(docker.image_exists('nodejs'))
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/tslint/no_errors.ts',
 FILE_WITH_ERRORS = 'tests/fixtures/tslint/has_errors.ts'
@@ -23,7 +22,7 @@ class TestTslint(TestCase):
         options = {
             'config': 'tests/fixtures/tslint/tslint_good.json'
         }
-        self.tool = Tslint(self.problems, options)
+        self.tool = Tslint(self.problems, options, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -55,7 +54,9 @@ class TestTslint(TestCase):
 
     @needs_tslint
     def test_process_files__invalid_config(self):
-        tool = Tslint(self.problems, options={'config': 'invalid-file'})
+        tool = Tslint(self.problems,
+                      options={'config': 'invalid-file'},
+                      base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config returns 1 error')
@@ -66,7 +67,7 @@ class TestTslint(TestCase):
 
     @needs_tslint
     def test_process_files__no_config_set_no_default(self):
-        tool = Tslint(self.problems, options={})
+        tool = Tslint(self.problems, options={}, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Missing config returns 1 error')
@@ -80,7 +81,7 @@ class TestTslint(TestCase):
         options = {
             'config': 'tests/fixtures/tslint/tslint_good.json'
         }
-        tool = Tslint(self.problems, options)
+        tool = Tslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
 
         problems = self.problems.all(FILE_WITH_ERRORS)
@@ -95,35 +96,11 @@ class TestTslint(TestCase):
         eq_(expected, problems[1])
 
     @needs_tslint
-    def test_process_output__ancestor_directory(self):
-        # Simulate XML with ../file in the output
-        # which happens with tslint
-        options = {
-            'config': 'tests/fixtures/tslint/tslint_good.json'
-        }
-        restore = os.getcwd()
-        tool = Tslint(self.problems, options, restore)
-        xml = """<?xml version="1.0" encoding="utf-8"?>
-<checkstyle version="4.3">
-  <file name="../tests/fixtures/tslint/has_errors.ts">
-    <error line="11" column="3" severity="error" message="bad code"
-      source="failure.tslint.object-literal-sort-keys" />
-  </file>
-</checkstyle>"""
-        os.chdir(os.path.join('.', 'lintreview'))
-        tool._process_output(xml, [FILE_WITH_ERRORS])
-        os.chdir(restore)
-
-        problems = self.problems.all(FILE_WITH_ERRORS)
-        expected = Comment(FILE_WITH_ERRORS, 11, 11, 'bad code')
-        eq_(expected, problems[0])
-
-    @needs_tslint
     def test_process_files__invalid_rule(self):
         options = {
             'config': 'tests/fixtures/tslint/tslint_invalid_rule.json'
         }
-        tool = Tslint(self.problems, options)
+        tool = Tslint(self.problems, options, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
 
         problems = self.problems.all()
