@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_checkstyle
+import lintreview.docker as docker
 
 
 log = logging.getLogger(__name__)
@@ -17,7 +16,7 @@ class Sasslint(Tool):
         """
         See if sass-lint is on the system path.
         """
-        return in_path('sass-lint') or npm_exists('sass-lint')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -31,23 +30,15 @@ class Sasslint(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        cmd = 'sass-lint'
-        if npm_exists('sass-lint'):
-            cmd = os.path.join(
-                os.getcwd(),
-                'node_modules',
-                '.bin',
-                'sass-lint')
-        command = [cmd, '-f', 'checkstyle', '-v']
+        command = ['sass-lint', '-f', 'checkstyle', '-v']
         command += files
         if self.options.get('ignore'):
             command += ['--ignore ', self.options.get('ignore')]
         if self.options.get('config'):
-            command += ['--config', self.apply_base(self.options['config'])]
-        output = run_command(
+            command += ['--config',
+                        docker.apply_base(self.options['config'])]
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+            source_dir=self.base_path)
+        process_checkstyle(self.problems, output, docker.strip_base)

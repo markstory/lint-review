@@ -1,14 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
+import lintreview.docker as docker
+from lintreview.review import Problems, Comment
 from lintreview.tools.sasslint import Sasslint
-from unittest import TestCase
-from unittest import skipIf
+from unittest import TestCase, skipIf
 from nose.tools import eq_
+from tests import root_dir
 
-sasslint_missing = not(in_path('sass-lint') or npm_exists('sass-lint'))
+sasslint_missing = not(docker.image_exists('nodejs'))
 
 
 class TestSasslint(TestCase):
@@ -22,7 +20,7 @@ class TestSasslint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Sasslint(self.problems)
+        self.tool = Sasslint(self.problems, base_path=root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -67,7 +65,7 @@ class TestSasslint(TestCase):
         config = {
             'ignore': '`cat /etc/passwd`'
         }
-        tool = Sasslint(self.problems, config)
+        tool = Sasslint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
@@ -79,7 +77,7 @@ class TestSasslint(TestCase):
             'config': 'tests/fixtures/sasslint/sass-lint.yml'
         }
 
-        tool = Sasslint(self.problems, config)
+        tool = Sasslint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
