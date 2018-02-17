@@ -9,6 +9,6 @@ COPY package.json /tool
 RUN cd /tool \
   && npm install \
   # Make npm executables quack like binaries.
-  && ln -s /tool/node_modules/.bin/{eslint,csslint,jscs,sass-lint,tslint,standardjs,xo} /usr/bin
+  && ln -s /tool/node_modules/.bin/{eslint,csslint,jscs,sass-lint,tslint,standard,xo} /usr/bin
 
 WORKDIR /src
