@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import logging
 import os
-import functools
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
