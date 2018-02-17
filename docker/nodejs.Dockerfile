@@ -16,6 +16,9 @@ RUN cd /tool \
   && ln -s /tool/node_modules/.bin/sass-lint /usr/bin/sass-lint \
   && ln -s /tool/node_modules/.bin/standard /usr/bin/standard \
   && ln -s /tool/node_modules/.bin/tslint /usr/bin/tslint \
-  && ln -s /tool/node_modules/.bin/xo /usr/bin/xo
+  && ln -s /tool/node_modules/.bin/xo /usr/bin/xo \
+  # Move package.json so that it is an ancestor of /src allowing
+  # eslint and xo to use it for config
+  && mv /tool/package.json /
 
 WORKDIR /src
