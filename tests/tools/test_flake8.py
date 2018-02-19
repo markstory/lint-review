@@ -1,12 +1,18 @@
 from __future__ import absolute_import
+import lintreview.docker as docker
 from lintreview.review import Problems
 from lintreview.tools.flake8 import Flake8
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from nose.tools import eq_, assert_in
-from tests import read_file, read_and_restore_file
+from tests import root_dir, read_file, read_and_restore_file
+
+
+python_missing = not(docker.image_exists('python2'))
 
 
 class TestFlake8(TestCase):
+
+    needs_flake8 = skipIf(python_missing, 'Needs python image to run')
 
     fixtures = [
         'tests/fixtures/pep8/no_errors.py',
@@ -15,7 +21,7 @@ class TestFlake8(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Flake8(self.problems, options={'config': ''})
+        self.tool = Flake8(self.problems, {'config': ''}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -24,10 +30,12 @@ class TestFlake8(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
+    @needs_flake8
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
+    @needs_flake8
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -37,6 +45,7 @@ class TestFlake8(TestCase):
         eq_(2, problems[0].position)
         assert_in('multiple imports on one line', problems[0].body)
 
+    @needs_flake8
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -49,11 +58,12 @@ class TestFlake8(TestCase):
         eq_(2, problems[0].position)
         assert_in('multiple imports on one line', problems[0].body)
 
+    @needs_flake8
     def test_config_options_and_process_file(self):
         options = {
             'ignore': 'F4,W603',
         }
-        self.tool = Flake8(self.problems, options)
+        self.tool = Flake8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 5
@@ -67,7 +77,7 @@ class TestFlake8(TestCase):
             'max-line-length': 120,
             'max-complexity': 10
         }
-        tool = Flake8(self.problems, options)
+        tool = Flake8(self.problems, options, root_dir)
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
@@ -80,15 +90,16 @@ class TestFlake8(TestCase):
         eq_(set(expected), set(out))
 
     def test_has_fixer__not_enabled(self):
-        tool = Flake8(self.problems, {})
+        tool = Flake8(self.problems, {}, root_dir)
         eq_(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
-        tool = Flake8(self.problems, {'fixer': True})
+        tool = Flake8(self.problems, {'fixer': True}, root_dir)
         eq_(True, tool.has_fixer())
 
+    @needs_flake8
     def test_execute_fixer(self):
-        tool = Flake8(self.problems, {'fixer': True})
+        tool = Flake8(self.problems, {'fixer': True}, root_dir)
 
         original = read_file(self.fixtures[1])
         tool.execute_fixer(self.fixtures)
@@ -97,8 +108,9 @@ class TestFlake8(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
+    @needs_flake8
     def test_execute_fixer__fewer_problems_remain(self):
-        tool = Flake8(self.problems, {'fixer': True})
+        tool = Flake8(self.problems, {'fixer': True}, root_dir)
 
         # The fixture file can have all problems fixed by autopep8
         original = read_file(self.fixtures[1])
