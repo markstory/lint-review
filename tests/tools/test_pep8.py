@@ -1,12 +1,17 @@
 from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.pep8 import Pep8
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from nose.tools import eq_, assert_in, assert_not_in
-from tests import read_file, read_and_restore_file
+from tests import root_dir, read_file, read_and_restore_file
+import lintreview.docker as docker
+
+python_missing = not(docker.image_exists('python2'))
 
 
 class TestPep8(TestCase):
+
+    needs_pep8 = skipIf(python_missing, 'Needs python image to run')
 
     fixtures = [
         'tests/fixtures/pep8/no_errors.py',
@@ -15,7 +20,7 @@ class TestPep8(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Pep8(self.problems)
+        self.tool = Pep8(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -24,10 +29,12 @@ class TestPep8(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
+    @needs_pep8
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
+    @needs_pep8
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -40,6 +47,7 @@ class TestPep8(TestCase):
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[5])
 
+    @needs_pep8
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -55,11 +63,12 @@ class TestPep8(TestCase):
                            "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[5])
 
+    @needs_pep8
     def test_process_files__ignore(self):
         options = {
             'ignore': 'E2,W603'
         }
-        self.tool = Pep8(self.problems, options)
+        self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         eq_(4, len(problems))
@@ -67,11 +76,12 @@ class TestPep8(TestCase):
             assert_not_in('E2', p.body)
             assert_not_in('W603', p.body)
 
+    @needs_pep8
     def test_process_files__line_length(self):
         options = {
             'max-line-length': '10'
         }
-        self.tool = Pep8(self.problems, options)
+        self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         eq_(10, len(problems))
@@ -79,11 +89,12 @@ class TestPep8(TestCase):
                            'E501 line too long (23 > 10 characters)')
         eq_(expected, problems[0])
 
+    @needs_pep8
     def test_process_files__select(self):
         options = {
             'select': 'W603'
         }
-        self.tool = Pep8(self.problems, options)
+        self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         eq_(1, len(problems))
@@ -98,8 +109,9 @@ class TestPep8(TestCase):
         tool = Pep8(self.problems, {'fixer': True})
         eq_(True, tool.has_fixer())
 
+    @needs_pep8
     def test_execute_fixer(self):
-        tool = Pep8(self.problems, {'fixer': True})
+        tool = Pep8(self.problems, {'fixer': True}, root_dir)
 
         original = read_file(self.fixtures[1])
         tool.execute_fixer(self.fixtures)
@@ -108,12 +120,13 @@ class TestPep8(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
+    @needs_pep8
     def test_execute_fixer__options(self):
         tool = Pep8(self.problems, {
             'fixer': True,
             'max-line-length': 120,
             'exclude': 'W201'
-        })
+        }, root_dir)
 
         original = read_file(self.fixtures[1])
         tool.execute_fixer(self.fixtures)
@@ -122,8 +135,9 @@ class TestPep8(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
+    @needs_pep8
     def test_execute_fixer__fewer_problems_remain(self):
-        tool = Pep8(self.problems, {'fixer': True})
+        tool = Pep8(self.problems, {'fixer': True}, root_dir)
 
         # The fixture file can have all problems fixed by autopep8
         original = read_file(self.fixtures[1])
