@@ -1,17 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Comment
-from lintreview.review import Problems
+from lintreview.review import Comment, Problems
 from lintreview.tools.foodcritic import Foodcritic
-from lintreview.utils import in_path, bundle_exists
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_
-
-
-critic_missing = not(in_path('foodcritic') or bundle_exists('foodcritic'))
+from tests import root_dir, requires_image
 
 
 class TestFoodcritic(TestCase):
-    needs_critic = skipIf(critic_missing, 'Missing foodcritic, cannot run')
 
     fixtures = [
         'tests/fixtures/foodcritic/noerrors',
@@ -21,15 +16,27 @@ class TestFoodcritic(TestCase):
     def setUp(self):
         self.problems = Problems()
 
-    @needs_critic
-    def test_process_cookbook_pass(self):
-        self.tool = Foodcritic(self.problems, None, self.fixtures[0])
+    @requires_image('ruby2')
+    def test_process_cookbook_pass__no_path(self):
+        self.tool = Foodcritic(self.problems,
+                               {},
+                               root_dir + self.fixtures[0])
         self.tool.process_files(None)
         eq_([], self.problems.all())
 
-    @needs_critic
+    @requires_image('ruby2')
+    def test_process_cookbook_pass(self):
+        self.tool = Foodcritic(self.problems,
+                               {'path': self.fixtures[0]},
+                               root_dir)
+        self.tool.process_files(None)
+        eq_([], self.problems.all())
+
+    @requires_image('ruby2')
     def test_process_cookbook_fail(self):
-        self.tool = Foodcritic(self.problems, None, self.fixtures[1])
+        self.tool = Foodcritic(self.problems,
+                               {'path': self.fixtures[1]},
+                               root_dir)
         self.tool.process_files(None)
         problems = self.problems.all()
         eq_(5, len(problems))
