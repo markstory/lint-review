@@ -1,17 +1,12 @@
 from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.jsonlint import Jsonlint
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_, assert_in
-from tests import root_dir
-import lintreview.docker as docker
-
-python_missing = not(docker.image_exists('python2'))
+from tests import root_dir, requires_image
 
 
 class TestJsonlint(TestCase):
-
-    needs_jsonlint = skipIf(python_missing, 'Needs python2 image')
 
     fixtures = [
         'tests/fixtures/jsonlint/no_errors.json',
@@ -30,12 +25,12 @@ class TestJsonlint(TestCase):
         self.assertTrue(self.tool.match_file('test.json'))
         self.assertTrue(self.tool.match_file('dir/name/test.json'))
 
-    @needs_jsonlint
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_jsonlint
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -59,7 +54,7 @@ class TestJsonlint(TestCase):
         assert_in("Warning: Strict JSON does not allow a final comma",
                   problems[1].body)
 
-    @needs_jsonlint
+    @requires_image('python2')
     def test_process_files_three_files(self):
         self.tool.process_files(self.fixtures)
 

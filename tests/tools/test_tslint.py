@@ -1,21 +1,15 @@
 from __future__ import absolute_import
-import os
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from lintreview.review import Comment, IssueComment, Problems
 from lintreview.tools.tslint import Tslint
 from nose.tools import eq_
-from tests import root_dir
-import lintreview.docker as docker
-
-tslint_missing = not(docker.image_exists('nodejs'))
+from tests import root_dir, requires_image
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/tslint/no_errors.ts',
 FILE_WITH_ERRORS = 'tests/fixtures/tslint/has_errors.ts'
 
 
 class TestTslint(TestCase):
-
-    needs_tslint = skipIf(tslint_missing, 'Needs tslint to run')
 
     def setUp(self):
         self.problems = Problems()
@@ -32,16 +26,16 @@ class TestTslint(TestCase):
         self.assertTrue(self.tool.match_file('test.ts'))
         self.assertTrue(self.tool.match_file('dir/name/test.ts'))
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files__pass(self):
         self.tool.process_files(FILE_WITH_NO_ERRORS)
         eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files__fail(self):
         self.tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
@@ -52,7 +46,7 @@ class TestTslint(TestCase):
         expected = Comment(FILE_WITH_ERRORS, 1, 1, msg)
         eq_(expected, problems[0])
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files__invalid_config(self):
         tool = Tslint(self.problems,
                       options={'config': 'invalid-file'},
@@ -65,7 +59,7 @@ class TestTslint(TestCase):
         expected = [IssueComment(msg)]
         eq_(expected, problems)
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files__no_config_set_no_default(self):
         tool = Tslint(self.problems, options={}, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
@@ -76,7 +70,7 @@ class TestTslint(TestCase):
         expected = [IssueComment(msg)]
         eq_(expected, problems)
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files_with_config(self):
         options = {
             'config': 'tests/fixtures/tslint/tslint_good.json'
@@ -95,7 +89,7 @@ class TestTslint(TestCase):
         expected = Comment(FILE_WITH_ERRORS, 11, 11, msg)
         eq_(expected, problems[1])
 
-    @needs_tslint
+    @requires_image('nodejs')
     def test_process_files__invalid_rule(self):
         options = {
             'config': 'tests/fixtures/tslint/tslint_invalid_rule.json'

@@ -1,21 +1,16 @@
 from __future__ import absolute_import
-from unittest import TestCase, skipIf
-
+from unittest import TestCase
 from lintreview.review import Problems, Comment
 from lintreview.tools.standardjs import Standardjs
 from nose.tools import eq_
-from tests import root_dir
-import lintreview.docker as docker
+from tests import root_dir, requires_image
 
-standardjs_missing = not(docker.image_exists('nodejs'))
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/standardjs/no_errors.js',
 FILE_WITH_ERRORS = 'tests/fixtures/standardjs/has_errors.js'
 
 
 class TestStandardjs(TestCase):
-
-    needs_standardjs = skipIf(standardjs_missing, 'Needs standardjs to run')
 
     def setUp(self):
         self.problems = Problems()
@@ -29,16 +24,16 @@ class TestStandardjs(TestCase):
         self.assertTrue(self.tool.match_file('test.js'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
-    @needs_standardjs
+    @requires_image('nodejs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_standardjs
+    @requires_image('nodejs')
     def test_process_files_pass(self):
         self.tool.process_files(FILE_WITH_NO_ERRORS)
         eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
 
-    @needs_standardjs
+    @requires_image('nodejs')
     def test_process_files_fail(self):
         self.tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)

@@ -1,18 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.jshint import Jshint
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_
-import lintreview.docker as docker
-from tests import root_dir
-
-jshint_missing = not(docker.image_exists('nodejs'))
+from tests import root_dir, requires_image
 
 
 class TestJshint(TestCase):
-
-    needs_jshint = skipIf(jshint_missing, 'Needs jshint to run')
 
     fixtures = [
         'tests/fixtures/jshint/no_errors.js',
@@ -31,16 +25,16 @@ class TestJshint(TestCase):
         self.assertTrue(self.tool.match_file('test.js'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -54,7 +48,7 @@ class TestJshint(TestCase):
         expected = Comment(fname, 4, 4, "Missing semicolon.")
         eq_(expected, problems[1])
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[2]])
         problems = self.problems.all(self.fixtures[2])
@@ -67,7 +61,7 @@ class TestJshint(TestCase):
         expected = Comment(fname, 5, 5, "'go' is not defined.")
         eq_(expected, problems[4])
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -76,7 +70,7 @@ class TestJshint(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(3, len(problems))
 
-    @needs_jshint
+    @requires_image('nodejs')
     def test_process_files_with_config(self):
         config = {
             'config': 'tests/fixtures/jshint/config.json'

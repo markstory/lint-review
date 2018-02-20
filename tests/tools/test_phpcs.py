@@ -1,17 +1,12 @@
 from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs
-import lintreview.docker as docker
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_, ok_
-from tests import root_dir, read_file, read_and_restore_file
-
-phpcs_missing = not(docker.image_exists('phpcs'))
+from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
 class Testphpcs(TestCase):
-
-    needs_phpcs = skipIf(phpcs_missing, 'Needs phpcs')
 
     fixtures = [
         'tests/fixtures/phpcs/no_errors.php',
@@ -29,16 +24,16 @@ class Testphpcs(TestCase):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -59,7 +54,7 @@ class Testphpcs(TestCase):
             "Spaces must be used to indent lines; tabs are not allowed")
         eq_(expected, problems[2])
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -68,7 +63,7 @@ class Testphpcs(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(3, len(problems))
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__with_config(self):
         config = {
             'standard': 'Zend'
@@ -80,7 +75,7 @@ class Testphpcs(TestCase):
 
         eq_(3, len(problems), 'Changing standards changes error counts')
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__with_ignore(self):
         config = {
             'standard': 'PSR2',
@@ -93,7 +88,7 @@ class Testphpcs(TestCase):
 
         eq_(0, len(problems), 'ignore option should exclude files')
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__with_exclude(self):
         config = {
             'standard': 'PSR2',
@@ -106,7 +101,7 @@ class Testphpcs(TestCase):
 
         eq_(1, len(problems), 'exclude option should reduce errors.')
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_process_files__with_invalid_exclude(self):
         config = {
             'standard': 'PSR2',
@@ -184,7 +179,7 @@ class Testphpcs(TestCase):
         tool = Phpcs(self.problems, {'fixer': True})
         eq_(True, tool.has_fixer())
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_execute_fixer(self):
         tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 
@@ -195,7 +190,7 @@ class Testphpcs(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
-    @needs_phpcs
+    @requires_image('phpcs')
     def test_execute_fixer__no_problems_remain(self):
         tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 

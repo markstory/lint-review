@@ -1,18 +1,12 @@
 from __future__ import absolute_import
-import lintreview.docker as docker
 from lintreview.review import Problems
 from lintreview.tools.flake8 import Flake8
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_, assert_in
-from tests import root_dir, read_file, read_and_restore_file
-
-
-python_missing = not(docker.image_exists('python2'))
+from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
 class TestFlake8(TestCase):
-
-    needs_flake8 = skipIf(python_missing, 'Needs python image to run')
 
     fixtures = [
         'tests/fixtures/pep8/no_errors.py',
@@ -30,12 +24,12 @@ class TestFlake8(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
-    @needs_flake8
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_flake8
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -45,7 +39,7 @@ class TestFlake8(TestCase):
         eq_(2, problems[0].position)
         assert_in('multiple imports on one line', problems[0].body)
 
-    @needs_flake8
+    @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -58,7 +52,7 @@ class TestFlake8(TestCase):
         eq_(2, problems[0].position)
         assert_in('multiple imports on one line', problems[0].body)
 
-    @needs_flake8
+    @requires_image('python2')
     def test_config_options_and_process_file(self):
         options = {
             'ignore': 'F4,W603',
@@ -97,7 +91,7 @@ class TestFlake8(TestCase):
         tool = Flake8(self.problems, {'fixer': True}, root_dir)
         eq_(True, tool.has_fixer())
 
-    @needs_flake8
+    @requires_image('python2')
     def test_execute_fixer(self):
         tool = Flake8(self.problems, {'fixer': True}, root_dir)
 
@@ -108,7 +102,7 @@ class TestFlake8(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
-    @needs_flake8
+    @requires_image('python2')
     def test_execute_fixer__fewer_problems_remain(self):
         tool = Flake8(self.problems, {'fixer': True}, root_dir)
 

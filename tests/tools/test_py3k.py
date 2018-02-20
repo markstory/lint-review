@@ -1,18 +1,13 @@
 from __future__ import absolute_import
 
-import lintreview.docker as docker
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_
 from lintreview.review import Problems, Comment
 from lintreview.tools.py3k import Py3k
-from tests import root_dir
-
-python_missing = not(docker.image_exists('python2'))
+from tests import root_dir, requires_image
 
 
 class TestPy3k(TestCase):
-
-    needs_pylint = skipIf(python_missing, 'Needs python2 image')
 
     class fixtures:
         no_errors = 'tests/fixtures/py3k/no_errors.py'
@@ -29,12 +24,12 @@ class TestPy3k(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
-    @needs_pylint
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures.no_errors])
         eq_([], self.problems.all(self.fixtures.no_errors))
 
-    @needs_pylint
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
@@ -47,14 +42,14 @@ class TestPy3k(TestCase):
                     'W1638 range built-in referenced when not iterating')
         ], problems)
 
-    @needs_pylint
+    @requires_image('python2')
     def test_process_files__config_option_str(self):
         tool = Py3k(self.problems, {'ignore': 'W1638,E1601'}, root_dir)
         tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
         eq_(0, len(problems))
 
-    @needs_pylint
+    @requires_image('python2')
     def test_process_files__config_option_list(self):
         tool = Py3k(self.problems,
                     {'ignore': ['W1638', 'E1601']},
@@ -63,7 +58,7 @@ class TestPy3k(TestCase):
         problems = self.problems.all(self.fixtures.has_errors)
         eq_(0, len(problems))
 
-    @needs_pylint
+    @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files([self.fixtures.no_errors,
                                  self.fixtures.has_errors])

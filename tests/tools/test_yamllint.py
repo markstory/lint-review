@@ -1,17 +1,12 @@
 from __future__ import absolute_import
-import lintreview.docker as docker
 from lintreview.review import Problems, Comment
 from lintreview.tools.yamllint import Yamllint
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_
-from tests import root_dir
-
-python_missing = not(docker.image_exists('python2'))
+from tests import root_dir, requires_image
 
 
 class TestYamllint(TestCase):
-
-    needs_yamllint = skipIf(python_missing, 'Needs python2 image')
 
     fixtures = [
         'tests/fixtures/yamllint/no_errors.yaml',
@@ -31,12 +26,12 @@ class TestYamllint(TestCase):
         self.assertTrue(self.tool.match_file('test.yml'))
         self.assertTrue(self.tool.match_file('dir/name/test.yml'))
 
-    @needs_yamllint
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_yamllint
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -53,7 +48,7 @@ class TestYamllint(TestCase):
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[1])
 
-    @needs_yamllint
+    @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -73,7 +68,7 @@ class TestYamllint(TestCase):
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[1])
 
-    @needs_yamllint
+    @requires_image('python2')
     def test_process_files_with_config(self):
         config = {
             'config': 'tests/fixtures/yamllint/config.yaml'
