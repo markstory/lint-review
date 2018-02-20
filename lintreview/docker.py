@@ -8,7 +8,7 @@ import os
 log = logging.getLogger(__name__)
 
 # The base path for all docker operations
-DOCKER_BASE = '/src/'
+DOCKER_BASE = '/src'
 
 
 def replace_basedir(base, files):
@@ -31,7 +31,7 @@ def strip_base(path):
     those in the diff.
     """
     if path.startswith(DOCKER_BASE):
-        return path[len(DOCKER_BASE):]
+        return path[len(DOCKER_BASE) + 1:]
     return path
 
 
@@ -39,6 +39,8 @@ def apply_base(value):
     path = os.path.abspath(os.path.join(DOCKER_BASE, value))
     if path.startswith(DOCKER_BASE):
         return path
+    if path == '/':
+        return DOCKER_BASE
     return os.path.basename(value)
 
 

@@ -17,6 +17,8 @@ def test_strip_base():
 
 
 def test_apply_base():
+    eq_('/src', docker.apply_base(''))
+    eq_('/src', docker.apply_base('/'))
     eq_('/src/thing.py', docker.apply_base('thing.py'))
     eq_('/src/some/thing.py', docker.apply_base('some/thing.py'))
     eq_('thing.py', docker.apply_base('/some/thing.py'))
