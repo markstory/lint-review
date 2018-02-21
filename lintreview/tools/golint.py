@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
-import functools
-from lintreview.tools import Tool, run_command, process_quickfix
-from lintreview.utils import in_path, go_bin_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
@@ -18,9 +17,9 @@ class Golint(Tool):
 
     def check_dependencies(self):
         """
-        See if golint is on the system path.
+        See if golint image exists
         """
-        return in_path('golint') or go_bin_path('golint')
+        return docker.image_exists('golint')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -34,26 +33,19 @@ class Golint(Tool):
         to save resources.
         """
         command = self.create_command(files)
-        output = run_command(
-            command,
-            ignore_error=True,
-            split=True)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
+        output = docker.run('golint', command, self.base_path)
+        output = output.strip().split("\n")
         # Look for multi-package error message, and re-run tools
         if len(output) == 1 and 'is in package' in output[0]:
             log.info('Re-running golint on individual files'
                      'as diff contains files from multiple packages: %s',
                      output[0])
-            self.run_individual_files(files, filename_converter)
+            self.run_individual_files(files, docker.strip_base)
         else:
-            process_quickfix(self.problems, output, filename_converter)
+            process_quickfix(self.problems, output, docker.strip_base)
 
     def create_command(self, files):
         command = ['golint']
-        if go_bin_path('golint'):
-            command = [go_bin_path('golint')]
         if 'min_confidence' in self.options:
             command += ['-min_confidence', self.options.get('min_confidence')]
         command += files
@@ -67,5 +59,6 @@ class Golint(Tool):
         """
         for filename in files:
             command = self.create_command([filename])
-            output = run_command(command, ignore_error=True, split=True)
+            output = docker.run('golint', command, self.base_path)
+            output = output.split("\n")
             process_quickfix(self.problems, output, filename_converter)

@@ -1,17 +1,13 @@
 from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.golint import Golint
-from lintreview.utils import go_bin_path
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from nose.tools import eq_
 from mock import patch
-
-golint_missing = not(go_bin_path('golint'))
+from tests import root_dir, requires_image
 
 
 class TestGolint(TestCase):
-
-    needs_golint = skipIf(golint_missing, 'Needs golint installed')
 
     fixtures = [
         'tests/fixtures/golint/no_errors.go',
@@ -21,7 +17,7 @@ class TestGolint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Golint(self.problems)
+        self.tool = Golint(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.go'))
@@ -30,16 +26,16 @@ class TestGolint(TestCase):
         self.assertFalse(self.tool.match_file('test.php'))
         self.assertFalse(self.tool.match_file('test.golp'))
 
-    @needs_golint
+    @requires_image('golint')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_golint
+    @requires_image('golint')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_golint
+    @requires_image('golint')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -61,7 +57,7 @@ class TestGolint(TestCase):
             "so drop this else and outdent its block")
         eq_(expected, problems[1])
 
-    @needs_golint
+    @requires_image('golint')
     def test_process_files_two_files(self):
         self.tool.process_files([self.fixtures[0], self.fixtures[1]])
 
@@ -70,7 +66,7 @@ class TestGolint(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(2, len(problems))
 
-    @needs_golint
+    @requires_image('golint')
     def test_process_files_in_different_packages(self):
         self.tool.process_files([self.fixtures[1], self.fixtures[2]])
 
@@ -79,30 +75,28 @@ class TestGolint(TestCase):
         eq_(2, len(self.problems.all(self.fixtures[1])))
         eq_(1, len(self.problems.all(self.fixtures[2])))
 
-    @needs_golint
-    @patch('lintreview.tools.golint.run_command')
+    @requires_image('golint')
+    @patch('lintreview.docker.run')
     def test_process_files_with_config__mocked(self, mock_command):
-        mock_command.return_value = []
+        mock_command.return_value = ""
         config = {
             'min_confidence': 0.95
         }
-        tool = Golint(self.problems, config)
+        tool = Golint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         mock_command.assert_called_with(
+            'golint',
             [
-                go_bin_path('golint'),
-                '-min_confidence', 0.95,
-                self.fixtures[1]
+                'golint', '-min_confidence', 0.95, self.fixtures[1]
             ],
-            ignore_error=True,
-            split=True)
+            root_dir)
 
-    @needs_golint
+    @requires_image('golint')
     def test_process_files_with_config(self):
         config = {
             'min_confidence': 0.95
         }
-        tool = Golint(self.problems, config)
+        tool = Golint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
         eq_(2, len(self.problems))
