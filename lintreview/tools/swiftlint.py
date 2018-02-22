@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_checkstyle
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +15,7 @@ class Swiftlint(Tool):
         """
         See if swiftlint is on the system path.
         """
-        return in_path('swiftlint')
+        return docker.image_exists('swiftlint')
 
     def match_file(self, filename):
         """
@@ -42,18 +41,14 @@ class Swiftlint(Tool):
 
         # swiftlint uses a set of environment variables
         # to lint multiple files at once.
-        env = os.environ.copy()
+        env = {}
         for index, name in enumerate(files):
             env['SCRIPT_INPUT_FILE_%s' % (index,)] = name
         env['SCRIPT_INPUT_FILE_COUNT'] = str(len(files))
 
-        output = run_command(
+        output = docker.run(
+            'swiftlint',
             command,
-            env=env,
-            cwd=self.base_path,
-            ignore_error=True)
-
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+            self.base_path,
+            env=env)
+        process_checkstyle(self.problems, output, docker.strip_base)
