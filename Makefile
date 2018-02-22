@@ -8,3 +8,4 @@ images:
 	cd docker && docker build -t luacheck -f luacheck.Dockerfile .
 	cd docker && docker build -t golint -f golint.Dockerfile .
 	cd docker && docker build -t checkstyle -f checkstyle.Dockerfile .
+	cd docker && docker build -t shellcheck -f shellcheck.Dockerfile .

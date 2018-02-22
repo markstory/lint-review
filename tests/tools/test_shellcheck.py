@@ -1,18 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.shellcheck import Shellcheck
-from lintreview.utils import in_path
 from unittest import TestCase
-from unittest import skipIf
 from nose.tools import eq_
-
-shellcheck_missing = not(in_path('shellCheck'))
+from tests import root_dir, requires_image
 
 
 class Testshellcheck(TestCase):
-
-    needs_shellcheck = skipIf(shellcheck_missing, 'Needs shellcheck')
 
     fixtures = [
         'tests/fixtures/shellcheck/no_errors.sh',
@@ -21,7 +15,7 @@ class Testshellcheck(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Shellcheck(self.problems)
+        self.tool = Shellcheck(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.bash'))
@@ -37,16 +31,16 @@ class Testshellcheck(TestCase):
         res = self.tool.match_file('tests/fixtures/shellcheck/tool')
         self.assertTrue(res)
 
-    @needs_shellcheck
+    @requires_image('shellcheck')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_shellcheck
+    @requires_image('shellcheck')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_shellcheck
+    @requires_image('shellcheck')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -77,7 +71,7 @@ class Testshellcheck(TestCase):
             'be last.')
         eq_(expected, problems[2])
 
-    @needs_shellcheck
+    @requires_image('shellcheck')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -86,13 +80,13 @@ class Testshellcheck(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(3, len(problems))
 
-    @needs_shellcheck
+    @requires_image('shellcheck')
     def test_process_files_with_config(self):
         config = {
             'shell': 'bash',
             'exclude': 'SC2154,SC2069'
         }
-        tool = Shellcheck(self.problems, config)
+        tool = Shellcheck(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
