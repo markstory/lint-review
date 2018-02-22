@@ -1,18 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.checkstyle import Checkstyle
-from lintreview.utils import in_path
 from unittest import TestCase
-from unittest import skipIf
 from nose.tools import eq_, assert_in
-
-checkstyle_missing = not(in_path('checkstyle'))
+from tests import root_dir, requires_image
 
 
 class TestCheckstyle(TestCase):
-
-    needs_checkstyle = skipIf(checkstyle_missing, 'Needs checkstyle to run')
 
     fixtures = [
         'tests/fixtures/checkstyle/no_errors.java',
@@ -24,7 +18,7 @@ class TestCheckstyle(TestCase):
         config = {
             'config': 'tests/fixtures/checkstyle/config.xml'
         }
-        self.tool = Checkstyle(self.problems, config)
+        self.tool = Checkstyle(self.problems, config, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -33,16 +27,16 @@ class TestCheckstyle(TestCase):
         self.assertTrue(self.tool.match_file('test.java'))
         self.assertTrue(self.tool.match_file('dir/name/test.java'))
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -67,7 +61,7 @@ class TestCheckstyle(TestCase):
         )
         eq_(expected, problems[2])
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -76,7 +70,7 @@ class TestCheckstyle(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(4, len(problems))
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_process_files__no_config_comment(self):
         config = {}
         tool = Checkstyle(self.problems, config)
@@ -86,7 +80,7 @@ class TestCheckstyle(TestCase):
         eq_(1, len(problems))
         assert_in('could not run `checkstyle`', problems[0].body)
 
-    @needs_checkstyle
+    @requires_image('checkstyle')
     def test_process_files__missing_config(self):
         config = {'config': 'badness.xml'}
         tool = Checkstyle(self.problems, config)
@@ -101,12 +95,12 @@ class TestCheckstyle(TestCase):
         config = {
             'config': 'test/checkstyle.xml'
         }
-        tool = Checkstyle(self.problems, config, '/some/path')
+        tool = Checkstyle(self.problems, config, root_dir)
         result = tool.create_command(['some/file.js'])
         expected = [
             'checkstyle',
             '-f', 'xml',
-            '-c', '/some/path/test/checkstyle.xml',
+            '-c', '/src/test/checkstyle.xml',
             'some/file.js'
         ]
         assert 'checkstyle' in result[0], 'checkstyle is in command name'

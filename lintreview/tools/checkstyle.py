@@ -1,11 +1,9 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
+import lintreview.docker as docker
 from lintreview.review import IssueComment
-from lintreview.tools import Tool
-from lintreview.tools import run_command, process_checkstyle
-from lintreview.utils import in_path
+from lintreview.tools import Tool, process_checkstyle
 
 log = logging.getLogger(__name__)
 
@@ -16,9 +14,9 @@ class Checkstyle(Tool):
 
     def check_dependencies(self):
         """
-        See if checkstyle is on the system path.
+        See if checkstyle image exists
         """
-        return in_path('checkstyle')
+        return docker.image_exists('checkstyle')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -37,9 +35,7 @@ class Checkstyle(Tool):
                    "the `config` option to a valid checkstyle XML file.")
             return self.problems.add(IssueComment(msg))
         command = self.create_command(files)
-        output = run_command(
-            command,
-            ignore_error=True)
+        output = docker.run('checkstyle', command, self.base_path)
 
         # Only one line is generally a config error. Replay the error
         # to the user.
@@ -58,16 +54,13 @@ class Checkstyle(Tool):
             lines = lines[0:-1]
         output = ''.join(lines)
 
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+        process_checkstyle(self.problems, output, docker.strip_base)
 
     def create_command(self, files):
         command = [
             'checkstyle',
             '-f', 'xml',
-            '-c', self.apply_base(self.options['config'])
+            '-c', docker.apply_base(self.options['config'])
         ]
         command += files
         return command
