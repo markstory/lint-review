@@ -70,8 +70,8 @@ def run(image, command, source_dir, env=None, timeout=None):
 
     env_args = []
     if isinstance(env, dict):
-        for key, val in env:
-            env_args.append(u"-e {key}={val}".format(key=key, val=val))
+        for key, val in env.items():
+            env_args.extend(['-e', u'{key}={val}'.format(key=key, val=val)])
     elif env:
         raise ValueError('env argument should be a dict')
 
