@@ -3,7 +3,6 @@ import logging
 import os
 import lintreview.docker as docker
 from lintreview.tools import Tool,  process_checkstyle
-from lintreview.utils import in_path
 from six.moves import map
 
 log = logging.getLogger(__name__)
