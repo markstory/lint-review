@@ -1,18 +1,12 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.luacheck import Luacheck
-from lintreview.utils import in_path
 from unittest import TestCase
-from unittest import skipIf
 from nose.tools import eq_
-
-luacheck_missing = not(in_path('luaCheck'))
+from tests import root_dir, requires_image
 
 
 class Testluacheck(TestCase):
-
-    needs_luacheck = skipIf(luacheck_missing, 'Needs luacheck')
 
     fixtures = [
         'tests/fixtures/luacheck/no_errors.lua',
@@ -22,7 +16,7 @@ class Testluacheck(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Luacheck(self.problems)
+        self.tool = Luacheck(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.lua'))
@@ -31,16 +25,16 @@ class Testluacheck(TestCase):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
 
-    @needs_luacheck
+    @requires_image('luacheck')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_luacheck
+    @requires_image('luacheck')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_luacheck
+    @requires_image('luacheck')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -54,7 +48,7 @@ class Testluacheck(TestCase):
             '(E011) expected \'=\' near \'+\'')
         eq_(expected, problems[0])
 
-    @needs_luacheck
+    @requires_image('luacheck')
     def test_process_files_three_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -72,12 +66,12 @@ class Testluacheck(TestCase):
             '(W113) accessing undefined variable \'sometable\'')
         eq_(expected, problems[1])
 
-    @needs_luacheck
+    @requires_image('luacheck')
     def test_process_files_with_config(self):
         config = {
             'config': 'tests/fixtures/luacheck/luacheckrc'
         }
-        tool = Luacheck(self.problems, config)
+        tool = Luacheck(self.problems, config, root_dir)
         tool.process_files(self.fixtures)
 
         problems = self.problems.all(self.fixtures[2])

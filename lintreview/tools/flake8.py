@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 import os
 import logging
-from lintreview.tools import Tool, run_command, process_quickfix
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
@@ -33,9 +33,9 @@ class Flake8(Tool):
 
     def check_dependencies(self):
         """
-        See if flake8 is on the PATH
+        See if python2 image exists
         """
-        return in_path('flake8')
+        return docker.image_exists('python2')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -50,11 +50,15 @@ class Flake8(Tool):
         """
         log.debug('Processing %s files with %s', len(files), self.name)
         command = self.make_command(files)
-        output = run_command(command, split=True, ignore_error=True)
+        output = docker.run(
+            'python2',
+            command,
+            source_dir=self.base_path)
         if not output:
             log.debug('No flake8 errors found.')
             return False
 
+        output = output.split("\n")
         process_quickfix(self.problems, output, lambda name: name)
 
     def make_command(self, files):
@@ -79,10 +83,7 @@ class Flake8(Tool):
         """Run autopep8, as flake8 has no fixer mode.
         """
         command = self.create_fixer_command(files)
-        run_command(
-            command,
-            ignore_error=True,
-            include_errors=False)
+        docker.run('python2', command, self.base_path)
 
     def create_fixer_command(self, files):
         command = [

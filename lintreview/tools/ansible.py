@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import os
 import logging
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +13,9 @@ class Ansible(Tool):
 
     def check_dependencies(self):
         """
-        See if ansible-lint is on the PATH
+        See if python2 container exists
         """
-        return in_path('ansible-lint')
+        return docker.image_exists('python2')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -34,22 +33,12 @@ class Ansible(Tool):
         if self.options.get('ignore'):
             command += ['-x', self.options.get('ignore')]
         command += files
-        output = run_command(command, split=True, ignore_error=True)
+        output = docker.run('python2', command, self.base_path)
         if not output:
             log.debug('No ansible-lint errors found.')
             return False
 
+        output = output.split("\n")
         output.sort()
 
-        for line in output:
-            filename, line, error = self._parse_line(line)
-            self.problems.add(filename, line, error)
-
-    def _parse_line(self, line):
-        """
-        ansible-lint only generates results as stdout.
-        Parse the output for real data.
-        """
-        parts = line.split(':')
-        message = parts[2].strip()
-        return (parts[0], int(parts[1]), message)
+        process_quickfix(self.problems, output, lambda x: x)

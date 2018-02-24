@@ -1,9 +1,9 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.jsonlint import Jsonlint
 from unittest import TestCase
 from nose.tools import eq_, assert_in
+from tests import root_dir, requires_image
 
 
 class TestJsonlint(TestCase):
@@ -16,7 +16,7 @@ class TestJsonlint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Jsonlint(self.problems)
+        self.tool = Jsonlint(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -25,10 +25,12 @@ class TestJsonlint(TestCase):
         self.assertTrue(self.tool.match_file('test.json'))
         self.assertTrue(self.tool.match_file('dir/name/test.json'))
 
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -52,6 +54,7 @@ class TestJsonlint(TestCase):
         assert_in("Warning: Strict JSON does not allow a final comma",
                   problems[1].body)
 
+    @requires_image('python2')
     def test_process_files_three_files(self):
         self.tool.process_files(self.fixtures)
 

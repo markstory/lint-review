@@ -1,11 +1,10 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
 import re
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_checkstyle
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -16,9 +15,9 @@ class Tslint(Tool):
 
     def check_dependencies(self):
         """
-        See if TsLint is on the system path.
+        See if nodejs image exists
         """
-        return in_path('tslint') or npm_exists('tslint')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         """
@@ -33,19 +32,18 @@ class Tslint(Tool):
         Run code checks with TSLint.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        cmd = self.name
-        if npm_exists('tslint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'tslint')
-        command = [cmd, '--format', 'checkstyle']
+        command = ['tslint', '--format', 'checkstyle']
 
         # Add config file or default to recommended linters
         if self.options.get('config'):
-            command += ['-c', self.apply_base(self.options['config'])]
+            command += ['-c',
+                        docker.apply_base(self.options['config'])]
 
         command += files
-        output = run_command(
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
+            source_dir=self.base_path)
         self._process_output(output, files)
 
     def _process_output(self, output, files):
@@ -69,7 +67,4 @@ class Tslint(Tool):
             msg = msg.format(config)
             return self.problems.add(IssueComment(msg))
 
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+        process_checkstyle(self.problems, output, docker.strip_base)

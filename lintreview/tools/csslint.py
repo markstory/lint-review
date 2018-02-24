@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_checkstyle
 
 
 log = logging.getLogger(__name__)
@@ -15,9 +14,9 @@ class Csslint(Tool):
 
     def check_dependencies(self):
         """
-        See if csslint is on the system path.
+        See if nodejs image exists.
         """
-        return in_path('csslint') or npm_exists('csslint')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -32,17 +31,14 @@ class Csslint(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         cmd = 'csslint'
-        if npm_exists('csslint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'csslint')
         command = [cmd, '--format=checkstyle-xml']
 
         if self.options.get('ignore'):
             command += ['--ignore=' + self.options.get('ignore')]
         command += files
-        output = run_command(
+
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+            source_dir=self.base_path)
+        process_checkstyle(self.problems, output, docker.strip_base)

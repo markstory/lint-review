@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
-import functools
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool,  process_checkstyle
 from six.moves import map
 
 log = logging.getLogger(__name__)
@@ -15,9 +14,9 @@ class Shellcheck(Tool):
 
     def check_dependencies(self):
         """
-        See if shellcheck is on the system path.
+        See if shellcheck image exists
         """
-        return in_path('shellcheck')
+        return docker.image_exists('shellcheck')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -44,14 +43,8 @@ class Shellcheck(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
-        output = run_command(
-            command,
-            ignore_error=True,
-            include_errors=False)
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+        output = docker.run('shellcheck', command, self.base_path)
+        process_checkstyle(self.problems, output, docker.strip_base)
         list(map(self.escape_backtick, self.problems))
 
     def escape_backtick(self, problem):

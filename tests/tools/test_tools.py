@@ -1,21 +1,11 @@
 from __future__ import absolute_import
 import lintreview.tools as tools
 import github3
-import os
 from lintreview.config import ReviewConfig, build_review_config
-from lintreview.review import Review
-from lintreview.review import Problems
+from lintreview.review import Review, Problems
 from nose.tools import eq_, raises
 from mock import Mock
-
-
-fixture_path = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        'fixtures'
-    )
-)
+from tests import root_dir, fixtures_path, requires_image
 
 
 sample_ini = """
@@ -83,41 +73,43 @@ def test_tool_apply_base__no_base():
 
 def test_tool_apply_base__with_base():
     problems = Problems()
-    tool = tools.Tool(problems, {}, fixture_path)
+    tool = tools.Tool(problems, {}, fixtures_path)
 
     result = tool.apply_base('comments_current.json')
-    eq_(result, fixture_path + '/comments_current.json')
+    eq_(result, fixtures_path + '/comments_current.json')
 
     result = tool.apply_base('./comments_current.json')
-    eq_(result, fixture_path + '/comments_current.json')
+    eq_(result, fixtures_path + '/comments_current.json')
 
     result = tool.apply_base('eslint/config.json')
-    eq_(result, fixture_path + '/eslint/config.json')
+    eq_(result, fixtures_path + '/eslint/config.json')
 
     result = tool.apply_base('./eslint/config.json')
-    eq_(result, fixture_path + '/eslint/config.json')
+    eq_(result, fixtures_path + '/eslint/config.json')
 
     result = tool.apply_base('../fixtures/eslint/config.json')
-    eq_(result, fixture_path + '/eslint/config.json')
+    eq_(result, fixtures_path + '/eslint/config.json')
 
 
 def test_tool_apply_base__with_base_no_traversal():
     problems = Problems()
-    tool = tools.Tool(problems, {}, fixture_path)
+    tool = tools.Tool(problems, {}, fixtures_path)
 
     result = tool.apply_base('../../../comments_current.json')
     eq_(result, 'comments_current.json')
 
 
+@requires_image('python2')
 def test_run():
     config = build_review_config(simple_ini)
     problems = Problems()
     files = ['./tests/fixtures/pep8/has_errors.py']
-    tool_list = tools.factory(config, problems, '')
+    tool_list = tools.factory(config, problems, root_dir)
     tools.run(tool_list, files, [])
     eq_(7, len(problems))
 
 
+@requires_image('python2')
 def test_run__filter_files():
     config = build_review_config(simple_ini)
     problems = Problems()
@@ -125,6 +117,6 @@ def test_run__filter_files():
         './tests/fixtures/pep8/has_errors.py',
         './tests/fixtures/phpcs/has_errors.php'
     ]
-    tool_list = tools.factory(config, problems, '')
+    tool_list = tools.factory(config, problems, root_dir)
     tools.run(tool_list, files, [])
     eq_(7, len(problems))

@@ -1,11 +1,10 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
 import re
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, run_command, process_checkstyle
-from lintreview.utils import in_path, npm_exists
+from lintreview.tools import Tool, process_checkstyle
+import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -15,9 +14,9 @@ class Eslint(Tool):
     name = 'eslint'
 
     def check_dependencies(self):
-        """See if ESLint is on the system path.
+        """See if the nodejs image exists
         """
-        return in_path('eslint') or npm_exists('eslint')
+        return docker.image_exists('nodejs')
 
     def match_file(self, filename):
         """Check if a file should be linted using ESLint.
@@ -39,20 +38,20 @@ class Eslint(Tool):
         command = self._create_command()
 
         command += files
-        output = run_command(
+        output = docker.run(
+            'nodejs',
             command,
-            ignore_error=True)
+            source_dir=self.base_path)
         self._process_output(output, files)
 
     def process_fixer(self, files):
         """Run Eslint in the fixer mode.
         """
         command = self.create_fixer_command(files)
-        output = run_command(
+        docker.run(
+            'nodejs',
             command,
-            ignore_error=True,
-            include_errors=False)
-        log.debug(output)
+            source_dir=self.base_path)
 
     def create_fixer_command(self, files):
         command = self._create_command()
@@ -61,24 +60,18 @@ class Eslint(Tool):
         return command
 
     def _create_command(self):
-        cmd = 'eslint'
-        if npm_exists('eslint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'eslint')
-        command = [cmd, '--format', 'checkstyle']
+        command = ['eslint', '--format', 'checkstyle']
 
         # Add config file or default to recommended linters
         if self.options.get('config'):
-            command += ['--config', self.apply_base(self.options['config'])]
+            command += ['--config',
+                        docker.apply_base(self.options['config'])]
         return command
 
     def _process_output(self, output, files):
         if '<?xml' not in output:
             return self._config_error(output)
-
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_checkstyle(self.problems, output, filename_converter)
+        process_checkstyle(self.problems, output, docker.strip_base)
 
     def _config_error(self, output):
         if 'Cannot read config file' in output:

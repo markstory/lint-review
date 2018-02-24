@@ -2,18 +2,12 @@ from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jscs import Jscs
-from lintreview.utils import in_path
-from lintreview.utils import npm_exists
 from unittest import TestCase
-from unittest import skipIf
 from nose.tools import eq_
-
-jscs_missing = not(in_path('jscs') or npm_exists('jscs'))
+from tests import root_dir, requires_image
 
 
 class TestJscs(TestCase):
-
-    needs_jscs = skipIf(jscs_missing, 'Needs jscs to run')
 
     fixtures = [
         'tests/fixtures/jscs/no_errors.js',
@@ -22,7 +16,7 @@ class TestJscs(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Jscs(self.problems)
+        self.tool = Jscs(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -31,16 +25,16 @@ class TestJscs(TestCase):
         self.assertTrue(self.tool.match_file('test.js'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
-    @needs_jscs
+    @requires_image('nodejs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @needs_jscs
+    @requires_image('nodejs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
-    @needs_jscs
+    @requires_image('nodejs')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -54,7 +48,7 @@ class TestJscs(TestCase):
         expected = Comment(fname, 7, 7, 'Expected indentation of 4 characters')
         eq_(expected, problems[6])
 
-    @needs_jscs
+    @requires_image('nodejs')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -63,12 +57,12 @@ class TestJscs(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_(8, len(problems))
 
-    @needs_jscs
+    @requires_image('nodejs')
     def test_process_files_with_config(self):
         config = {
             'preset': 'airbnb'
         }
-        tool = Jscs(self.problems, config)
+        tool = Jscs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[0]])
 
         problems = self.problems.all(self.fixtures[0])

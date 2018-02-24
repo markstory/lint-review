@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import os
 import logging
-import functools
-from lintreview.tools import Tool, run_command, process_quickfix, stringify
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix, stringify
 
 log = logging.getLogger(__name__)
 
@@ -19,9 +18,9 @@ class Py3k(Tool):
 
     def check_dependencies(self):
         """
-        See if pylint is on the PATH
+        See if python image is available
         """
-        return in_path('pylint')
+        return docker.image_exists('python2')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -36,17 +35,15 @@ class Py3k(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.make_command(files)
-        output = run_command(command, split=True, ignore_error=True)
+        output = docker.run('python2', command, self.base_path)
         if not output:
             log.debug('No py3k errors found.')
             return False
 
+        output = output.split("\n")
         output = [line for line in output if not line.startswith("*********")]
 
-        filename_converter = functools.partial(
-            self._relativize_filename,
-            files)
-        process_quickfix(self.problems, output, filename_converter)
+        process_quickfix(self.problems, output, docker.strip_base)
 
     def make_command(self, files):
         msg_template = '{path}:{line}:{column}:{msg_id} {msg}'

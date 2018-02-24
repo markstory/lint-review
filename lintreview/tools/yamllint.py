@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 import os
 import logging
-from lintreview.tools import Tool, run_command, process_quickfix
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
@@ -13,9 +13,9 @@ class Yamllint(Tool):
 
     def check_dependencies(self):
         """
-        See if yamllint is on the PATH
+        See if python2 image is installed
         """
-        return in_path('yamllint')
+        return docker.image_exists('python2')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -34,12 +34,16 @@ class Yamllint(Tool):
         command = ['yamllint', '--format=parsable']
         # Add config file if its present
         if self.options.get('config'):
-            command += ['-c', self.apply_base(self.options['config'])]
+            command += [
+                '-c',
+                docker.apply_base(self.options['config'])
+            ]
         command += files
 
-        output = run_command(command, split=True, ignore_error=True)
+        output = docker.run('python2', command, self.base_path)
         if not output:
             log.debug('No yamllint errors found.')
             return False
 
+        output = output.split("\n")
         process_quickfix(self.problems, output, lambda x: x)

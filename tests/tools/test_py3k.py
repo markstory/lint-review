@@ -1,19 +1,13 @@
 from __future__ import absolute_import
-from unittest import TestCase, skipIf
 
+from unittest import TestCase
 from nose.tools import eq_
-
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.py3k import Py3k
-import sys
-
-not_python2 = sys.version_info[0] >= 3
+from tests import root_dir, requires_image
 
 
 class TestPy3k(TestCase):
-
-    needs_py2 = skipIf(not_python2, 'Cannot run in python3')
 
     class fixtures:
         no_errors = 'tests/fixtures/py3k/no_errors.py'
@@ -21,7 +15,7 @@ class TestPy3k(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Py3k(self.problems)
+        self.tool = Py3k(self.problems, base_path=root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -30,11 +24,12 @@ class TestPy3k(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures.no_errors])
         eq_([], self.problems.all(self.fixtures.no_errors))
 
-    @needs_py2
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
@@ -47,21 +42,23 @@ class TestPy3k(TestCase):
                     'W1638 range built-in referenced when not iterating')
         ], problems)
 
-    @needs_py2
+    @requires_image('python2')
     def test_process_files__config_option_str(self):
-        tool = Py3k(self.problems, {'ignore': 'W1638,E1601'})
+        tool = Py3k(self.problems, {'ignore': 'W1638,E1601'}, root_dir)
         tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
         eq_(0, len(problems))
 
-    @needs_py2
+    @requires_image('python2')
     def test_process_files__config_option_list(self):
-        tool = Py3k(self.problems, {'ignore': ['W1638', 'E1601']})
+        tool = Py3k(self.problems,
+                    {'ignore': ['W1638', 'E1601']},
+                    root_dir)
         tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
         eq_(0, len(problems))
 
-    @needs_py2
+    @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files([self.fixtures.no_errors,
                                  self.fixtures.has_errors])

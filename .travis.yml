@@ -1,6 +1,8 @@
 language: python
 
 dist: 'trusty'
+services:
+  - docker
 
 python:
   - "2.7"
@@ -15,33 +17,11 @@ env:
   - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -y install golang checkstyle
+  - make images
 
 install:
   - pip install -r requirements-dev.txt
   - pip install .
-  - pip install codecov
-  - pip install coverage
-
-before_script:
-  # Install golint
-  - go version
-  - go get -u github.com/golang/lint/golint
-
-  # install node and npm tools
-  - rm -rf ~/.nvm
-  - git clone https://github.com/creationix/nvm.git ~/.nvm
-  - (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`)
-  - source ~/.nvm/nvm.sh
-  - nvm install 5
-  - npm install
-
-  # Use ruby2
-  - rvm install 2.3.0
-  - rvm use 2.3.0
-  - bundle install --path ./bundle
-
   # Sample config file
   - cp settings.sample.py settings.py
 

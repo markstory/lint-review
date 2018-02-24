@@ -4,8 +4,6 @@ import lintreview.fixers as fixers
 from lintreview.config import build_review_config
 from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
-from lintreview.utils import composer_exists
-from unittest import skipIf
 from mock import Mock, sentinel
 from nose.tools import (
     assert_raises,
@@ -13,7 +11,7 @@ from nose.tools import (
     eq_,
     with_setup
 )
-from .. import load_fixture, fixtures_path, fixer_ini
+from .. import requires_image, root_dir, load_fixture, fixtures_path, fixer_ini
 from ..test_git import setup_repo, teardown_repo, clone_path
 
 
@@ -21,8 +19,6 @@ app_config = {
     'GITHUB_AUTHOR_NAME': 'bot',
     'GITHUB_AUTHOR_EMAIL': 'bot@example.com'
 }
-
-phpcs_missing = not(composer_exists('phpcs'))
 
 
 def test_run_fixers():
@@ -48,13 +44,13 @@ def test_run_fixers__no_fixer_mode():
     eq_(0, len(out))
 
 
-@skipIf(phpcs_missing, 'Needs phpcs')
+@requires_image('phpcs')
 @with_setup(setup_repo, teardown_repo)
 def test_run_fixers__integration():
     # Test fixer integration with phpcs.
     tail_path = 'tests/fixtures/phpcs/has_errors.php'
     file_path = os.path.abspath(clone_path + '/' + tail_path)
-    phpcs = Phpcs(Mock(), {'fixer': True})
+    phpcs = Phpcs(Mock(), {'fixer': True}, root_dir)
 
     diff = fixers.run_fixers([phpcs], clone_path, [file_path])
     eq_(1, len(diff))

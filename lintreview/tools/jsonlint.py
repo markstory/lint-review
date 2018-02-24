@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import os
 import logging
-from lintreview.tools import Tool
-from lintreview.tools import run_command
-from lintreview.utils import in_path
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +13,9 @@ class Jsonlint(Tool):
 
     def check_dependencies(self):
         """
-        See if jsonlint is on the PATH
+        See if the python2 image exists
         """
-        return in_path('jsonlint')
+        return docker.image_exists('python2')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -35,23 +34,13 @@ class Jsonlint(Tool):
         command = ['jsonlint']
         command += files
 
-        output = run_command(command, split=True, ignore_error=True)
+        output = docker.run(
+            'python2',
+            command,
+            source_dir=self.base_path)
         if not output:
             log.debug('No jsonlint errors found.')
             return False
 
-        for line in output:
-            if (line[0] == ' ' or
-                    line.find(': has errors') >= 0 or
-                    line.find(': ok') >= 0):
-                continue
-            filename, line, error = self._parse_line(line)
-            self.problems.add(filename, line, error)
-
-    def _parse_line(self, line):
-        """
-        jsonlint only generates results as stdout.
-        Parse the output for real data.
-        """
-        parts = line.split(':', 3)
-        return (parts[0], int(parts[1]), parts[3][1:-1])
+        output = output.split("\n")
+        process_quickfix(self.problems, output, lambda x: x)

@@ -1,9 +1,9 @@
 from __future__ import absolute_import
-from lintreview.review import Problems
-from lintreview.review import Comment
+from lintreview.review import Problems, Comment
 from lintreview.tools.yamllint import Yamllint
 from unittest import TestCase
 from nose.tools import eq_
+from tests import root_dir, requires_image
 
 
 class TestYamllint(TestCase):
@@ -15,7 +15,7 @@ class TestYamllint(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Yamllint(self.problems)
+        self.tool = Yamllint(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
@@ -26,10 +26,12 @@ class TestYamllint(TestCase):
         self.assertTrue(self.tool.match_file('test.yml'))
         self.assertTrue(self.tool.match_file('dir/name/test.yml'))
 
+    @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         eq_([], self.problems.all(self.fixtures[0]))
 
+    @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -46,6 +48,7 @@ class TestYamllint(TestCase):
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[1])
 
+    @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -65,11 +68,12 @@ class TestYamllint(TestCase):
         expected = Comment(fname, 2, 2, msg)
         eq_(expected, problems[1])
 
+    @requires_image('python2')
     def test_process_files_with_config(self):
         config = {
             'config': 'tests/fixtures/yamllint/config.yaml'
         }
-        tool = Yamllint(self.problems, config)
+        tool = Yamllint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[0]])
 
         problems = self.problems.all(self.fixtures[0])
