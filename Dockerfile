@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-ENV REFRESHED_AT 2016-05-21
+ENV REFRESHED_AT 2018-02-24
 
 RUN apt-get update && \
     apt-get install -y curl && \
@@ -7,34 +7,15 @@ RUN apt-get update && \
 
 RUN apt-get install -y \
     python2.7 python-pip \
-    php \
-    php-pear \
     git \
-    ruby \
-    nodejs \
-    ruby \
-    ruby-dev \
-    shellcheck \
-    luarocks \
     libxml2 \
     libffi-dev \
     zlib1g-dev \
+    docker.io \
     build-essential && \
     apt-get -y autoremove && \
     apt-get -y clean  && \
     rm -rf /var/lib/apt/lists/*
-
-WORKDIR /code
-RUN pear install PHP_CodeSniffer
-RUN luarocks install luacheck
-RUN gem install bundler
-
-ADD package.json /code/
-RUN npm install
-
-ENV BUNDLE_SILENCE_ROOT_WARNING 1
-ADD Gemfile Gemfile.lock /code/
-RUN bundler install --system
 
 ADD requirements.txt /code/
 RUN pip install -r requirements.txt
