@@ -52,7 +52,7 @@ def clone(url, path):
     command = ['git', 'clone', url, path]
     return_code, _ = _process(command)
     if return_code:
-        raise IOError(u"Unable to clone repository '{}'".format(url))
+        raise IOError(u"Unable to clone repository into '{}'".format(path))
     return True
 
 
