@@ -30,7 +30,7 @@ class Sasslint(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['sass-lint', '-f', 'checkstyle', '-v']
+        command = ['sass-lint', '-f', 'checkstyle', '-v', '-q']
         command += files
         if self.options.get('ignore'):
             command += ['--ignore ', self.options.get('ignore')]

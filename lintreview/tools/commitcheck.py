@@ -1,16 +1,23 @@
 from __future__ import absolute_import
 from lintreview.tools import Tool
 from lintreview.review import IssueComment
+from lintreview.config import load_config
 import logging
 import re
 
 
 log = logging.getLogger(__name__)
 
+config = load_config()
+
 
 class Commitcheck(Tool):
 
     name = 'commitcheck'
+
+    def __init__(self, problems, options=None, base_path=None):
+        super(Commitcheck, self).__init__(problems, options, base_path)
+        self.author = config.get('GITHUB_AUTHOR_EMAIL', None)
 
     def check_dependencies(self):
         """
@@ -48,6 +55,14 @@ class Commitcheck(Tool):
         self.problems.add(IssueComment(body))
 
     def _check_commit(self, pattern, commit):
+        author = self.author
+        if author and (author == commit.commit.author['email'] or
+                       author == commit.commit.committer['email']):
+            log.info("Skipping commit %s it was authored by %s",
+                     commit.commit.sha,
+                     author)
+            return
+
         match = pattern.search(commit.commit.message)
         if not match:
             return commit.sha
