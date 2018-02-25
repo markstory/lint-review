@@ -2,10 +2,7 @@ FROM ubuntu:16.04
 ENV REFRESHED_AT 2018-02-24
 
 RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -sL https://deb.nodesource.com/setup_6.x | bash -
-
-RUN apt-get install -y \
+    apt-get install -y \
     python2.7 python-pip \
     git \
     libxml2 \
@@ -17,8 +14,10 @@ RUN apt-get install -y \
     apt-get -y clean  && \
     rm -rf /var/lib/apt/lists/*
 
-ADD requirements.txt /code/
-RUN pip install -r requirements.txt
+WORKDIR /code
+
 ADD . /code
-RUN pip install .
+ADD requirements.txt /code/
+RUN cd /code && pip install -r requirements.txt
+RUN cd /code && pip install .
 RUN cp /code/settings.sample.py /code/settings.py
