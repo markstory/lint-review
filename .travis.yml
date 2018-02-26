@@ -1,8 +1,15 @@
+---
 language: python
 
 dist: 'trusty'
+
 services:
   - docker
+
+addons:
+  apt:
+    packages:
+      - gpg
 
 python:
   - "2.7"
