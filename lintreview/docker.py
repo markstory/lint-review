@@ -93,5 +93,7 @@ def run(image, command, source_dir, env=None, timeout=None):
         universal_newlines=True)
 
     output, error = process.communicate()
+    output = error + output
+    log.debug('Container output was: %s', output)
 
-    return error + output
+    return output
