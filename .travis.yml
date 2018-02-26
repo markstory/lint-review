@@ -9,7 +9,7 @@ services:
 addons:
   apt:
     packages:
-      - gpg
+      - gnupg2
 
 python:
   - "2.7"
