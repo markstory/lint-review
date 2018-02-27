@@ -1,8 +1,15 @@
+---
 language: python
 
 dist: 'trusty'
+
 services:
   - docker
+
+addons:
+  apt:
+    packages:
+      - gnupg2
 
 python:
   - "2.7"

@@ -50,6 +50,8 @@ services:
     environment:
       <<: *lintreview_env
       C_FORCE_ROOT: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     links:
       - broker
     networks:
