@@ -381,20 +381,6 @@ class TestProblems(TestCase):
         expected = 'Tabs bad'
         eq_(expected, result[0].body)
 
-    def test_add__with_base_path(self):
-        problems = Problems('/some/path/')
-        problems.add('/some/path/file.py', 10, 'Not good')
-        eq_([], problems.all('/some/path/file.py'))
-        eq_(1, len(problems.all('file.py')))
-        eq_(1, len(problems))
-
-    def test_add__with_base_path_no_trailing_slash(self):
-        problems = Problems('/some/path')
-        problems.add('/some/path/file.py', 10, 'Not good')
-        eq_([], problems.all('/some/path/file.py'))
-        eq_(1, len(problems.all('file.py')))
-        eq_(1, len(problems))
-
     def test_add__with_diff_containing_block_offset(self):
         res = [PullFile(f) for f in json.loads(self.block_offset)]
         changes = DiffCollection(res)

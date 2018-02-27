@@ -82,7 +82,7 @@ class TestProcessor(object):
         subject.load_changes()
         subject.run_tools(config)
 
-        file_path = './tests/View/Helper/AssetCompressHelper.php'
+        file_path = '/src/View/Helper/AssetCompressHelper.php'
         fixer_stub.create_context.assert_called_with(
             config,
             app_config,
@@ -92,7 +92,7 @@ class TestProcessor(object):
         fixer_stub.run_fixers.assert_called_with(
             sentinel.tools,
             './tests',
-            [os.path.abspath(file_path)])
+            [file_path])
         fixer_stub.apply_fixer_diff.assert_called_with(
             subject._changes,
             sentinel.diff,
