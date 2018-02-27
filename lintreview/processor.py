@@ -3,6 +3,7 @@ import logging
 import lintreview.tools as tools
 import lintreview.fixers as fixers
 
+from lintreview.docker import DOCKER_BASE
 from lintreview.diff import DiffCollection
 from lintreview.fixers.error import ConfigurationError, WorkflowError
 from lintreview.review import Problems, Review, IssueComment
@@ -40,7 +41,7 @@ class Processor(object):
             raise RuntimeError('No loaded changes, cannot run tools. '
                                'Try calling load_changes first.')
         files_to_check = self._changes.get_files(
-            append_base=self._target_path,
+            append_base=DOCKER_BASE,
             ignore_patterns=review_config.ignore_patterns())
         commits_to_check = self._pull_request.commits()
 
