@@ -14,9 +14,9 @@ class Gpg(Tool):
 
     def check_dependencies(self):
         """
-        See if the gpg image
+        See if the gpg image exists
         """
-        return docker.image_exists('python2')
+        return docker.image_exists('gpg')
 
     def execute_commits(self, commits):
         """
