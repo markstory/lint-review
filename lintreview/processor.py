@@ -27,7 +27,7 @@ class Processor(object):
         self._repository = repository
         self._pull_request = pull_request
         self._target_path = target_path
-        self.problems = Problems(target_path)
+        self.problems = Problems()
         self._review = Review(repository, pull_request, config)
 
     def load_changes(self):

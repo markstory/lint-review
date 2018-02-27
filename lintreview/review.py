@@ -290,24 +290,15 @@ class Problems(object):
     Used by tool objects to collect problems, and by
     the Review objects to publish results.
     """
-    _base = None
-
-    def __init__(self, base=None, changes=None):
+    def __init__(self, changes=None):
         self._items = OrderedDict()
         self._changes = changes
-        if base:
-            self._base = base.rstrip('/') + '/'
 
     def set_changes(self, changes):
         self._changes = changes
 
     def has_changes(self):
         return self._changes and len(self._changes) > 0
-
-    def _trim_filename(self, filename):
-        if not self._base:
-            return filename
-        return filename[len(self._base):]
 
     def line_to_position(self, filename, line):
         """Convert the line number in the final file to a diff offset
@@ -336,7 +327,6 @@ class Problems(object):
             self._items[filename.key()] = filename
             return
 
-        filename = self._trim_filename(filename)
         if not position:
             position = self.line_to_position(filename, line)
 
