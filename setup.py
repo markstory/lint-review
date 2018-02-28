@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = "lintreview"
-VERSION = "2.0.0-beta1"
+VERSION = "2.0.0-beta2"
 
 requirements = open('./requirements.txt', 'r')
 
@@ -11,7 +11,7 @@ setup(
     description="Lint Review, an automated code review tool that "
                 "integrates with github. Integrates with the github API "
                 "& a variety of code checking tools.",
-    author="Mark story",
+    author="Mark Story",
     author_email="mark@mark-story.com",
     packages=find_packages(exclude=['tests*']),
     entry_points={
