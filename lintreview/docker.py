@@ -57,8 +57,7 @@ def image_exists(name):
 
 
 def run(image, command, source_dir, env=None, timeout=None):
-    """
-    Execute tool commands in docker containers.
+    """Execute tool commands in docker containers.
 
     All output from the container will be treated as tool output
     to be parsed by the tool adapter.

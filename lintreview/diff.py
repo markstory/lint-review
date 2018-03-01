@@ -132,8 +132,7 @@ class DiffCollection(object):
             i += 1
 
     def get_files(self, append_base='', ignore_patterns=None):
-        """
-        Get the names of all files that have changed
+        """Get the names of all files that have changed
         """
         if append_base:
             append_base = os.path.realpath(append_base) + os.sep
@@ -149,17 +148,14 @@ class DiffCollection(object):
         return any(matches)
 
     def all_changes(self, filename):
-        """
-        Get all the changes for a given file independant
+        """Get all the changes for a given file independant
         of which commit changed them.
         """
         return [change for change in self._diffs
                 if change.filename == filename]
 
     def has_line_changed(self, filename, line):
-        """
-        Check whether or not a line has changed in
-        a file.
+        """Check whether or not a line has changed in a file.
 
         Useful for verifying that errors from tools
         are new and likely to be related to the lines
@@ -180,8 +176,8 @@ class DiffCollection(object):
 
 
 class Diff(object):
-    """
-    Contains the changes for a single file.
+    """Contains the changes for a single file.
+
     Github's API returns one Diff per file
     in a pull request.
     """

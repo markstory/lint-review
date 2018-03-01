@@ -95,6 +95,7 @@ def checkout(path, ref):
 @log_io_error
 def diff(path, files=None):
     """Get a diff of the unstaged changes.
+
     See lintreview.diff.parse_diff if you need to create
     more useful objects from the diff.
     """
@@ -125,7 +126,8 @@ def apply_cached(path, patch):
 
 @log_io_error
 def status(path):
-    """Get the working status of path"""
+    """Get the working status of path
+    """
     command = ['git', 'status', '-s']
     return_code, output = _process(command, chdir=path)
     if return_code:
@@ -145,8 +147,8 @@ def commit(path, author, message):
 
 @log_io_error
 def create_branch(path, name):
-    """Create & checkout a local branch based
-    on the currently checked out commit
+    """Create & checkout a local branch based on the currently
+    checked out commit.
     """
     command = ['git', 'checkout', '-b', name]
     return_code, output = _process(command, chdir=path)
@@ -158,7 +160,8 @@ def create_branch(path, name):
 
 @log_io_error
 def branch_exists(path, name):
-    """See if a branch exists"""
+    """See if a branch exists
+    """
     command = ['git', 'branch']
     return_code, output = _process(command, chdir=path)
     if return_code:
@@ -170,7 +173,8 @@ def branch_exists(path, name):
 
 @log_io_error
 def push(path, remote, branch):
-    """Push a branch to the named remote"""
+    """Push a branch to the named remote
+    """
     command = ['git', 'push', remote, branch]
     return_code, output = _process(command, chdir=path)
     if return_code:
@@ -184,6 +188,7 @@ def push(path, remote, branch):
 @log_io_error
 def add_remote(path, name, url):
     """Add a remote to the repo at `path`
+
     Generally used to add a push remote to a repo
     for fixer flows.
     """
