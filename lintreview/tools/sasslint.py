@@ -38,7 +38,7 @@ class Sasslint(Tool):
                 'node_modules',
                 '.bin',
                 'sass-lint')
-        command = [cmd, '-f', 'checkstyle', '-v']
+        command = [cmd, '-f', 'checkstyle', '-v', '-q']
         command += files
         if self.options.get('ignore'):
             command += ['--ignore ', self.options.get('ignore')]

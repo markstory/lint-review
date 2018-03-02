@@ -55,3 +55,9 @@ class TestCommitCheck(TestCase):
                '* 6dcb09b5b57875f334f61aebed695e2e4193db5e\n')
         expected = IssueComment(msg)
         eq_(expected, self.problems.all()[0])
+
+    def test_execute_commits__ignore_author_email(self):
+        self.tool.author = 'support@github.com'
+        self.tool.options['pattern'] = '\d+'
+        self.tool.execute_commits(self.fixture_data)
+        eq_(0, len(self.problems))
