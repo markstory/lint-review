@@ -4,6 +4,7 @@ from lintreview.tools.foodcritic import Foodcritic
 from unittest import TestCase
 from nose.tools import eq_
 from tests import root_dir, requires_image
+import os
 
 
 class TestFoodcritic(TestCase):
@@ -20,7 +21,7 @@ class TestFoodcritic(TestCase):
     def test_process_cookbook_pass__no_path(self):
         self.tool = Foodcritic(self.problems,
                                {},
-                               root_dir + self.fixtures[0])
+                               os.path.join(root_dir, self.fixtures[0]))
         self.tool.process_files(None)
         eq_([], self.problems.all())
 
