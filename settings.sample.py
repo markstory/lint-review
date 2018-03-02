@@ -36,7 +36,7 @@ from kombu import Exchange, Queue
 
 # AMQP or other celery broker URL.
 # amqp paths should be in the form of user:pass@host:port//virtualhost
-BROKER_URL = 'amqp://'+''.join([
+broker_url = 'amqp://'+''.join([
     env('LINTREVIEW_MQ_USER', 'guest'), ':',
     env('LINTREVIEW_MQ_PASS', 'guest'), '@',
     env('LINTREVIEW_MQ_HOST', 'broker'), ':',
@@ -45,11 +45,11 @@ BROKER_URL = 'amqp://'+''.join([
 ])
 
 # Use json for serializing messages.
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['json']
+task_serializer = 'json'
+accept_content = ['json']
 
 # Show dates and times in UTC
-CELERY_ENABLE_UTC = True
+enable_utc = True
 
 
 # General project configuration
