@@ -131,12 +131,10 @@ class DiffCollection(object):
             yield self._diffs[i]
             i += 1
 
-    def get_files(self, append_base='', ignore_patterns=None):
+    def get_files(self, ignore_patterns=None):
         """Get the names of all files that have changed
         """
-        if append_base:
-            append_base = os.path.realpath(append_base) + os.sep
-        return [append_base + change.filename
+        return [change.filename
                 for change in self._diffs
                 if not self._ignore_file(change.filename, ignore_patterns)]
 
