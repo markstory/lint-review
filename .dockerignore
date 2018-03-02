@@ -1,0 +1,14 @@
+*.pyc
+build/
+dist/
+*.egg-info
+tags
+/env
+/settings.py
+/workspace
+/ca.crt
+/node_modules
+/vendor
+/bundle
+/.bundle
+output.log

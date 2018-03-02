@@ -23,6 +23,12 @@ class Tool(object):
         if isinstance(options, dict):
             self.options = options
 
+    def get_working_dir(self):
+        working_dir = self.options.get('working_dir')
+        if working_dir:
+            return os.path.join(self.base_path, working_dir)
+        return os.getcwd()
+
     def check_dependencies(self):
         """
         Used to check for a tools commandline
@@ -196,6 +202,7 @@ def factory(config, problems, base_path):
     for linter in config.linters():
         linter_config = config.linter_config(linter)
         try:
+            linter = linter.split('_#')[0]
             classname = linter.capitalize()
             log.debug("Attempting to import 'lintreview.tools.%s'", linter)
             mod = __import__('lintreview.tools.' + linter, fromlist='*')
@@ -263,6 +270,8 @@ def process_checkstyle(problems, xml, filename_converter):
             message = err.get('message')
             if ',' in line:
                 lines = [int(x) for x in line.split(',')]
+            elif not line.isdigit():
+                continue
             else:
                 lines = [int(line)]
             list(map(lambda x: problems.add(filename, x, message), lines))

@@ -178,6 +178,23 @@ are used to find and exclude files when doing a review. Ignore patterns use glob
 to find files. The patterns start at the reviewed repository root. If you need to ignore mulitple
 patterns separate them with new lines.
 
+### Multiple projects in one repo
+
+You can list multiple `tool_` sections as follows (**note the _# suffixes**):
+
+    [tool_eslint_#client]
+    config = client/.eslintrc.json
+    working_dir = client
+    install = true
+
+    [tool_eslint_#server]
+    config = server/.eslintrc.json
+    working_dir = server
+    install = true
+
+Each section must have a unique name, but anything after and including `_#` is ignored when determining the linter for which it applies. This allows you to run the same linter multiple times with different settings for each run. This can be useful if, as in the example above, you have two different projects (e.g. client and server) in the same repository.
+
+To avoid duplicate or conflicting comments, make sure that the each project ignores the files of the other. Using the example above, there should be a .eslintignore file in the `client` directory that ignores files in `server`, and vice versa. Depending on the tool, you might also be able to do this using an ignore pattern in the .lintrc. The documentation for each linter outlines which settings are available.
 
 ## Running Lint Review
 
@@ -254,6 +271,15 @@ to do style checks on PHP, Javascript and or CSS files.
 * `exclude` A comma separated list of sniffs to not apply.
 * `tab_width` The number of spaces to convert tabs into, this is useful for projects using
   tabs for indentation.
+* `working_dir` Change the working directory before linting. 
+* `install` Run composer install before linting. Runs in `working_dir`, if specified. Otherwise, runs in the root directory of this linter. Any non-empty value for this option will trigger an install.
+
+`working_dir` and `install` can be used together to avoid having to pre-install linting packages inside this linter. Instead, set `working_dir` to the location of your project's composer.json and set `install = true`.
+
+**NOTE** If `install` isn't specified, you'll need to install the PHPCS globall:
+
+    cd path/to/lintreview
+    composer require "squizlabs/php_codesniffer=*"
 
 ### Javascript:
 
@@ -284,15 +310,39 @@ you can use this linter you'll need to install nodejs and the jshint npm package
 
 #### ESLint
 
-Uses the [eslint](http://eslint.org/) npm module to check javascript files. Before
-you can use this linter you'll need to install the eslint npm package:
-
-    cd path/to/lintreview
-    npm install eslint
+Uses the [eslint](http://eslint.org/) npm module to check javascript files. 
 
 *Options*
 
 * `config` Provide a path to the json config file for eslint.
+* `extensions` The extensions to check. By default only `.js` and `.jsx` files will be checked.
+* `working_dir` Change the working directory before linting. 
+* `install` Run npm install before linting. Runs in `working_dir`, if specified. Otherwise, runs in the root directory of this linter. Any non-empty value for this option will trigger an install.
+
+`working_dir` and `install` can be used together to avoid having to pre-install linting packages inside this linter. For example, if one of your projects requires `eslint-plugin-vue` while the other needs `eslint-plugin-react`, you don't need to install them both inside the linter. Instead, set `working_dir` to the location of your project's package.json and set `install = true`. This will also help if you're having problems with the linter being unable to resolve required packages.
+
+**NOTE** If `install` isn't specified, you'll need to install the eslint npm package:
+
+    cd path/to/lintreview
+    npm install eslint
+
+If you have multiple eslint configurations listed, and if your projects are laid out such that one project's `working_dir` is *inside* the other's, then you should do one of two things:
+1. Add `root: true` to the .eslintrc of the project in the child directory
+2. Run the project with the top-most `working_dir` first.
+
+For example, consider the following setup:
+
+    [tool_eslint_#server]
+    config = app/.eslintrc.json
+    working_dir = app
+    install = true
+
+    [tool_eslint_#client]
+    config = app/public/.eslintrc.json
+    working_dir = app/public
+    install = true
+
+The client is in `app/public`, which is inside `app`. If you are intentionally extending the server eslint config in the client directory, then the server should be run first by renaming the sections `tool_eslint_#1_server` and `tool_eslint_#2_client`. Otherwiser, if the client's eslint config should be completely independent of the server's, then `root: true` should be added to `app/public/.eslintrc.json`.
 
 #### StandardJs
 

@@ -20,6 +20,7 @@ before_install:
 
 install:
   - pip install -r requirements-dev.txt
+  - pip install -r requirements-linters.txt
   - pip install .
   - pip install codecov
   - pip install coverage

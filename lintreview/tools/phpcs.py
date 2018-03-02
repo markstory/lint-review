@@ -22,7 +22,8 @@ class Phpcs(Tool):
         """
         See if PHPCS is on the system path.
         """
-        return in_path('phpcs') or composer_exists('phpcs')
+        working_dir = self.get_working_dir()
+        return in_path('phpcs') or composer_exists('phpcs', cwd=working_dir)
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -36,11 +37,24 @@ class Phpcs(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
+
+        working_dir = self.get_working_dir()
+        log.debug('Working in dir %s', working_dir)
+
+        if self.options.get('install'):
+            output = run_command(
+                ['composer', 'install'],
+                ignore_error=True,
+                cwd=working_dir)
+            log.debug('Install output: %s', output)
+
         command = self.create_command(files)
         output = run_command(
             command,
             ignore_error=True,
-            include_errors=False)
+            include_errors=False,
+            cwd=working_dir)
+
         filename_converter = functools.partial(
             self._relativize_filename,
             files)
@@ -66,7 +80,7 @@ class Phpcs(Tool):
 
     def create_command(self, files):
         command = ['phpcs']
-        if composer_exists('phpcs'):
+        if composer_exists('phpcs', cwd=self.get_working_dir()):
             command = ['vendor/bin/phpcs']
         command += ['--report=checkstyle']
         command = self._apply_options(command)
@@ -106,11 +120,12 @@ class Phpcs(Tool):
         run_command(
             command,
             ignore_error=True,
-            include_errors=False)
+            include_errors=False,
+            cwd=self.get_working_dir())
 
     def create_fixer_command(self, files):
         command = ['phpcbf']
-        if composer_exists('phpcbf'):
+        if composer_exists('phpcbf', cwd=self.get_working_dir()):
             command = ['vendor/bin/phpcbf']
         command = self._apply_options(command)
         command += files

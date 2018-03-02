@@ -19,26 +19,28 @@ def in_path(name):
     return False
 
 
-def npm_exists(name):
+def npm_exists(name, cwd=None):
     """
     Check whether or not a cli tool exists in a node_modules/.bin
     dir in os.cwd
 
     @return boolean
     """
-    cwd = os.getcwd()
+    if cwd is None:
+        cwd = os.getcwd()
     path = os.path.join(cwd, 'node_modules', '.bin', name)
     return os.path.exists(path)
 
 
-def composer_exists(name):
+def composer_exists(name, cwd=None):
     """
     Check whether or not a cli tool exists in vendor/bin/{name}
     relative to os.cwd
 
     @return boolean
     """
-    cwd = os.getcwd()
+    if cwd is None:
+        cwd = os.getcwd()
     path = os.path.join(cwd, 'vendor', 'bin', name)
     return os.path.exists(path)
 

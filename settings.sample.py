@@ -36,7 +36,7 @@ from kombu import Exchange, Queue
 
 # AMQP or other celery broker URL.
 # amqp paths should be in the form of user:pass@host:port//virtualhost
-BROKER_URL = 'amqp://'+''.join([
+broker_url = 'amqp://'+''.join([
     env('LINTREVIEW_MQ_USER', 'guest'), ':',
     env('LINTREVIEW_MQ_PASS', 'guest'), '@',
     env('LINTREVIEW_MQ_HOST', 'broker'), ':',
@@ -45,11 +45,11 @@ BROKER_URL = 'amqp://'+''.join([
 ])
 
 # Use json for serializing messages.
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['json']
+task_serializer = 'json'
+accept_content = ['json']
 
 # Show dates and times in UTC
-CELERY_ENABLE_UTC = True
+enable_utc = True
 
 
 # General project configuration
@@ -87,13 +87,13 @@ SSL_CA_BUNDLE = None
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
 # Used as the author information when making commits
-GITHUB_AUTHOR_NAME = 'lintreview'
-GITHUB_AUTHOR_EMAIL = 'lintreview@example.com'
+GITHUB_AUTHOR_NAME = env('GITHUB_AUTHOR_NAME', 'lintreview')
+GITHUB_AUTHOR_EMAIL = env('GITHUB_AUTHOR_EMAIL', 'lintreview@example.com')
 
 # Status Configuration
 ######################
 # Customize the build status integration name. Defaults to lintreview.
-# APP_NAME = 'lintreview'
+APP_NAME = env('LINTREVIEW_APP_NAME', 'lintreview')
 
 # Publish result to a pull requests status
 PULLREQUEST_STATUS = env('LINTREVIEW_PULLREQUEST_STATUS', True, bool)

@@ -7,12 +7,11 @@ from lintreview.config import load_config, build_review_config
 from lintreview.repo import GithubRepository
 from lintreview.processor import Processor
 
-config = load_config()
 celery = Celery('lintreview.tasks')
-celery.config_from_object(config)
+celery.config_from_object('settings')
 
+config = load_config()
 log = logging.getLogger(__name__)
-
 
 @celery.task(ignore_result=True)
 def process_pull_request(user, repo_name, number, lintrc):
