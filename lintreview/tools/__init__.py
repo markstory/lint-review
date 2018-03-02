@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import lintreview.docker as docker
 import logging
 import os
 import collections
@@ -172,7 +173,12 @@ def run(lint_tools, files, commits):
 
     Uses the ReviewConfig, problemset, and list of files to iteratively
     run each tool across the various files in a pull request.
+
+    file paths are converted into docker paths as all
+    tools run in docker containers.
     """
+    files = [docker.apply_base(f) for f in files]
+
     log.info('Running lint tools on %d files', len(files))
     for tool in lint_tools:
         log.debug('Runnning %s', tool)

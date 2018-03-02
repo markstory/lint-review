@@ -1,7 +1,8 @@
 from __future__ import absolute_import
-from lintreview.diff import parse_diff, Diff, DiffCollection
+from lintreview.diff import parse_diff, Diff
 from lintreview.fixers.commit_strategy import CommitStrategy
 from lintreview.fixers.error import ConfigurationError
+import lintreview.docker as docker
 import lintreview.git as git
 import logging
 
@@ -36,9 +37,10 @@ def run_fixers(tools, base_path, files):
     If no diff is generated an empty list will be returned"""
     log.info('Running fixers on %d files', len(files))
 
+    docker_files = [docker.apply_base(f) for f in files]
     for tool in tools:
         if tool.has_fixer():
-            tool.execute_fixer(files)
+            tool.execute_fixer(docker_files)
     diff = git.diff(base_path, files)
     if diff:
         return parse_diff(diff)

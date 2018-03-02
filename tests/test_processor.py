@@ -82,7 +82,7 @@ class TestProcessor(object):
         subject.load_changes()
         subject.run_tools(config)
 
-        file_path = '/src/View/Helper/AssetCompressHelper.php'
+        file_path = 'View/Helper/AssetCompressHelper.php'
         fixer_stub.create_context.assert_called_with(
             config,
             app_config,

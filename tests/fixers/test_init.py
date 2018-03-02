@@ -49,10 +49,9 @@ def test_run_fixers__no_fixer_mode():
 def test_run_fixers__integration():
     # Test fixer integration with phpcs.
     tail_path = 'tests/fixtures/phpcs/has_errors.php'
-    file_path = os.path.abspath(clone_path + '/' + tail_path)
-    phpcs = Phpcs(Mock(), {'fixer': True}, root_dir)
+    phpcs = Phpcs(Mock(), {'fixer': True}, clone_path)
 
-    diff = fixers.run_fixers([phpcs], clone_path, [file_path])
+    diff = fixers.run_fixers([phpcs], clone_path, [tail_path])
     eq_(1, len(diff))
     eq_(tail_path, diff[0].filename)
 
