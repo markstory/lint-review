@@ -1,6 +1,6 @@
 FROM alpine:3.7
 RUN apk add --no-cache \
-        curl=7.58.0-r0 \
+        curl=7.58.0-r1 \
         gcc=6.4.0-r5 \
         git=2.15.0-r1 \
         libffi-dev=3.2.1-r4 \
