@@ -95,7 +95,7 @@ class TestEslint(TestCase):
         error = problems[0]
         ok_('Your eslint configuration output the following error'
             in error.body)
-        ok_('ESLint couldn\'t find the plugin "eslint-plugin-mocha"'
+        ok_('ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
             in error.body)
 
     @requires_image('nodejs')
