@@ -41,4 +41,7 @@ class Sasslint(Tool):
             'nodejs',
             command,
             source_dir=self.base_path)
-        process_checkstyle(self.problems, output, docker.strip_base)
+        # sass-lint is very silly and outputs multiple xml documents.
+        # One for each file...
+        for line in output.split("\n"):
+            process_checkstyle(self.problems, line, docker.strip_base)

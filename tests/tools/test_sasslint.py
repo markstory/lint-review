@@ -11,6 +11,7 @@ class TestSasslint(TestCase):
     fixtures = [
         'tests/fixtures/sasslint/no_errors.scss',
         'tests/fixtures/sasslint/has_errors.scss',
+        'tests/fixtures/sasslint/has_more_errors.scss',
     ]
 
     def setUp(self):
@@ -47,12 +48,15 @@ class TestSasslint(TestCase):
         eq_(expected, problems[0])
 
     @requires_image('nodejs')
-    def test_process_files_two_files(self):
+    def test_process_files__multiple_files(self):
         self.tool.process_files(self.fixtures)
 
         eq_([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
+        eq_(1, len(problems))
+
+        problems = self.problems.all(self.fixtures[2])
         eq_(1, len(problems))
 
     @requires_image('nodejs')
