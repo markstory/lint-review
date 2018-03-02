@@ -197,7 +197,7 @@ Uses the [flake8](http://pypi.python.org/pypi/flake8) module to check code.
 *Options*
 
 * `ignore` Set which pep8 error codes you wish to ignore.
-* `exclude` Exclude files or directories which match these comma
+* `exclude` Exclude files matching these comma
    separated patterns (default: .svn, CVS, .bzr, .hg, .git)
 * `filename` When parsing directories, only check filenames
    matching these comma separated patterns (default: `*.py`)
@@ -205,8 +205,9 @@ Uses the [flake8](http://pypi.python.org/pypi/flake8) module to check code.
 * `max-line-length` Set maximum allowed line length (default: 79)
 * `format` Set the error format [default|pylint|<custom>]
 * `max-complexity` McCabe complexity threshold
-* `snippet` Interacts with [flake8-snippets](https://pypi.python.org/pypi/flake8-snippets) allowing
-  you to trigger errors on specific snippets you want to disallow.
+* `snippet` Interacts with
+  [flake8-snippets](https://pypi.python.org/pypi/flake8-snippets) allowing you
+  to trigger errors on specific snippets you want to disallow.
 
 These options are passed into flake8 as cli options.
 
@@ -242,13 +243,15 @@ to do style checks on PHP, Javascript and or CSS files.
 
 *Options*
 
-* `standard` The coding standard to use. By default the `PSR2` standard is used. You can
-  use any of the built-in standards or provide your own inside your project directory.
-* `extensions` The extensions to check. By default only `.php` files will be checked.
+* `standard` The coding standard to use. By default the `PSR2` standard is used.
+  You can use any of the built-in standards or provide your own inside your
+  project directory.
+* `extensions` The extensions to check. By default only `.php` files will be
+  checked.
 * `ignore` A glob path of files to ignore.
 * `exclude` A comma separated list of sniffs to not apply.
-* `tab_width` The number of spaces to convert tabs into, this is useful for projects using
-  tabs for indentation.
+* `tab_width` The number of spaces to convert tabs into, this is useful for
+  projects using tabs for indentation.
 
 ### Javascript:
 
