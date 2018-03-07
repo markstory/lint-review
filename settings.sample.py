@@ -14,9 +14,9 @@ def env(key, default=None, cast=str):
 # gunicorn config
 bind = env('LINTREVIEW_GUNICORN_BIND', '127.0.0.1:5000')
 errorlog = env('LINTREVIEW_GUNICORN_LOG_ERROR',
-                          'lintreview.error.log')
+               'lintreview.error.log')
 accesslog = env('LINTREVIEW_GUNICORN_LOG_ACCESS',
-                           'lintreview.access.log')
+                'lintreview.access.log')
 debug = env('LINTREVIEW_GUNICORN_DEBUG', True, bool)
 loglevel = env('LINTREVIEW_GUNICORN_LOGLEVEL', 'debug')
 
@@ -87,8 +87,9 @@ SSL_CA_BUNDLE = None
 SUMMARY_THRESHOLD = env('LINTREVIEW_SUMMARY_THRESHOLD', 50, int)
 
 # Used as the author information when making commits
-GITHUB_AUTHOR_NAME = 'lintreview'
-GITHUB_AUTHOR_EMAIL = 'lintreview@example.com'
+GITHUB_AUTHOR_NAME = env('LINTREVIEW_GITHUB_AUTHOR_NAME', 'lintreview')
+GITHUB_AUTHOR_EMAIL = env('LINTREVIEW_GITHUB_AUTHOR_EMAIL',
+                          'lintreview@example.com')
 
 # Status Configuration
 ######################
