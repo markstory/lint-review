@@ -29,6 +29,16 @@ class TestEslint(TestCase):
         self.assertTrue(self.tool.match_file('test.jsx'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
+    def test_match_file__extensions(self):
+        options = {
+            'extensions': '.js,.jsm'
+        }
+        tool = Eslint(self.problems, options)
+        self.assertFalse(tool.match_file('test.php'))
+        self.assertFalse(tool.match_file('test.jsx'))
+        self.assertTrue(tool.match_file('test.js'))
+        self.assertTrue(tool.match_file('test.jsm'))
+
     @requires_image('nodejs')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
