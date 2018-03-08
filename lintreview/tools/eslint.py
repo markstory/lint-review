@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import logging
 import os
 import re
+from lintreview.config import comma_value
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle
 import lintreview.docker as docker
@@ -23,7 +24,8 @@ class Eslint(Tool):
         """
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.js' or ext == '.jsx'
+        extensions = comma_value(self.options.get('extensions', '.js,.jsx'))
+        return ext in extensions
 
     def has_fixer(self):
         """Eslint has a fixer that can be enabled
