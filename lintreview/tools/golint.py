@@ -37,7 +37,7 @@ class Golint(Tool):
         output = output.strip().split("\n")
         # Look for multi-package error message, and re-run tools
         if len(output) == 1 and 'is in package' in output[0]:
-            log.info('Re-running golint on individual files'
+            log.info('Re-running golint on individual files '
                      'as diff contains files from multiple packages: %s',
                      output[0])
             self.run_individual_files(files, docker.strip_base)
@@ -62,3 +62,22 @@ class Golint(Tool):
             output = docker.run('golint', command, self.base_path)
             output = output.split("\n")
             process_quickfix(self.problems, output, filename_converter)
+
+    def has_fixer(self):
+        """golint has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
+    def process_fixer(self, files):
+        """Run gofmt as a fixer for go
+        """
+        command = self.create_fixer_command(files)
+        docker.run(
+            'golint',
+            command,
+            source_dir=self.base_path)
+
+    def create_fixer_command(self, files):
+        command = ['gofmt', '-w']
+        command += docker.replace_basedir(self.base_path, files)
+        return command

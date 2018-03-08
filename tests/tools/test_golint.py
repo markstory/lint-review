@@ -4,7 +4,7 @@ from lintreview.tools.golint import Golint
 from unittest import TestCase
 from nose.tools import eq_
 from mock import patch
-from tests import root_dir, requires_image
+from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
 class TestGolint(TestCase):
@@ -100,3 +100,22 @@ class TestGolint(TestCase):
         tool = Golint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
         eq_(2, len(self.problems))
+
+    def test_has_fixer__not_enabled(self):
+        tool = Golint(self.problems, {})
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Golint(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    @requires_image('golint')
+    def test_execute_fixer(self):
+        tool = Golint(self.problems, {'fixer': True}, root_dir)
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
