@@ -54,7 +54,7 @@ class Pep8(Tool):
             return False
         output = output.split("\n")
 
-        process_quickfix(self.problems, output, lambda name: name)
+        process_quickfix(self.problems, output, docker.strip_base)
 
     def has_fixer(self):
         """

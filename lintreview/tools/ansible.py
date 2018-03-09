@@ -41,4 +41,4 @@ class Ansible(Tool):
         output = output.split("\n")
         output.sort()
 
-        process_quickfix(self.problems, output, lambda x: x)
+        process_quickfix(self.problems, output, docker.strip_base)
