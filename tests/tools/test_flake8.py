@@ -15,7 +15,7 @@ class TestFlake8(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.tool = Flake8(self.problems, {'config': ''}, root_dir)
+        self.tool = Flake8(self.problems, {}, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
