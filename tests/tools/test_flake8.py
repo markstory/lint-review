@@ -53,6 +53,20 @@ class TestFlake8(TestCase):
         assert_in('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
+    def test_process_absolute_container_path(self):
+        fixtures = ['/src/' + path for path in self.fixtures]
+        self.tool.process_files(fixtures)
+
+        eq_([], self.problems.all(self.fixtures[0]))
+
+        problems = self.problems.all(self.fixtures[1])
+        assert len(problems) >= 6
+
+        eq_(2, problems[0].line)
+        eq_(2, problems[0].position)
+        assert_in('multiple imports on one line', problems[0].body)
+
+    @requires_image('python2')
     def test_config_options_and_process_file(self):
         options = {
             'ignore': 'F4,W603',
