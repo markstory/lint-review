@@ -26,5 +26,6 @@ tag: guard-VERSION
 	git tag -s $(VERSION)
 	git push origin
 	git push origin --tags
+	python setup.py bdist_wheel upload
 
 release: tag
