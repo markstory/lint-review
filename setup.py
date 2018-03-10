@@ -1,13 +1,14 @@
 from setuptools import setup, find_packages
-
-PACKAGE_NAME = "lintreview"
-VERSION = "2.0.0-beta4"
+import re
 
 requirements = open('./requirements.txt', 'r')
 
+with open('./lintreview/__init__.py', 'rt', encoding='utf8') as f:
+    version = re.search(r"__version__ = '(.*?)'", f.read()).group(1)
+
 setup(
-    name=PACKAGE_NAME,
-    version=VERSION,
+    name='lintreview',
+    version=version,
     description="Lint Review, an automated code review tool that "
                 "integrates with github. Integrates with the github API "
                 "& a variety of code checking tools.",

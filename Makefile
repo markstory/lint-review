@@ -10,3 +10,23 @@ images:
 	cd docker && docker build -t checkstyle -f checkstyle.Dockerfile .
 	cd docker && docker build -t shellcheck -f shellcheck.Dockerfile .
 	cd docker && docker build -t gpg -f gpg.Dockerfile .
+
+
+# Utility target for checking required parameters
+guard-%:
+	@if [ "$($*)" = '' ]; then \
+		echo "Missing required $* variable."; \
+		exit 1; \
+	fi;
+
+tag: guard-VERSION
+	sed -i'' -e "s/__version__ = '\(.*\)'/__version__ = '$(VERSION)'/" lintreview/__init__.py
+	git add lintreview/__init__.py
+	git commit -m 'Bump version'
+	git tag -s $(VERSION)
+
+docker_image: guard-VERSION
+	docker build -t markstory/lint-review:$(VERSION) .
+	docker push markstory/lint-review:$(VERSION)
+
+release: tag docker_image
