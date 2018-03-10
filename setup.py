@@ -3,7 +3,7 @@ import re
 
 requirements = open('./requirements.txt', 'r')
 
-with open('./lintreview/__init__.py', 'rt', encoding='utf8') as f:
+with open('./lintreview/__init__.py', 'r') as f:
     version = re.search(r"__version__ = '(.*?)'", f.read()).group(1)
 
 setup(
