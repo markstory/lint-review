@@ -46,4 +46,4 @@ class Yamllint(Tool):
             return False
 
         output = output.split("\n")
-        process_quickfix(self.problems, output, lambda x: x)
+        process_quickfix(self.problems, output, docker.strip_base)

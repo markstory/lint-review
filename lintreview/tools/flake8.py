@@ -59,7 +59,7 @@ class Flake8(Tool):
             return False
 
         output = output.split("\n")
-        process_quickfix(self.problems, output, lambda name: name)
+        process_quickfix(self.problems, output, docker.strip_base)
 
     def make_command(self, files):
         command = ['flake8', '--isolated']

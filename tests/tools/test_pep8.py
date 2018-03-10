@@ -59,6 +59,16 @@ class TestPep8(TestCase):
         eq_(expected, problems[5])
 
     @requires_image('python2')
+    def test_process_absolute_container_path(self):
+        fixtures = ['/src/' + path for path in self.fixtures]
+        self.tool.process_files(fixtures)
+
+        eq_([], self.problems.all(self.fixtures[0]))
+
+        problems = self.problems.all(self.fixtures[1])
+        assert len(problems) >= 6
+
+    @requires_image('python2')
     def test_process_files__ignore(self):
         options = {
             'ignore': 'E2,W603'
