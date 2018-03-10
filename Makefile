@@ -27,8 +27,4 @@ tag: guard-VERSION
 	git push origin
 	git push origin --tags
 
-docker_image: guard-VERSION
-	docker build -t markstory/lint-review:$(VERSION) .
-	docker push markstory/lint-review:$(VERSION)
-
-release: tag docker_image
+release: tag
