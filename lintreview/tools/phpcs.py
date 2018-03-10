@@ -87,8 +87,7 @@ class Phpcs(Tool):
         return command
 
     def has_fixer(self):
-        """
-        PHPCS has a fixer that can be enabled through configuration.
+        """PHPCS has a fixer that can be enabled through configuration.
         """
         return bool(self.options.get('fixer', False))
 
