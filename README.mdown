@@ -58,9 +58,15 @@ source env/bin/activate
 pip install .
 ```
 
+## Make docker images for tools you want to use
+
 In addition to installing the dependencies for lint-review you will also need to
-build the containers for each lint tool you want to use. You can use `make images`
-to build the included images.
+build the containers for each lint tool you want to use:
+
+```bash
+# Create a set of images for frequently used tools.
+make images
+````
 
 Once the dependencies are installed you should configure the repositories you
 want to review.
