@@ -24,6 +24,8 @@ tag: guard-VERSION
 	git add lintreview/__init__.py
 	git commit -m 'Bump version'
 	git tag -s $(VERSION)
+	git push origin
+	git push origin --tags
 
 docker_image: guard-VERSION
 	docker build -t markstory/lint-review:$(VERSION) .
