@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import fnmatch
 import re
-import os
 import logging
 from collections import namedtuple
 
@@ -198,7 +197,7 @@ class Diff(object):
         line intersects with the previous change we also care.
         """
         hunks = []
-        hunk_separator = r'(^\@\@ \-\d+,\d+ \+\d+,\d+ \@\@.*?\n)'
+        hunk_separator = r'(^\@\@ \-\d+,\d+ \+\d+(?:,\d+)? \@\@.*?\n)'
         blocks = re.split(hunk_separator, patch, 0, re.M)
 
         if len(blocks) and blocks[0] == '':
@@ -302,7 +301,7 @@ class Hunk(object):
     Each Diff is made of multiple hunks of various sizes.
     Each Hunk begins with the ``@@`` delimiter.
     """
-    start_line_pattern = re.compile('\@\@ \-(\d+),\d+ \+(\d+),\d+ \@\@')
+    start_line_pattern = re.compile('\@\@ \-(\d+),\d+ \+(\d+)(?:,\d+)? \@\@')
 
     def __init__(self, header, patch, offset):
         self._header = header

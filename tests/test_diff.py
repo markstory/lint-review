@@ -88,6 +88,8 @@ class TestDiffCollection(TestCase):
     # Diff with removed files
     removed_files_json = load_fixture('diff_with_removed_files.json')
 
+    single_line_add_json = load_fixture('diff_single_line_add.json')
+
     def setUp(self):
         self.one_file = create_pull_files(self.one_file_json)
         self.two_files = create_pull_files(self.two_files_json)
@@ -163,6 +165,15 @@ class TestDiffCollection(TestCase):
 
         # Should return false for unchanged
         self.assertFalse(changes.has_line_changed(filename, 145))
+
+    def test_has_line_changed__single_line(self):
+        filename = 'some.js'
+        pull_file = create_pull_files(self.single_line_add_json)
+        changes = DiffCollection(pull_file)
+
+        self.assertTrue(changes.has_line_changed(filename, 1))
+        self.assertFalse(changes.has_line_changed(filename, 0))
+        self.assertFalse(changes.has_line_changed(filename, 2))
 
     def test_parsing_diffs_removed__file(self):
         changes = DiffCollection(self.removed_files)
