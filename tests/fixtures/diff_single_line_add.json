@@ -1,0 +1,14 @@
+[
+  {
+    "sha": "f5f3a3c645baa24a34967b55056965c8235cfa3c",
+    "filename": "some.js",
+    "status": "added",
+    "additions": 1,
+    "deletions": 0,
+    "changes": 1,
+    "blob_url": "https://github.com/markstory/lint-test/blob/92d26ce01117618294efb4ccc607dcd5ab19fea1/some.js",
+    "raw_url": "https://github.com/markstory/lint-test/raw/92d26ce01117618294efb4ccc607dcd5ab19fea1/some.js",
+    "contents_url": "https://api.github.com/repos/markstory/lint-test/contents/some.js?ref=92d26ce01117618294efb4ccc607dcd5ab19fea1",
+    "patch": "@@ -0,0 +1 @@\n+alert('hi!');"
+  }
+]
