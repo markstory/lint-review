@@ -120,3 +120,15 @@ def test_run__filter_files():
     tool_list = tools.factory(config, problems, root_dir)
     tools.run(tool_list, files, [])
     eq_(7, len(problems))
+
+
+def test_python_image():
+    eq_('python2', tools.python_image(False))
+    eq_('python2', tools.python_image(''))
+    eq_('python2', tools.python_image('derp'))
+    eq_('python2', tools.python_image({}))
+    eq_('python2', tools.python_image([]))
+    eq_('python2', tools.python_image({'python': 2}))
+    eq_('python2', tools.python_image({'python': '2'}))
+    eq_('python3', tools.python_image({'python': '3'}))
+    eq_('python3', tools.python_image({'python': 3}))
