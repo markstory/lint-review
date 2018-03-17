@@ -58,6 +58,20 @@ class TestPep8(TestCase):
                            "W603 '<>' is deprecated, use '!='")
         eq_(expected, problems[5])
 
+    @requires_image('python3')
+    def test_process_files_two_files__python3(self):
+        self.tool.options['python'] = 3
+        self.tool.process_files(self.fixtures)
+
+        eq_([], self.problems.all(self.fixtures[0]))
+
+        problems = self.problems.all(self.fixtures[1])
+        assert len(problems) >= 6
+
+        eq_(2, problems[0].line)
+        eq_(2, problems[0].position)
+        assert_in('multiple imports on one line', problems[0].body)
+
     @requires_image('python2')
     def test_process_absolute_container_path(self):
         fixtures = ['/src/' + path for path in self.fixtures]
@@ -151,5 +165,33 @@ class TestPep8(TestCase):
 
         read_and_restore_file(self.fixtures[1], original)
         assert len(self.problems.all()) > 0, 'Most errors should be fixed'
+        text = [c.body for c in self.problems.all()]
+        assert_in("'<>' is deprecated", ' '.join(text))
+
+    @requires_image('python3')
+    def test_execute_fixer__python3(self):
+        options = {'fixer': True, 'python': 3}
+        tool = Pep8(self.problems, options, root_dir)
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+
+    @requires_image('python3')
+    def test_execute_fixer__fewer_problems_remain__python3(self):
+        options = {'fixer': True, 'python': 3}
+        tool = Pep8(self.problems, options, root_dir)
+
+        # The fixture file can have all problems fixed by autopep8
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+        tool.process_files(self.fixtures)
+
+        read_and_restore_file(self.fixtures[1], original)
+        assert 1 < len(self.problems.all()), 'Most errors should be fixed'
+
         text = [c.body for c in self.problems.all()]
         assert_in("'<>' is deprecated", ' '.join(text))

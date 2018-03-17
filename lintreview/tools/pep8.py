@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import os
 import logging
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_quickfix
+from lintreview.tools import Tool, process_quickfix, python_image
 
 log = logging.getLogger(__name__)
 
@@ -45,10 +45,9 @@ class Pep8(Tool):
             if option in pep8_options:
                 command += [u'--{}'.format(option), value]
         command += files
-        output = docker.run(
-            'python2',
-            command,
-            source_dir=self.base_path)
+
+        image = python_image(self.options)
+        output = docker.run(image, command, source_dir=self.base_path)
         if not output:
             log.debug('No pep8 errors found.')
             return False
@@ -66,7 +65,8 @@ class Pep8(Tool):
         """Run autopep8, as pep8 has no fixer mode.
         """
         command = self.create_fixer_command(files)
-        docker.run('python2', command, source_dir=self.base_path)
+        image = python_image(self.options)
+        docker.run(image, command, source_dir=self.base_path)
 
     def create_fixer_command(self, files):
         command = [

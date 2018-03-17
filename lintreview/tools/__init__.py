@@ -243,3 +243,18 @@ def stringify(value):
     if isinstance(value, collections.Iterable):
         return ','.join(value)
     return str(value)
+
+
+def python_image(config):
+    supported = {
+        '3': 'python3',
+        '2': 'python2'
+    }
+    if not config:
+        return supported['2']
+    if 'python' not in config:
+        return supported['2']
+    version = str(config['python'])
+    if version not in supported:
+        return supported['2']
+    return supported[version]
