@@ -69,6 +69,23 @@ class TestRubocop(TestCase):
             'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
         eq_(expected, problems[1])
 
+    @requires_image('ruby2')
+    def test_process_files_one_file_fail_display_cop_names__bool(self):
+        options = {
+            'display_cop_names': True,
+        }
+        self.tool = Rubocop(self.problems, options, root_dir)
+        linty_filename = self.fixtures[1]
+        self.tool.process_files([linty_filename])
+
+        problems = self.problems.all(linty_filename)
+        expected = Comment(
+            linty_filename,
+            4,
+            4,
+            'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
+        eq_(expected, problems[1])
+
     def test_has_fixer__not_enabled(self):
         tool = Rubocop(self.problems, {}, root_dir)
         eq_(False, tool.has_fixer())

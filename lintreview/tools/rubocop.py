@@ -40,7 +40,7 @@ class Rubocop(Tool):
 
     def _create_command(self):
         command = ['bundle', 'exec', 'rubocop', '--format', 'emacs']
-        if self.options.get('display_cop_names', '').lower() == 'true':
+        if self.options.get('display_cop_names', False):
             command.append('--display-cop-names')
         else:
             command.append('--no-display-cop-names')
