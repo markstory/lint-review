@@ -132,3 +132,62 @@ def test_python_image():
     eq_('python2', tools.python_image({'python': '2'}))
     eq_('python3', tools.python_image({'python': '3'}))
     eq_('python3', tools.python_image({'python': 3}))
+
+
+def test_process_checkstyle():
+    problems = Problems()
+    xml = """
+<checkstyle>
+  <file name="things.py">
+    <error line="1" message="Not good" />
+    <error line="2" message="Also not good" />
+  </file>
+  <file name="other_things.py">
+    <error line="3" message="Not good" />
+  </file>
+</checkstyle>
+"""
+    tools.process_checkstyle(problems, xml, lambda x: x)
+    eq_(3, len(problems))
+
+    things = problems.all('things.py')
+    eq_(2, len(things))
+    eq_(1, things[0].line)
+    eq_('Not good', things[0].body)
+
+
+def test_process_checkstyle__comma_lines():
+    problems = Problems()
+    xml = """
+<checkstyle>
+  <file name="other_things.py">
+    <error line="3,4,5" message="Not good" />
+  </file>
+</checkstyle>
+"""
+    tools.process_checkstyle(problems, xml, lambda x: x)
+    eq_(3, len(problems))
+
+    things = problems.all('other_things.py')
+    eq_(3, len(things))
+    eq_(3, things[0].line)
+    eq_('Not good', things[0].body)
+
+    eq_(4, things[1].line)
+    eq_('Not good', things[1].body)
+
+    eq_(5, things[2].line)
+    eq_('Not good', things[2].body)
+
+
+def test_process_checkstyle__non_int():
+    problems = Problems()
+    xml = """
+<checkstyle>
+  <file name="other_things.py">
+    <error line="undefined" message="Not good" />
+  </file>
+</checkstyle>
+"""
+    tools.process_checkstyle(problems, xml, lambda x: x)
+    eq_(0, len(problems))
