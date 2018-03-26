@@ -32,4 +32,4 @@ class CommitStrategy(object):
         remote_branch = self.pull_request.head_branch
 
         git.commit(self.path, author, 'Fixing style errors.')
-        git.push(self.path, 'origin', 'stylefixes:' + remote_branch)
+        git.push(self.path, 'origin', u'stylefixes:{}'.format(remote_branch))
