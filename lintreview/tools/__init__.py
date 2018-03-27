@@ -225,11 +225,19 @@ def process_checkstyle(problems, xml, filename_converter):
         for err in f.findall('error'):
             line = err.get('line')
             message = err.get('message')
-            if ',' in line:
-                lines = [int(x) for x in line.split(',')]
-            else:
-                lines = [int(line)]
-            list(map(lambda x: problems.add(filename, x, message), lines))
+            try:
+                lines = []
+                if ',' in line:
+                    lines = [int(x) for x in line.split(',')]
+                else:
+                    lines = [int(line)]
+            except Exception as e:
+                log.info(
+                    "Could not parse checkstyle output. "
+                    "Dropping message=%s line=%s"
+                    "Error was %s", message, line, e)
+            for line in lines:
+                problems.add(filename, line, message)
 
 
 def stringify(value):
