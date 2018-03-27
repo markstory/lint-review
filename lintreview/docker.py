@@ -82,12 +82,11 @@ def run(image, command, source_dir, env=None, timeout=None):
     cmd += env_args
     cmd.append(image)
 
-    # Make all the arguments into unicode strings.
+    # Make all the arguments into bytestr strings.
     # to get around encoding issues.
-    cmd = [arg.encode('utf8') for arg in cmd]
     cmd += [six.text_type(arg).encode('utf8') for arg in command]
 
-    log.debug('Running %s', ' '.join(cmd))
+    log.debug(u'Running {}'.format(cmd))
     process = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,
@@ -95,8 +94,12 @@ def run(image, command, source_dir, env=None, timeout=None):
         stderr=subprocess.PIPE,
         universal_newlines=True)
 
+    # Get output bytes/string
     output, error = process.communicate()
     output = error + output
     log.debug('Container output was: %s', output)
 
+    # Workaround for bytestr in py2 and str in py3
+    if isinstance(output, six.binary_type):
+        return output.decode('utf8')
     return output

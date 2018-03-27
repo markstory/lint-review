@@ -30,4 +30,4 @@ def test_apply_base():
 def test_run__unicode():
     cmd = ['echo', u"\u2620"]
     output = docker.run('python2', cmd, test_dir)
-    eq_(output, u"\u2620\n".encode('utf8'))
+    eq_(output, u"\u2620\n")
