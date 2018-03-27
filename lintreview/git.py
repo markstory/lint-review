@@ -216,7 +216,11 @@ def reset_hard(path):
 def destroy(path):
     """Blow up a repo and all its contents.
     """
-    shutil.rmtree(path, False)
+    try:
+        shutil.rmtree(path, False)
+    except:
+        log.warn('rmtree failed. force destroying %s', path)
+        _process(['rm', '-rf', path])
 
 
 def exists(path):
@@ -251,7 +255,7 @@ def _process(command, input_val=None, chdir=False):
         stderr=subprocess.PIPE,
         shell=False)
     if isinstance(input_val, six.string_types):
-        input_val = input_val.encode()
+        input_val = input_val.encode('utf-8')
     output, error = process.communicate(input=input_val)
     return_code = process.returncode
 

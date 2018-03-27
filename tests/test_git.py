@@ -213,3 +213,12 @@ def test_create_branch():
     eq_(True, git.branch_exists(clone_path, 'master'))
     eq_(True, git.branch_exists(clone_path, 'testing'))
     eq_(False, git.branch_exists(clone_path, 'nope'))
+
+
+@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+@with_setup(setup_repo, noop)
+def test_destory_unicode_paths():
+    with open(clone_path + u"/\u2620.txt", 'w') as f:
+        f.write('skull and crossbones')
+
+    git.destroy(clone_path)
