@@ -81,6 +81,9 @@ def run(image, command, source_dir, env=None, timeout=None):
     ]
     cmd += env_args
     cmd.append(image)
+
+    # Make all the arguments into unicode strings.
+    # to get around encoding issues.
     cmd = [arg.encode('utf8') for arg in cmd]
     cmd += [six.text_type(arg).encode('utf8') for arg in command]
 
