@@ -101,6 +101,7 @@ def diff(path, files=None):
     """
     command = ['git', 'diff', '--patience']
     if files:
+        files = [f.encode('utf8') for f in files]
         command.extend(files)
     return_code, output = _process(command, chdir=path)
     if return_code:
@@ -220,7 +221,7 @@ def destroy(path):
         shutil.rmtree(path, False)
     except:
         log.warn('rmtree failed. force destroying %s', path)
-        _process(['rm', '-rf', path])
+        subprocess.call(['rm', '-r', path])
 
 
 def exists(path):
@@ -255,7 +256,7 @@ def _process(command, input_val=None, chdir=False):
         stderr=subprocess.PIPE,
         shell=False)
     if isinstance(input_val, six.string_types):
-        input_val = input_val.encode('utf-8')
+        input_val = input_val.encode('utf8')
     output, error = process.communicate(input=input_val)
     return_code = process.returncode
 
