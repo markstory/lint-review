@@ -217,11 +217,7 @@ def reset_hard(path):
 def destroy(path):
     """Blow up a repo and all its contents.
     """
-    try:
-        shutil.rmtree(path, False)
-    except:
-        log.warn('rmtree failed. force destroying %s', path)
-        subprocess.call(['rm', '-r', path])
+    shutil.rmtree(path, False)
 
 
 def exists(path):
