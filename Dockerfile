@@ -1,6 +1,7 @@
 FROM ubuntu:16.04
 ENV REFRESHED_AT 2018-02-24
 ENV LANG=en_US.UTF-8
+ENV LC_ALL=C
 
 RUN apt-get update && \
     apt-get install -y \
