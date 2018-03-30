@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import lintreview.docker as docker
 from nose.tools import eq_
+from tests import requires_image, test_dir
 
 
 def test_replace_basedir():
@@ -23,3 +24,10 @@ def test_apply_base():
     eq_('/src/some/thing.py', docker.apply_base('some/thing.py'))
     eq_('thing.py', docker.apply_base('/some/thing.py'))
     eq_('thing.py', docker.apply_base('/some/../../thing.py'))
+
+
+@requires_image('python2')
+def test_run__unicode():
+    cmd = ['echo', u"\u2620"]
+    output = docker.run('python2', cmd, test_dir)
+    eq_(output, u"\u2620\n")

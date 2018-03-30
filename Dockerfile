@@ -1,5 +1,7 @@
 FROM ubuntu:16.04
 ENV REFRESHED_AT 2018-02-24
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && \
     apt-get install -y \
@@ -9,7 +11,9 @@ RUN apt-get update && \
     libffi-dev \
     zlib1g-dev \
     docker.io \
+    language-pack-en \
     build-essential && \
+    dpkg-reconfigure locales && \
     apt-get -y autoremove && \
     apt-get -y clean  && \
     rm -rf /var/lib/apt/lists/*
