@@ -11,6 +11,7 @@ RUN apt-get update && \
     libffi-dev \
     zlib1g-dev \
     docker.io \
+    language-pack-en \
     build-essential && \
     dpkg-reconfigure locales && \
     apt-get -y autoremove && \
