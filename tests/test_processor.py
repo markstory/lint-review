@@ -34,7 +34,8 @@ class TestProcessor(object):
         pull = self.get_pull_request()
         repo = Mock()
 
-        subject = Processor(repo, pull, './tests', app_config)
+        config = build_review_config('', app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
 
         eq_(1, len(subject._changes), 'File count is wrong')
@@ -45,8 +46,9 @@ class TestProcessor(object):
         pull = self.get_pull_request()
         repo = Mock()
 
-        subject = Processor(repo, pull, './tests', app_config)
-        subject.run_tools(None)
+        config = build_review_config('', app_config)
+        subject = Processor(repo, pull, './tests', config)
+        subject.run_tools()
 
     @patch('lintreview.processor.tools')
     @patch('lintreview.processor.fixers')
@@ -54,13 +56,13 @@ class TestProcessor(object):
         pull = self.get_pull_request()
         repo = Mock()
 
-        config = build_review_config(fixer_ini)
+        config = build_review_config(fixer_ini, app_config)
         config.ignore_patterns = lambda: [
             'View/Helper/*']
 
-        subject = Processor(repo, pull, './tests', app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
-        subject.run_tools(config)
+        subject.run_tools()
         tool_stub.run.assert_called_with(
             ANY,
             [],
@@ -77,15 +79,14 @@ class TestProcessor(object):
         fixer_stub.create_context.return_value = sentinel.context
         fixer_stub.run_fixers.return_value = sentinel.diff
 
-        config = build_review_config(fixer_ini)
-        subject = Processor(repo, pull, './tests', app_config)
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
-        subject.run_tools(config)
+        subject.run_tools()
 
         file_path = 'View/Helper/AssetCompressHelper.php'
         fixer_stub.create_context.assert_called_with(
             config,
-            app_config,
             './tests',
             repo,
             pull)
@@ -110,10 +111,10 @@ class TestProcessor(object):
         fixer_stub.create_context.return_value = sentinel.context
         fixer_stub.run_fixers.side_effect = RuntimeError
 
-        config = build_review_config(fixer_ini)
-        subject = Processor(repo, pull, './tests', app_config)
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
-        subject.run_tools(config)
+        subject.run_tools()
 
         assert fixer_stub.create_context.called
         assert fixer_stub.run_fixers.called
@@ -144,10 +145,10 @@ class TestProcessor(object):
         fixer_stub.create_context.return_value = sentinel.context
         fixer_stub.apply_fixer_diff.side_effect = error
 
-        config = build_review_config(fixer_ini)
-        subject = Processor(repo, pull, './tests', app_config)
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
-        subject.run_tools(config)
+        subject.run_tools()
 
         assert fixer_stub.create_context.called
         assert fixer_stub.run_fixers.called
@@ -163,7 +164,8 @@ class TestProcessor(object):
         pull = self.get_pull_request()
         repo = Mock()
 
-        subject = Processor(repo, pull, './tests', app_config)
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
         subject.problems = Mock()
         subject._review = Mock()
 
@@ -175,4 +177,5 @@ class TestProcessor(object):
             subject._review.publish.called,
             'Review should be published.')
         subject._review.publish.assert_called_with(
-            subject.problems, pull.head, 50)
+            subject.problems,
+            pull.head)

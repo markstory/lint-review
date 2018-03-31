@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from . import load_fixture
-from lintreview.config import load_config
+from . import load_fixture, fixer_ini
+from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review, Problems, Comment, IssueComment
 from lintreview.repo import GithubRepository, GithubPullRequest
@@ -25,14 +25,14 @@ class TestReview(TestCase):
         repo.pull_request.return_value = pr
 
         self.repo, self.pr = repo, pr
-        self.review = Review(repo, pr)
+        self.config = build_review_config(fixer_ini, config)
 
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
         self.pr.review_comments.return_value = [
                 GhIssueComment(f) for f in json.loads(fixture_data)]
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.load_comments()
 
         eq_(0, len(review.comments("View/Helper/AssetCompressHelper.php")))
@@ -41,7 +41,7 @@ class TestReview(TestCase):
         fixture_data = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
             GhIssueComment(f) for f in json.loads(fixture_data)]
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.load_comments()
 
         filename = "Routing/Filter/AssetCompressor.php"
@@ -64,7 +64,7 @@ class TestReview(TestCase):
         self.pr.review_comments.return_value = [
             GhIssueComment(f) for f in json.loads(fixture_data)]
         problems = Problems()
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         filename_1 = "Routing/Filter/AssetCompressor.php"
         filename_2 = "View/Helper/AssetCompressHelper.php"
 
@@ -100,7 +100,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         sha = 'abc123'
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.publish_review(problems, sha)
 
         assert self.pr.create_review.called
@@ -115,7 +115,7 @@ class TestReview(TestCase):
         problems = Problems()
         sha = 'abc123'
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.publish_review(problems, sha)
 
         assert self.pr.create_review.called is False
@@ -125,7 +125,7 @@ class TestReview(TestCase):
         problems.add(IssueComment('Very bad'))
         sha = 'abc123'
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.publish_review(problems, sha)
 
         assert self.pr.create_review.called
@@ -147,7 +147,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         sha = 'abc123'
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.publish_review(problems, sha)
 
         assert self.pr.create_review.called
@@ -159,25 +159,28 @@ class TestReview(TestCase):
             sha,
             body='First\n\nSecond')
 
-    def test_publish_status__ok_no_comment_label_or_status(self):
-        config = {
+    def test_publish_status__ok_no_comment_or_label(self):
+        app_config = {
             'OK_COMMENT': None,
             'OK_LABEL': None,
             'PULLREQUEST_STATUS': False,
         }
+        config = build_review_config(fixer_ini, app_config)
         review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
-        assert not self.repo.create_status.called, 'Create status called'
+        assert self.repo.create_status.called, 'Create status called'
         assert not self.pr.create_comment.called, 'Comment not created'
         assert not self.pr.add_label.called, 'Label added created'
 
-    def test_publish_status__ok_with_comment_label_and_status(self):
-        config = {
+    def test_publish_status__ok_with_comment_label(self):
+        app_config = {
             'OK_COMMENT': 'Great job!',
             'OK_LABEL': 'No lint errors',
             'PULLREQUEST_STATUS': True,
         }
+        config = build_review_config(fixer_ini, app_config)
+        review = Review(self.repo, self.pr, config)
         review = Review(self.repo, self.pr, config)
         review.publish_status(0)
 
@@ -194,11 +197,12 @@ class TestReview(TestCase):
         self.pr.add_label.assert_called_with('No lint errors')
 
     def test_publish_status__has_errors(self):
-        config = {
+        app_config = {
             'OK_COMMENT': 'Great job!',
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
+        config = build_review_config(fixer_ini, app_config)
         review = Review(self.repo, self.pr, config)
         review.publish_status(1)
 
@@ -207,6 +211,27 @@ class TestReview(TestCase):
         self.repo.create_status.assert_called_with(
             self.pr.head,
             'failure',
+            'Lint errors found, see pull request comments.')
+        assert not self.pr.create_comment.called, 'Comment not created'
+        assert not self.pr.add_label.called, 'Label added created'
+
+    def test_publish_status__has_errors__success_status(self):
+        app_config = {
+            'PULLREQUEST_STATUS': False,
+            'OK_COMMENT': 'Great job!',
+            'OK_LABEL': 'No lint errors',
+            'APP_NAME': 'custom-name'
+        }
+        config = build_review_config(fixer_ini, app_config)
+        eq_('success', config.failed_review_status(), 'config object changed')
+
+        review = Review(self.repo, self.pr, config)
+        review.publish_status(1)
+
+        assert self.repo.create_status.called, 'Create status not called'
+        self.repo.create_status.assert_called_with(
+            self.pr.head,
+            'success',
             'Lint errors found, see pull request comments.')
         assert not self.pr.create_comment.called, 'Comment not created'
         assert not self.pr.add_label.called, 'Label added created'
@@ -221,7 +246,7 @@ class TestReview(TestCase):
         )
         problems.add_many(errors)
         sha = 'abc123'
-        config = {'OK_LABEL': 'No lint'}
+        config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
 
         review = Review(self.repo, self.pr, config)
         sha = 'abc123'
@@ -239,7 +264,7 @@ class TestReview(TestCase):
 
     def test_publish_empty_comment(self):
         problems = Problems(changes=[])
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
 
         sha = 'abc123'
         review.publish(problems, sha)
@@ -252,7 +277,7 @@ class TestReview(TestCase):
 
     def test_publish_empty_comment_add_ok_label(self):
         problems = Problems(changes=[])
-        config = {'OK_LABEL': 'No lint'}
+        config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
         review = Review(self.repo, self.pr, config)
 
         sha = 'abc123'
@@ -267,9 +292,7 @@ class TestReview(TestCase):
         self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_empty_comment_with_comment_status(self):
-        config = {
-            'PULLREQUEST_STATUS': True,
-        }
+        config = build_review_config(fixer_ini, {'PULLREQUEST_STATUS': True})
 
         problems = Problems(changes=[])
         review = Review(self.repo, self.pr, config)
@@ -305,9 +328,10 @@ class TestReview(TestCase):
         problems.set_changes([1])
         sha = 'abc123'
 
-        review = Review(self.repo, self.pr)
+        config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
+        review = Review(self.repo, self.pr, config)
         review.publish_summary = Mock()
-        review.publish(problems, sha, 1)
+        review.publish(problems, sha)
 
         assert review.publish_summary.called, 'Should have been called.'
 
@@ -322,7 +346,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         problems.set_changes([1])
 
-        review = Review(self.repo, self.pr)
+        review = Review(self.repo, self.pr, self.config)
         review.publish_summary(problems)
 
         assert self.pr.create_comment.called

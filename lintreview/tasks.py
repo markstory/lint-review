@@ -50,10 +50,9 @@ def process_pull_request(user, repo_name, number, lintrc):
         target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, clone_url, target_path, pr_head)
 
-        processor = Processor(repo, pull_request,
-                              target_path, config)
+        processor = Processor(repo, pull_request, target_path, review_config)
         processor.load_changes()
-        processor.run_tools(review_config)
+        processor.run_tools()
         processor.publish()
 
         log.info('Completed lint processing for %s/%s/%s' % (

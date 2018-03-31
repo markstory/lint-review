@@ -168,7 +168,7 @@ class ReviewConfig(object):
         except:
             return None
 
-    def review_passed_label(self):
+    def passed_review_label(self):
         """Get the label name that is managed by review publishing
         """
         if 'review' in self._data:
@@ -207,7 +207,7 @@ class ReviewConfig(object):
         """Dict compatibility method
         """
         if key not in self._data:
-            raise IndexError(key + " is invalid")
+            raise KeyError(key + " is invalid")
         return self._data[key]
 
     def load_ini(self, ini_config):

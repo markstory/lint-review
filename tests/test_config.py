@@ -169,7 +169,7 @@ class ReviewConfigTest(TestCase):
         config = build_review_config(simple_ini, app_config)
         eq_(app_config['SUMMARY_THRESHOLD'], config['SUMMARY_THRESHOLD'])
 
-    @raises(IndexError)
+    @raises(KeyError)
     def test_getitem__error(self):
         config = build_review_config(simple_ini, app_config)
         config['UNKNOWN']
@@ -192,17 +192,17 @@ class ReviewConfigTest(TestCase):
         config = build_review_config(review_ini, app_config)
         eq_(25, config.summary_threshold())
 
-    def test_review_passed_label__undefined(self):
+    def test_passed_review_label__undefined(self):
         config = build_review_config(simple_ini)
-        eq_(None, config.review_passed_label())
+        eq_(None, config.passed_review_label())
 
-    def test_review_passed_label__app_config(self):
+    def test_passed_review_label__app_config(self):
         config = build_review_config(simple_ini, app_config)
-        eq_('no lint', config.review_passed_label())
+        eq_('no lint', config.passed_review_label())
 
-    def test_review_passed_label__job_config(self):
+    def test_passed_review_label__job_config(self):
         config = build_review_config(review_ini, app_config)
-        eq_('lint ok', config.review_passed_label())
+        eq_('lint ok', config.passed_review_label())
 
     def test_failed_review_status__undefined(self):
         config = build_review_config(simple_ini)

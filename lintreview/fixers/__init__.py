@@ -14,14 +14,14 @@ workflow_strategies = {
 }
 
 
-def create_context(review_config, app_config, repo_path,
+def create_context(review_config, repo_path,
                    head_repository, pull_request):
     """Create the context used for running fixers"""
     context = {
         'strategy': review_config.fixer_workflow(),
         'enabled': review_config.fixers_enabled(),
-        'author_name': app_config['GITHUB_AUTHOR_NAME'],
-        'author_email': app_config['GITHUB_AUTHOR_EMAIL'],
+        'author_name': review_config['GITHUB_AUTHOR_NAME'],
+        'author_email': review_config['GITHUB_AUTHOR_EMAIL'],
         'repo_path': repo_path,
         'pull_request': pull_request,
         'repository': head_repository,

@@ -96,7 +96,8 @@ GITHUB_AUTHOR_EMAIL = env('LINTREVIEW_GITHUB_AUTHOR_EMAIL',
 # Customize the build status integration name. Defaults to lintreview.
 # APP_NAME = 'lintreview'
 
-# Publish result to a pull requests status
+# Publish failing result as pull requests status
+# If false, reviews with comments will get a 'success' build status.
 PULLREQUEST_STATUS = env('LINTREVIEW_PULLREQUEST_STATUS', True, bool)
 
 # Uncomment this option to enable adding an issue comment
