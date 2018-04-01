@@ -115,8 +115,7 @@ class Review(object):
     to github.
     """
 
-    def __init__(self, repo, pull_request, config=None):
-        config = config if config else {}
+    def __init__(self, repo, pull_request, config):
         self._repo = repo
         self._comments = Problems()
         self._pr = pull_request
@@ -125,7 +124,7 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems, head_sha, summary_threshold=None):
+    def publish(self, problems, head_sha):
         """Publish the review.
 
         Existing comments are loaded, and compared
@@ -140,8 +139,10 @@ class Review(object):
         self.remove_existing(problems)
 
         new_problem_count = len(problems)
-        under_threshold = (summary_threshold is None or
-                           new_problem_count < summary_threshold)
+
+        threshold = self.config.summary_threshold()
+        under_threshold = (threshold is None or
+                           new_problem_count < threshold)
 
         if under_threshold:
             self.publish_review(problems, head_sha)
@@ -223,29 +224,28 @@ class Review(object):
         """Update the build status for the tip commit.
         The build will be a success if there are 0 problems.
         """
-        state = 'failure'
+        state = self.config.failed_review_status()
         description = 'Lint errors found, see pull request comments.'
         if problem_count == 0:
             self.publish_ok_label()
             self.publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
-        if self.config.get('PULLREQUEST_STATUS', True):
-            self._repo.create_status(
-                self._pr.head,
-                state,
-                description
-            )
+        self._repo.create_status(
+            self._pr.head,
+            state,
+            description
+        )
 
     def remove_ok_label(self):
-        label = self.config.get('OK_LABEL', False)
+        label = self.config.passed_review_label()
         if label:
             IssueLabel(label).remove(self._pr)
 
     def publish_ok_label(self):
         """Optionally publish the OK_LABEL if it is enabled.
         """
-        label = self.config.get('OK_LABEL', False)
+        label = self.config.passed_review_label()
         if label:
             issue_label = IssueLabel(label)
             issue_label.publish(self._repo, self._pr)
@@ -263,13 +263,11 @@ class Review(object):
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         self._pr.create_comment(body)
-
-        if self.config.get('PULLREQUEST_STATUS', True):
-            self._repo.create_status(
-                self._pr.head,
-                'success',
-                body
-            )
+        self._repo.create_status(
+            self._pr.head,
+            'success',
+            body
+        )
 
     def publish_summary(self, problems):
         num_comments = len(problems)

@@ -44,25 +44,22 @@ def process_pull_request(user, repo_name, number, lintrc):
                      target_branch)
             return
 
-        status = config.get('PULLREQUEST_STATUS', True)
-        if status:
-            repo.create_status(pr_head, 'pending', 'Lintreview processing...')
+        repo.create_status(pr_head, 'pending', 'Lintreview processing')
 
         # Clone/Update repository
         target_path = git.get_repo_path(user, repo_name, number, config)
         git.clone_or_update(config, clone_url, target_path, pr_head)
 
-        processor = Processor(repo, pull_request,
-                              target_path, config)
+        processor = Processor(repo, pull_request, target_path, review_config)
         processor.load_changes()
-        processor.run_tools(review_config)
+        processor.run_tools()
         processor.publish()
 
         log.info('Completed lint processing for %s/%s/%s' % (
-            user, repo, number))
+            user, repo_name, number))
 
         git.destroy(target_path)
-        log.info('Cleaned up pull request %s/%s/%s', user, repo, number)
+        log.info('Cleaned up pull request %s/%s/%s', user, repo_name, number)
     except BaseException as e:
         log.exception(e)
 

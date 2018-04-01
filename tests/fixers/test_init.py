@@ -152,14 +152,14 @@ def test_apply_fixer_diff__no_intersection():
 
 
 def test_create_context():
-    config = build_review_config(fixer_ini)
+    config = build_review_config(fixer_ini, app_config)
     context = fixers.create_context(
-        config, app_config, clone_path,
+        config, clone_path,
         sentinel.repo, sentinel.pull_request)
 
     eq_('commit', context['strategy'])
-    eq_(app_config['GITHUB_AUTHOR_EMAIL'], context['author_email'])
-    eq_(app_config['GITHUB_AUTHOR_NAME'], context['author_name'])
+    eq_(config['GITHUB_AUTHOR_EMAIL'], context['author_email'])
+    eq_(config['GITHUB_AUTHOR_NAME'], context['author_name'])
     eq_(clone_path, context['repo_path'])
     eq_(sentinel.repo, context['repository'])
     eq_(sentinel.pull_request, context['pull_request'])
@@ -168,7 +168,6 @@ def test_create_context():
 def test_create_context__missing_key_raises():
     config = build_review_config(fixer_ini)
     with assert_raises(KeyError):
-        empty = {}
         fixers.create_context(
-            config, empty, clone_path,
+            config, clone_path,
             sentinel.repo, sentinel.pull_request)

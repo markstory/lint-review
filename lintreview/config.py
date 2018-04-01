@@ -48,7 +48,7 @@ def build_review_config(ini_config, app_config=None):
     Build a new ReviewConfig object using the ini config file
     and the defaults if they exist in the app_config
     """
-    config = ReviewConfig()
+    config = ReviewConfig(app_config)
     if app_config:
         defaults = get_lintrc_defaults(app_config)
         if defaults:
@@ -65,10 +65,18 @@ def newline_value(values):
     return [x.strip() for x in values.split('\n')]
 
 
+def boolean_value(value):
+    if value in ('yes', 'y', 1, '1', True, 'True', 'true'):
+        return True
+    if value in ('no', 'n', 0, '0', False, 'False', 'false'):
+        return False
+    raise ValueError(u'Could not convert `{}` to a boolean'.format(value))
+
+
 class ReviewConfig(object):
     """
-    Provides a domain level API to a repositories
-    .lintrc file. Allows reading tool names and tool configuration
+    Provides a domain level API to a application
+    and repository configuration data.
     """
     def __init__(self, data=None):
         self._data = {}
@@ -147,6 +155,61 @@ class ReviewConfig(object):
         except:
             return []
 
+    def summary_threshold(self):
+        """Get the threshold at which 1 single summary comment is posted.
+        """
+        if 'review' in self._data:
+            try:
+                return int(self._data['review']['summary_comment_threshold'])
+            except:
+                pass
+        try:
+            return int(self._data['SUMMARY_THRESHOLD'])
+        except:
+            return None
+
+    def passed_review_label(self):
+        """Get the label name that is managed by review publishing
+        """
+        if 'review' in self._data:
+            try:
+                return self._data['review']['apply_label_on_pass']
+            except:
+                pass
+        try:
+            return self._data['OK_LABEL']
+        except:
+            return None
+
+    def failed_review_status(self):
+        """Get the status name to use for failed reviews
+        """
+        if 'review' in self._data:
+            try:
+                value = boolean_value(self._data['review']['fail_on_comments'])
+
+                return 'failure' if value else 'success'
+            except:
+                pass
+        if 'PULLREQUEST_STATUS' in self._data:
+            value = boolean_value(self._data['PULLREQUEST_STATUS'])
+            return 'failure' if value else 'success'
+        return 'failure'
+
+    def get(self, key, default=None):
+        """Dict compatibility accessor for application config data
+        """
+        if key not in self._data:
+            return default
+        return self._data[key]
+
+    def __getitem__(self, key):
+        """Dict compatibility method
+        """
+        if key not in self._data:
+            raise KeyError(key + " is invalid")
+        return self._data[key]
+
     def load_ini(self, ini_config):
         """
         Read the provided ini contents arguments and merge
@@ -161,6 +224,7 @@ class ReviewConfig(object):
             'files': {},
             'branches': {},
             'fixers': {},
+            'review': {}
         }
         if parser.has_section('files'):
             ignore = parser.get('files', 'ignore')
@@ -175,6 +239,8 @@ class ReviewConfig(object):
 
         if parser.has_section('fixers'):
             data['fixers'] = dict(parser.items('fixers'))
+        if parser.has_section('review'):
+            data['review'] = dict(parser.items('review'))
         # Setup empty config sections
         for linter in linters:
             data['linters'][linter] = {}
