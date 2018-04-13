@@ -109,5 +109,7 @@ class TestPuppet(TestCase):
 
         read_and_restore_file(self.fixtures[1], original)
         eq_(2, len(self.problems.all()), 'Most errors should be fixed')
-        assert_in('autoload module layout', self.problems.all()[0].body)
-        assert_in('quoted boolean', self.problems.all()[1].body)
+
+        problems = sorted(self.problems.all(), key=attrgetter('line'))
+        assert_in('ERROR:foo not in autoload module layout', problems[0].body)
+        assert_in('WARNING:quoted boolean value', problems[1].body)
