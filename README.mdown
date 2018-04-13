@@ -391,6 +391,8 @@ You'll need to install it to use it:
 *Options*
 
 * `config` Provide a path to a puppet-lint config file.
+* `fixer_ignore` A comma separated list of linter checks to ignore when running
+  the fixer.
 
 `.puppet-lint.rc` files will also be respected, to allow each project to disable
 checks. A list of checks can be found by running "puppet-lint --help"
