@@ -65,6 +65,6 @@ class Puppet(Tool):
 
         if self.options.get('fixer_ignore'):
             for check in self.options['fixer_ignore'].split(','):
-                command.append('--no-{0}-check'.format(check.replace(' ', '')))
+                command.append('--no-{0}-check'.format(check.strip()))
         command += files
         return command
