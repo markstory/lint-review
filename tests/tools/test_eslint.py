@@ -81,7 +81,7 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems,
                       options={},
                       base_path=root_dir)
-        tool.process_files([FILE_WITH_ERRORS])
+        tool.process_files(['tests/fixtures/eslint/does_not_exist.js'])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config returns 1 error')
         assert_in('Please define the `config`', problems[0].body)
