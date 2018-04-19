@@ -76,9 +76,15 @@ class Eslint(Tool):
         process_checkstyle(self.problems, output, docker.strip_base)
 
     def _config_error(self, output):
+        if 'config' not in self.options:
+            msg = (
+                'You have not specified an eslint configuration file. '
+                'Please define the `config` option for the `eslint` linter.')
+            return self.problems.add(IssueComment(msg))
+
         if 'Cannot read config file' in output:
-            msg = u'Your eslint config file is missing or invalid. ' \
-                   u'Please ensure that `{}` exists and is valid.'
+            msg = (u'Your eslint config file is missing or invalid. '
+                   u'Please ensure that `{}` exists and is valid.')
             msg = msg.format(self.options['config'])
             return self.problems.add(IssueComment(msg))
 
