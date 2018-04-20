@@ -76,17 +76,23 @@ class Eslint(Tool):
         process_checkstyle(self.problems, output, docker.strip_base)
 
     def _config_error(self, output):
-        if 'config' not in self.options:
-            msg = (
-                'You have not specified an eslint configuration file. '
-                'Please define the `config` option for the `eslint` linter.')
-            return self.problems.add(IssueComment(msg))
-
         if 'Cannot read config file' in output:
-            msg = (u'Your eslint config file is missing or invalid. '
-                   u'Please ensure that `{}` exists and is valid.')
-            msg = msg.format(self.options['config'])
-            return self.problems.add(IssueComment(msg))
+            if 'no such file' in output:
+                msg = (u'Your eslint config file is missing or invalid. '
+                       u'Please ensure that `{}` exists and is valid.')
+                msg = msg.format(self.options['config'])
+                return self.problems.add(IssueComment(msg))
+
+            msg = (u'Your ESLint configuration is not valid, '
+                   'and output the following errors:\n'
+                   '```\n'
+                   '{}\n'
+                   '```\n')
+            # Grab the first few lines as they contain the
+            # JSON/YAML parse error
+            error_text = u'\n'.join(output.split('\n')[0:5])
+            comment = IssueComment(msg.format(error_text))
+            return self.problems.add(comment)
 
         missing_ruleset = re.search(r'Cannot find module.*', output)
         if missing_ruleset:

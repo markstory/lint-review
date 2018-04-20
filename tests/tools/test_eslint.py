@@ -77,14 +77,17 @@ class TestEslint(TestCase):
         eq_(expected, problems)
 
     @requires_image('nodejs')
-    def test_process_files__config_undefined(self):
+    def test_process_files__config_file_syntax_error(self):
         tool = Eslint(self.problems,
-                      options={},
+                      options={
+                          'config': 'tests/fixtures/eslint/syntaxerror.yaml'
+                      },
                       base_path=root_dir)
-        tool.process_files(['tests/fixtures/eslint/does_not_exist.js'])
+        tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config returns 1 error')
-        assert_in('Please define the `config`', problems[0].body)
+        assert_in('Your ESLint configuration is not valid', problems[0].body)
+        assert_in('YAMLException: Cannot read', problems[0].body)
 
     @requires_image('nodejs')
     def test_process_files_uses_default_config(self):

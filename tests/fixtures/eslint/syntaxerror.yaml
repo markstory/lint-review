@@ -1,0 +1,3 @@
+# Duplicate keys cause yaml parsing error
+extends: "eslint:recommended"
+extends: "eslint:recommended"
