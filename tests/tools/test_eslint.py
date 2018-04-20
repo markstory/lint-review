@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
-from nose.tools import eq_, ok_
+from nose.tools import eq_, ok_, assert_in
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
@@ -75,6 +75,19 @@ class TestEslint(TestCase):
                'Please ensure that `invalid-file` exists and is valid.')
         expected = [IssueComment(msg)]
         eq_(expected, problems)
+
+    @requires_image('nodejs')
+    def test_process_files__config_file_syntax_error(self):
+        tool = Eslint(self.problems,
+                      options={
+                          'config': 'tests/fixtures/eslint/syntaxerror.yaml'
+                      },
+                      base_path=root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Invalid config returns 1 error')
+        assert_in('Your ESLint configuration is not valid', problems[0].body)
+        assert_in('YAMLException: Cannot read', problems[0].body)
 
     @requires_image('nodejs')
     def test_process_files_uses_default_config(self):
