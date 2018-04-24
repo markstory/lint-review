@@ -42,6 +42,8 @@ services:
       - worker
       - -l
       - info
+      - --concurrency
+      - '1'
     healthcheck:
       test: ["CMD", "/code/docker_healthcheck.sh", "worker"]
       interval: 10s
