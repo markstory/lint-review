@@ -58,10 +58,15 @@ def process_pull_request(user, repo_name, number, lintrc):
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo_name, number))
 
-        git.destroy(target_path)
-        log.info('Cleaned up pull request %s/%s/%s', user, repo_name, number)
     except BaseException as e:
         log.exception(e)
+    finally:
+        try:
+            git.destroy(target_path)
+            log.info('Cleaned up pull request %s/%s/%s',
+                     user, repo_name, number)
+        except BaseException as e:
+            log.exception(e)
 
 
 @celery.task(ignore_result=True)
