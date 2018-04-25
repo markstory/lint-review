@@ -6,6 +6,7 @@
     "csslint": "0.10.x",
     "eslint": "4.x",
     "eslint-plugin-ember": "3.x",
+    "eslint-plugin-html": "4.x",
     "jscs": "1.x",
     "jscs-ember-deprecations": "2.3.0",
     "jshint": "2.x",
