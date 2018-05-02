@@ -3,6 +3,7 @@ import lintreview.git as git
 import logging
 
 from celery import Celery
+from copy import deepcopy
 from lintreview.config import load_config, build_review_config
 from lintreview.repo import GithubRepository
 from lintreview.processor import Processor
@@ -22,7 +23,7 @@ def process_pull_request(user, repo_name, number, lintrc):
     """
     log.info('Starting to process lint for %s/%s/%s', user, repo_name, number)
     log.debug("lintrc contents '%s'", lintrc)
-    review_config = build_review_config(lintrc, config)
+    review_config = build_review_config(lintrc, deepcopy(config))
 
     if len(review_config.linters()) == 0:
         log.info('No configured linters, skipping processing.')
