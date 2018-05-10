@@ -67,6 +67,21 @@ def images():
     return output
 
 
+def containers(include_stopped=False):
+    """Get the container list"""
+    cmd = ['docker', 'ps', '--format', '{{.Names}}']
+    if include_stopped:
+        cmd += ['-a']
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    output, error = process.communicate()
+    return output
+
+
 def run(image, command, source_dir, env=None, timeout=None, name=None):
     """Execute tool commands in docker containers.
 

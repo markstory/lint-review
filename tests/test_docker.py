@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import lintreview.docker as docker
-from nose.tools import eq_
+from nose.tools import eq_, ok_, assert_in
 from tests import requires_image, test_dir
 
 
@@ -31,3 +31,21 @@ def test_run__unicode():
     cmd = ['echo', u"\u2620"]
     output = docker.run('python2', cmd, test_dir)
     eq_(output, u"\u2620\n")
+
+
+@requires_image('python2')
+def test_run__named_container():
+    cmd = ['echo', "things"]
+    docker.run('python2', cmd, test_dir, name='test_container')
+    containers = docker.containers(include_stopped=True)
+    assert_in('test_container', containers)
+    docker.rm_container('test_container')
+
+    containers = docker.containers(include_stopped=True)
+    assert 'test_conainer' not in containers
+
+
+@requires_image('python2')
+def test_images():
+    result = docker.images()
+    assert_in('python2', result)
