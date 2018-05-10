@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import lintreview.docker as docker
-from nose.tools import eq_, ok_, assert_in
+from nose.tools import eq_, assert_in
 from tests import requires_image, test_dir
 
 
