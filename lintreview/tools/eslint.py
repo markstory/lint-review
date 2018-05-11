@@ -110,7 +110,7 @@ class Eslint(Tool):
             return None
 
         m = hashlib.md5()
-        m.update('-'.join(files))
+        m.update('-'.join(files).encode('utf8'))
         return 'eslint-' + m.hexdigest()
 
     def _cleanup(self, container_name):

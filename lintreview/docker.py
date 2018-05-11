@@ -64,7 +64,7 @@ def images():
         stderr=subprocess.PIPE,
         shell=False)
     output, error = process.communicate()
-    return output
+    return output.decode('utf8')
 
 
 def containers(include_stopped=False):
@@ -79,7 +79,7 @@ def containers(include_stopped=False):
         stderr=subprocess.PIPE,
         shell=False)
     output, error = process.communicate()
-    return output
+    return output.decode('utf8')
 
 
 def run(image, command, source_dir, env=None, timeout=None, name=None):
