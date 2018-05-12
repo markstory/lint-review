@@ -3,7 +3,8 @@ from unittest import TestCase
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
-from nose.tools import eq_, ok_, assert_in
+import lintreview.docker as docker
+from nose.tools import eq_, ok_, assert_in, assert_not_in
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
@@ -172,3 +173,59 @@ class TestEslint(TestCase):
 
         read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
         eq_(0, len(self.problems.all()), 'All errors should be autofixed')
+
+    @requires_image('nodejs')
+    def test_execute__install_plugins(self):
+        custom_dir = root_dir + '/tests/fixtures/eslint_custom'
+        tool = Eslint(self.problems, {
+            'config': 'config.json',
+            'install_plugins': True,
+            'fixer': True
+        }, custom_dir)
+        target = 'has_errors.js'
+        tool.process_files([target])
+
+        problems = self.problems.all()
+        eq_(2, len(problems), 'Should find errors')
+        assert_in('Unexpected var', problems[0].body)
+
+        ok_(docker.image_exists('nodejs'), 'original image is present')
+        assert_not_in('eslint', docker.images(), 'no eslint image remains')
+
+    @requires_image('nodejs')
+    def test_execute_fixer__install_plugins(self):
+        custom_dir = root_dir + '/tests/fixtures/eslint_custom'
+        tool = Eslint(self.problems, {
+            'config': 'config.json',
+            'install_plugins': True,
+            'fixer': True
+        }, custom_dir)
+
+        target = 'tests/fixtures/eslint_custom/fixer_errors.js'
+
+        # The fixture file can have all problems fixed by eslint
+        original = read_file(target)
+        tool.execute_fixer(['fixer_errors.js'])
+        tool.process_files(['fixer_errors.js'])
+
+        read_and_restore_file(target, original)
+        eq_(0, len(self.problems.all()), 'All errors should be autofixed')
+        assert_not_in('eslint', docker.images(), 'no eslint image remains')
+
+    @requires_image('nodejs')
+    def test_execute__install_plugins_cleanup_image_on_failure(self):
+        custom_dir = root_dir + '/tests/fixtures/eslint_custom'
+        tool = Eslint(self.problems, {
+            'config': 'invalid.json',
+            'install_plugins': True,
+            'fixer': True
+        }, custom_dir)
+        target = 'has_errors.js'
+        tool.process_files([target])
+
+        problems = self.problems.all()
+        eq_(1, len(problems))
+        assert_in('Cannot find module', problems[0].body)
+
+        ok_(docker.image_exists('nodejs'), 'original image is present')
+        assert_not_in('eslint', docker.images(), 'no eslint image remains')

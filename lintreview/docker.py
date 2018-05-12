@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import logging
 import subprocess
-from six.moves import map
 import six
 import os
 
@@ -56,7 +55,34 @@ def image_exists(name):
     return len(output) > 0
 
 
-def run(image, command, source_dir, env=None, timeout=None):
+def images():
+    """Get the docker image list"""
+    process = subprocess.Popen(
+        ['docker', 'images'],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    output, error = process.communicate()
+    return output.decode('utf8')
+
+
+def containers(include_stopped=False):
+    """Get the container list"""
+    cmd = ['docker', 'ps', '--format', '{{.Names}}']
+    if include_stopped:
+        cmd += ['-a']
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    output, error = process.communicate()
+    return output.decode('utf8')
+
+
+def run(image, command, source_dir, env=None, timeout=None, name=None):
     """Execute tool commands in docker containers.
 
     All output from the container will be treated as tool output
@@ -74,10 +100,16 @@ def run(image, command, source_dir, env=None, timeout=None):
     elif env:
         raise ValueError('env argument should be a dict')
 
-    # TODO add timeout support
-    cmd = [
-        'docker', 'run', '--rm',
-        '-v', u'{}:{}'.format(source_dir, DOCKER_BASE)
+    cmd = ['docker', 'run']
+
+    if name is not None:
+        cmd += ['--name', name]
+    else:
+        cmd.append('--rm')
+
+    cmd += [
+        '-v',
+        u'{}:{}'.format(source_dir, DOCKER_BASE)
     ]
     cmd += env_args
     cmd.append(image)
@@ -86,7 +118,7 @@ def run(image, command, source_dir, env=None, timeout=None):
     # to get around encoding issues.
     cmd += [six.text_type(arg).encode('utf8') for arg in command]
 
-    log.debug(u'Running {}'.format(cmd))
+    log.debug('Running %s', cmd)
     process = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,
@@ -103,3 +135,64 @@ def run(image, command, source_dir, env=None, timeout=None):
     if isinstance(output, six.binary_type):
         return output.decode('utf8')
     return output
+
+
+def rm_container(name):
+    """
+    Remove a container with the provided name
+    """
+    cmd = ['docker', 'rm', name]
+
+    log.debug('Running %s', cmd)
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True)
+
+    # Get output bytes/string
+    output, error = process.communicate()
+    output = error + output
+    if process.returncode != 0:
+        raise ValueError(output)
+
+
+def rm_image(name):
+    """
+    Remove the named image with the provided name
+    """
+    cmd = ['docker', 'rmi', name]
+    log.debug('Running %s', cmd)
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True)
+
+    # Get output bytes/string
+    output, error = process.communicate()
+    output = error + output
+    if process.returncode != 0:
+        raise ValueError(output)
+
+
+def commit(name):
+    """Commit a container state into a new image
+    """
+    cmd = ['docker', 'commit', name, name]
+    log.debug('Running %s', cmd)
+
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True)
+
+    # Get output bytes/string
+    output, error = process.communicate()
+    output = error + output
+    if process.returncode != 0:
+        raise ValueError(output)

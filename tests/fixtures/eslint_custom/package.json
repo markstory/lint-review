@@ -1,0 +1,7 @@
+{
+  "name": "lintreview-custom-eslint",
+  "version": "0.0.1",
+  "dependencies": {
+    "eslint-config-airbnb-base": "latest"
+  }
+}
