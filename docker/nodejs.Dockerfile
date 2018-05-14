@@ -22,7 +22,7 @@ RUN cd /tool \
   && ln -s /tool/node_modules/.bin/standard /usr/bin/standard \
   && ln -s /tool/node_modules/.bin/tslint /usr/bin/tslint \
   && ln -s /tool/node_modules/.bin/xo /usr/bin/xo \
-  # Move package.json so that it is an ancestor of /src allowing
+  # Copy package.json so that it is an ancestor of /src allowing
   # eslint and xo to use it for config
   && cp /tool/package.json / \
   && chmod +x /usr/bin/eslint-install
