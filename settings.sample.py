@@ -110,3 +110,5 @@ OK_COMMENT = env('LINTREVIEW_OK_COMMENT', '')
 # Customize the label name when label statuses are enabled.
 # eg: OK_LABEL = 'No lint errors'
 OK_LABEL = env('LINTREVIEW_OK_LABEL', '')
+
+# TEST LINT_REVIEW
