@@ -18,7 +18,7 @@ class Foodcritic(Tool):
         return docker.image_exists('ruby2')
 
     def process_files(self, files):
-        command = ['bundle', 'exec', 'foodcritic', '--no-progress']
+        command = ['foodcritic', '--no-progress']
 
         # if no directory is set, assume the root
         path = self.options.get('path', '')
