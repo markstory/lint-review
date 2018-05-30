@@ -39,7 +39,7 @@ class Puppet(Tool):
         process_quickfix(self.problems, output, docker.strip_base)
 
     def _create_command(self):
-        command = ['bundle', 'exec', 'puppet-lint']
+        command = ['puppet-lint']
         command += ['--log-format',
                     '%{path}:%{line}:%{column}:%{KIND}:%{message}']
         if self.options.get('config'):

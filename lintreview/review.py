@@ -44,6 +44,9 @@ class BaseComment(object):
         if text not in self.body:
             self.body += "\n" + text
 
+    def summary_text(self):
+        return self.body
+
 
 class IssueComment(BaseComment):
     """A simple comment that will be published as a
@@ -94,6 +97,9 @@ class Comment(BaseComment):
 
     def key(self):
         return (self.filename, self.position)
+
+    def summary_text(self):
+        return u"{0.filename}, line {0.line} - {0.body}".format(self)
 
     def __eq__(self, other):
         return (self.filename == other.filename and
@@ -276,8 +282,7 @@ class Review(object):
         self.remove_ok_label()
         body = u"There are {0} errors:\n\n".format(num_comments)
         for problem in problems:
-            body += u"* {0.filename}, line {0.line} - {0.body}\n".format(
-                problem)
+            body += u"* {}\n".format(problem.summary_text())
         self._pr.create_comment(body)
 
 

@@ -39,7 +39,7 @@ class Rubocop(Tool):
         process_quickfix(self.problems, output, docker.strip_base)
 
     def _create_command(self):
-        command = ['bundle', 'exec', 'rubocop', '--format', 'emacs']
+        command = ['rubocop', '--format', 'emacs']
         if self.options.get('display_cop_names', False):
             command.append('--display-cop-names')
         else:

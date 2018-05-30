@@ -340,6 +340,7 @@ class TestReview(TestCase):
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
+            IssueComment('Terrible things'),
             Comment(filename_1, 117, 117, 'Something bad'),
             Comment(filename_1, 119, 119, 'Something bad'),
         )
@@ -352,8 +353,9 @@ class TestReview(TestCase):
         assert self.pr.create_comment.called
         eq_(1, self.pr.create_comment.call_count)
 
-        msg = """There are 2 errors:
+        msg = """There are 3 errors:
 
+* Terrible things
 * Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
 * Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
 """
