@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
+import re
+from tempfile import NamedTemporaryFile
 import lintreview.docker as docker
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle
@@ -34,8 +36,13 @@ class Checkstyle(Tool):
             msg = ("We could not run `checkstyle` you did not set "
                    "the `config` option to a valid checkstyle XML file.")
             return self.problems.add(IssueComment(msg))
-        command = self.create_command(files)
-        output = docker.run('checkstyle', command, self.base_path)
+
+        with NamedTemporaryFile(dir=self.base_path,
+                                suffix='.properties') as f:
+            self.setup_properties(f)
+            properties_filename = os.path.basename(f.name)
+            command = self.create_command(properties_filename, files)
+            output = docker.run('checkstyle', command, self.base_path)
 
         # Only one line is generally a config error. Replay the error
         # to the user.
@@ -56,10 +63,59 @@ class Checkstyle(Tool):
 
         process_checkstyle(self.problems, output, docker.strip_base)
 
-    def create_command(self, files):
+    def escape_for_java(self, value):
+        """Escapes the values used in Java properties files. Uses special
+        characters specified by
+        https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html
+        """
+        replacements = {
+            ord(u"#"): u"\\#",
+            ord(u"!"): u"\\!",
+            ord(u"="): u"\\=",
+            ord(u":"): u"\\:",
+            ord(u"\\"): u"\\\\",
+            ord(u" "): u"\\u0020",
+            ord(u"\t"): u"\\u0009",
+            ord(u"\f"): u"\\u000C",
+            ord(u"\n"): u"\\n",
+            ord(u"\r"): u"\\r",
+        }
+
+        value = value.translate(replacements)
+
+        def escape_unicode(match):
+            char = ord(match.group(0))
+            if char < 0x10000:
+                return b"\\u%04x" % ord(match.group(0))
+            else:
+                char -= 0x10000
+                hi = 0xD800 | ((char >> 10) & 0x3FF)
+                lo = 0xDC00 | (char & 0x3FF)
+                return b"\\u%04x\\u%04x" % (hi, lo)
+
+        return re.sub(r'[^\x20-\x7e]', escape_unicode, value).encode('utf-8')
+
+    def setup_properties(self, properties_file):
+        config_loc = os.path.dirname(docker.apply_base(self.options['config']))
+        project_loc = docker.apply_base('/')
+
+        properties = {
+            'config_loc': config_loc,
+            'samedir': config_loc,
+            'project_loc': project_loc,
+            'basedir': project_loc
+        }
+
+        for key, value in properties.items():
+            properties_file.write(b'%b=%b\n' % (
+                self.escape_for_java(key), self.escape_for_java(value)))
+        properties_file.flush()
+
+    def create_command(self, properties_filename, files):
         command = [
             'checkstyle',
             '-f', 'xml',
+            '-p', docker.apply_base(properties_filename),
             '-c', docker.apply_base(self.options['config'])
         ]
         command += files

@@ -11,6 +11,7 @@ class TestCheckstyle(TestCase):
     fixtures = [
         'tests/fixtures/checkstyle/no_errors.java',
         'tests/fixtures/checkstyle/has_errors.java',
+        'tests/fixtures/checkstyle/沒有錯誤.java',
     ]
 
     def setUp(self):
@@ -96,10 +97,11 @@ class TestCheckstyle(TestCase):
             'config': 'test/checkstyle.xml'
         }
         tool = Checkstyle(self.problems, config, root_dir)
-        result = tool.create_command(['some/file.js'])
+        result = tool.create_command('tmp1.properties', ['some/file.js'])
         expected = [
             'checkstyle',
             '-f', 'xml',
+            '-p', '/src/tmp1.properties',
             '-c', '/src/test/checkstyle.xml',
             'some/file.js'
         ]
