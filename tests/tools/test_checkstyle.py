@@ -11,7 +11,7 @@ class TestCheckstyle(TestCase):
     fixtures = [
         'tests/fixtures/checkstyle/no_errors.java',
         'tests/fixtures/checkstyle/has_errors.java',
-        'tests/fixtures/checkstyle/沒有錯誤.java',
+        u'tests/fixtures/checkstyle/\u6c92\u6709\u932f\u8aa4.java',
     ]
 
     def setUp(self):
