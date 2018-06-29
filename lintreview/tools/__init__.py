@@ -213,6 +213,9 @@ def process_checkstyle(problems, xml, filename_converter):
         # Some tools return "" if no errors are found
         return
     try:
+        # Needed for Python 2.7; http://bugs.python.org/issue11033
+        if isinstance(xml, six.text_type):
+            xml = xml.encode('utf-8')
         tree = ElementTree.fromstring(xml)
     except:
         log.error("Unable to parse XML %s", xml)

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import logging
 import os
 import re
+import six
 from tempfile import NamedTemporaryFile
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -81,6 +82,8 @@ class Checkstyle(Tool):
             ord(u"\r"): u"\\r",
         }
 
+        if not isinstance(value, six.text_type):
+            value = value.decode('utf-8')
         value = value.translate(replacements)
 
         def escape_unicode(match):
@@ -107,8 +110,9 @@ class Checkstyle(Tool):
         }
 
         for key, value in properties.items():
-            properties_file.write(b'%b=%b\n' % (
-                self.escape_for_java(key), self.escape_for_java(value)))
+            line = u'{0}={1}\n'.format(
+                self.escape_for_java(key), self.escape_for_java(value))
+            properties_file.write(line.encode('utf-8'))
         properties_file.flush()
 
     def create_command(self, properties_filename, files):
