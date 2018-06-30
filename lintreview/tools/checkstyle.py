@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import logging
 import os
-import re
-import six
 from tempfile import NamedTemporaryFile
+import jprops
 import lintreview.docker as docker
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle
@@ -64,40 +63,6 @@ class Checkstyle(Tool):
 
         process_checkstyle(self.problems, output, docker.strip_base)
 
-    def escape_for_java(self, value):
-        """Escapes the values used in Java properties files. Uses special
-        characters specified by
-        https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html
-        """
-        replacements = {
-            ord(u"#"): u"\\#",
-            ord(u"!"): u"\\!",
-            ord(u"="): u"\\=",
-            ord(u":"): u"\\:",
-            ord(u"\\"): u"\\\\",
-            ord(u" "): u"\\u0020",
-            ord(u"\t"): u"\\u0009",
-            ord(u"\f"): u"\\u000C",
-            ord(u"\n"): u"\\n",
-            ord(u"\r"): u"\\r",
-        }
-
-        if not isinstance(value, six.text_type):
-            value = value.decode('utf-8')
-        value = value.translate(replacements)
-
-        def escape_unicode(match):
-            char = ord(match.group(0))
-            if char < 0x10000:
-                return b"\\u%04x" % ord(match.group(0))
-            else:
-                char -= 0x10000
-                hi = 0xD800 | ((char >> 10) & 0x3FF)
-                lo = 0xDC00 | (char & 0x3FF)
-                return b"\\u%04x\\u%04x" % (hi, lo)
-
-        return re.sub(r'[^\x20-\x7e]', escape_unicode, value).encode('utf-8')
-
     def setup_properties(self, properties_file):
         config_loc = os.path.dirname(docker.apply_base(self.options['config']))
         project_loc = docker.apply_base('/')
@@ -106,14 +71,10 @@ class Checkstyle(Tool):
             'config_loc': config_loc,
             'samedir': config_loc,
             'project_loc': project_loc,
-            'basedir': project_loc
+            'basedir': project_loc,
         }
 
-        for key, value in properties.items():
-            line = u'{0}={1}\n'.format(
-                self.escape_for_java(key), self.escape_for_java(value))
-            properties_file.write(line.encode('utf-8'))
-        properties_file.flush()
+        jprops.store_properties(properties_file, properties)
 
     def create_command(self, properties_filename, files):
         command = [
