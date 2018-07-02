@@ -11,6 +11,19 @@ log = logging.getLogger(__name__)
 
 
 class Checkstyle(Tool):
+    """
+    Integrates with checkstyle.
+
+    When checkstyle is run a properties file will be generated, that
+    defines the following keys:
+
+    - config_loc
+    - samedir
+    - project_loc
+    - basedir
+
+    All of these keys will resolve to your repository's root directory.
+    """
 
     name = 'checkstyle'
 
