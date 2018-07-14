@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from unittest import TestCase
 from lintreview.review import Comment, IssueComment, Problems
 from lintreview.tools.tslint import Tslint
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 from tests import root_dir, requires_image
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/tslint/no_errors.ts',
@@ -54,7 +54,7 @@ class TestTslint(TestCase):
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Invalid config returns 1 error')
-        msg = ('Your tslint config file is missing or invalid. '
+        msg = ('Your tslint configuration file is missing or invalid. '
                'Please ensure that `invalid-file` exists and is valid JSON.')
         expected = [IssueComment(msg)]
         eq_(expected, problems)
@@ -65,7 +65,7 @@ class TestTslint(TestCase):
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
         eq_(1, len(problems), 'Missing config returns 1 error')
-        msg = ('Your tslint config file is missing or invalid. '
+        msg = ('Your tslint configuration file is missing or invalid. '
                'Please ensure that `tslint.json` exists and is valid JSON.')
         expected = [IssueComment(msg)]
         eq_(expected, problems)
@@ -111,3 +111,39 @@ class TestTslint(TestCase):
                '```')
         expected = [IssueComment(msg)]
         eq_(expected, problems)
+
+    @requires_image('nodejs')
+    def test_process_files__warnings(self):
+        options = {
+            'config': 'tests/fixtures/tslint/tslint_warning_rule.json'
+        }
+        tool = Tslint(self.problems, options, base_path=root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+
+        problems = self.problems.all()
+        eq_(4, len(problems))
+        expected = (
+            '`tslint` output the following warnings:\n'
+            '\n'
+            "* The 'no-boolean-literal-compare' rule requires type "
+            "information."
+        )
+        eq_(expected, problems[0].body)
+        ok_("Shadowed name: 'range'" in problems[1].body)
+
+    @requires_image('nodejs')
+    def test_process_files__unknown_module(self):
+        options = {
+            'config': 'tests/fixtures/tslint/tslint_missing_plugin.json'
+        }
+        tool = Tslint(self.problems, options, base_path=root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Invalid config should report an error')
+
+        error = problems[0]
+        ok_('Your tslint configuration output the following error:'
+            in error.body)
+        ok_('Invalid "extends" configuration value' in error.body)
+        ok_('could not require "tslint-react"' in error.body)

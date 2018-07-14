@@ -59,9 +59,36 @@ class Tslint(Tool):
             error = re.split(r'\n\s*\n', output)[0]
             return self.problems.add(IssueComment(msg.format(error.strip())))
 
+        missing_module = re.search(r'Failed to load .*?: Invalid.*', output)
+        if missing_module:
+            msg = (u'Your tslint configuration output the following error:\n'
+                   '```\n'
+                   '{}\n'
+                   '```')
+            error = missing_module.group(0)
+            return self.problems.add(IssueComment(msg.format(error)))
+
+        # tslint outputs warnings when rule constraints are violated
+        if output.startswith('Warning'):
+            lines = output.split('\n')
+            warnings = []
+            xml = []
+            for line in lines:
+                if line.startswith('Warning'):
+                    warnings.append('* ' + line[9:])
+                else:
+                    xml.append(line)
+
+            # Recreate the xml output without warnings
+            output = '\n'.join(xml)
+
+            msg = u'`tslint` output the following warnings:\n\n{}'
+            warning_bullets = '\n'.join(warnings)
+            self.problems.add(IssueComment(msg.format(warning_bullets)))
+
         if (output.startswith('No valid rules') or
                 not output.startswith('<?xml')):
-            msg = u'Your tslint config file is missing or invalid. ' \
+            msg = u'Your tslint configuration file is missing or invalid. ' \
                    u'Please ensure that `{}` exists and is valid JSON.'
             config = self.options.get('config', 'tslint.json')
             msg = msg.format(config)
