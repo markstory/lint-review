@@ -113,6 +113,25 @@ class TestTslint(TestCase):
         eq_(expected, problems)
 
     @requires_image('nodejs')
+    def test_process_files__warnings(self):
+        options = {
+            'config': 'tests/fixtures/tslint/tslint_warning_rule.json'
+        }
+        tool = Tslint(self.problems, options, base_path=root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+
+        problems = self.problems.all()
+        eq_(4, len(problems))
+        expected = (
+            '`tslint` output the following warnings:\n'
+            '\n'
+            "* The 'no-boolean-literal-compare' rule requires type "
+            "information."
+        )
+        eq_(expected, problems[0].body)
+        ok_("Shadowed name: 'range'" in problems[1].body)
+
+    @requires_image('nodejs')
     def test_process_files__unknown_module(self):
         options = {
             'config': 'tests/fixtures/tslint/tslint_missing_plugin.json'
