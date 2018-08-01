@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.yamllint import Yamllint
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -69,7 +69,7 @@ class TestYamllint(TestCase):
         eq_(expected, problems[1])
 
     @requires_image('python2')
-    def test_process_files_with_config(self):
+    def test_process_files__config(self):
         config = {
             'config': 'tests/fixtures/yamllint/config.yaml'
         }
@@ -80,3 +80,21 @@ class TestYamllint(TestCase):
 
         eq_(1, len(problems),
             'Config file should cause errors on no_errors.yml')
+
+    @requires_image('python2')
+    def test_process_files__missing_config(self):
+        config = {
+            'config': 'tests/fixtures/yamllint/lol.yaml'
+        }
+        tool = Yamllint(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[0]])
+
+        problems = self.problems.all()
+
+        eq_(1, len(problems))
+        assert_in(
+            '`yamllint` failed with the following error:\n'
+            '```\n'
+            "IOError: [Errno 2] No such file or directory: '/src/tests/fixtures/yamllint/lol.yaml'\n"
+            '```\n',
+            problems[0].body)

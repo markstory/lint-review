@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import os
 import logging
 import lintreview.docker as docker
+from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
@@ -44,6 +45,14 @@ class Yamllint(Tool):
         if not output:
             log.debug('No yamllint errors found.')
             return False
+
+        if 'No such file' in output and 'Traceback' in output:
+            error = output.strip().split("\n")[-1]
+            msg = (u'`yamllint` failed with the following error:\n'
+                   '```\n'
+                   '{}\n'
+                   '```\n')
+            return self.problems.add(IssueComment(msg.format(error)))
 
         output = output.split("\n")
         process_quickfix(self.problems, output, docker.strip_base)
