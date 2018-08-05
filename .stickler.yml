@@ -5,3 +5,6 @@ ignore:
   files:
     - 'bower_components/*'
     - 'node_modules/*'
+    - 'tests/fixtures/black/*'
+    - 'tests/fixtures/pep8/*'
+    - 'tests/fixtures/py3k/*'
