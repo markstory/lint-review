@@ -65,8 +65,8 @@ class Black(Tool):
 
     def create_command(self):
         command = ['black']
-        if 'safe' in self.options:
-            command.append('--safe')
+        if 'py36' in self.options:
+            command.append('--py36')
         if 'config' in self.options:
             command.extend(['--config',
                             docker.apply_base(self.options['config'])])
