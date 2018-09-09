@@ -217,9 +217,13 @@ def process_checkstyle(problems, xml, filename_converter):
         if isinstance(xml, six.text_type):
             xml = xml.encode('utf-8')
         tree = ElementTree.fromstring(xml)
-    except:
-        log.error("Unable to parse XML %s", xml)
-        raise
+    except Exception as e:
+        if len(xml) > 8192:
+            head = xml[0:250]
+            tail = xml[-250:]
+            log.error("Unable to parse XML head=%s, tail=%s", head, tail)
+        else:
+            log.error('Unable to parse XML %s', xml)
 
     for f in tree.findall('file'):
         filename = f.get('name')
