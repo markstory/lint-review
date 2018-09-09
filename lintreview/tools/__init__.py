@@ -224,6 +224,7 @@ def process_checkstyle(problems, xml, filename_converter):
             log.error("Unable to parse XML head=%s, tail=%s", head, tail)
         else:
             log.error('Unable to parse XML %s', xml)
+        raise
 
     for f in tree.findall('file'):
         filename = f.get('name')
