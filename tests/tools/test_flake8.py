@@ -103,7 +103,6 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--isolated',
             '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,

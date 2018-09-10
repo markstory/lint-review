@@ -60,7 +60,7 @@ class Flake8(Tool):
         process_quickfix(self.problems, output, docker.strip_base)
 
     def make_command(self, files):
-        command = ['flake8', '--isolated']
+        command = ['flake8']
         for option in self.options:
             if option in self.PYFLAKE_OPTIONS:
                 command.extend([
