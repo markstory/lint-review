@@ -1,5 +1,6 @@
 linters:
-  flake8: {  }
+  flake8:
+    max-line-length: 100
   rubocop: {  }
 ignore:
   files:

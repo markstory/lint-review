@@ -40,11 +40,11 @@ class TestCsslint(TestCase):
         eq_(2, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 1, 1, "Don't use IDs in selectors.")
+        expected = Comment(fname, 1, 1, "Warning - Don't use IDs in selectors.")
         eq_(expected, problems[0])
 
         expected = Comment(fname, 2, 2,
-                           "Using width with padding can"
+                           "Warning - Using width with padding can"
                            " sometimes make elements larger than you expect.")
         eq_(expected, problems[1])
 

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import logging
 import os
+import re
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_checkstyle
 
@@ -31,7 +32,7 @@ class Csslint(Tool):
         """
         log.debug('Processing %s files with %s', files, self.name)
         cmd = 'csslint'
-        command = [cmd, '--format=checkstyle-xml']
+        command = [cmd, '--format=compact']
 
         if self.options.get('ignore'):
             command += ['--ignore=' + self.options.get('ignore')]
@@ -41,4 +42,23 @@ class Csslint(Tool):
             'nodejs',
             command,
             source_dir=self.base_path)
-        process_checkstyle(self.problems, output, docker.strip_base)
+        self._process_output(output)
+
+    def _process_output(self, output):
+        """The checkstyle output from csslint is not
+        reliable for large results so we use compact format which looks like:
+
+        <filepath>: line 1 col 1, <message>
+        """
+        pattern = re.compile(
+                r'^(?P<path>[^:]+):\s+line\s+(?P<line>\d+),'
+                r'(?:.*?),\s(?P<message>.*)'
+        )
+        for line in output.splitlines():
+            match = pattern.match(line)
+            if not match:
+                continue
+            filename = docker.strip_base(match.group('path'))
+            line = int(match.group('line'))
+            message = match.group('message').strip()
+            self.problems.add(filename, line, message)
