@@ -67,7 +67,10 @@ class Flake8(Tool):
                     '--%s' % option,
                     self.options.get(option)
                 ])
-
+        if 'config' in self.options:
+            command.extend(['--format', 'default'])
+        else:
+            command.append('--isolated')
         command += files
         return command
 

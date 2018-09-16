@@ -93,7 +93,7 @@ class TestFlake8(TestCase):
             self.assertFalse('F4' in p.body)
             self.assertFalse('W603' in p.body)
 
-    def test_make_command__config(self):
+    def test_make_command__no_config(self):
         options = {
             'ignore': 'F4,W603',
             'max-line-length': 120,
@@ -106,6 +106,27 @@ class TestFlake8(TestCase):
             '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,
+            '--isolated',
+            self.fixtures[1]
+        ]
+        eq_(set(expected), set(out))
+
+    def test_make_command__config(self):
+        options = {
+            'ignore': 'F4,W603',
+            'max-line-length': 120,
+            'max-complexity': 10,
+            'config': '.flake8'
+        }
+        tool = Flake8(self.problems, options, root_dir)
+        out = tool.make_command([self.fixtures[1]])
+        expected = [
+            'flake8',
+            '--ignore', 'F4,W603',
+            '--max-complexity', 10,
+            '--max-line-length', 120,
+            '--config', '.flake8',
+            '--format', 'default',
             self.fixtures[1]
         ]
         eq_(set(expected), set(out))
