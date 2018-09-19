@@ -61,6 +61,9 @@ class Flake8(Tool):
 
     def make_command(self, files):
         command = ['flake8']
+        if 'config' in self.options:
+            self.options['config'] = docker.apply_base(self.options['config'])
+
         for option in self.options:
             if option in self.PYFLAKE_OPTIONS:
                 command.extend([
