@@ -66,6 +66,19 @@ class TestFlake8(TestCase):
         eq_(2, problems[0].position)
         assert_in('multiple imports on one line', problems[0].body)
 
+    @requires_image('python2')
+    def test_execute_config_with_format(self):
+        tool = Flake8(
+            self.problems,
+            {'config': 'tests/fixtures/pep8/flake8_bad_format.ini'},
+            root_dir)
+        fixtures = ['/src/' + path for path in self.fixtures]
+        tool.process_files(fixtures)
+        problems = self.problems.all(self.fixtures[1])
+        assert len(problems), 'should have problems'
+        for issue in problems:
+            assert 'W302' not in issue.body
+
     @requires_image('python3')
     def test_process_files_two_files__python3(self):
         self.tool.options['python'] = 3
@@ -125,7 +138,7 @@ class TestFlake8(TestCase):
             '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,
-            '--config', '.flake8',
+            '--config', '/src/.flake8',
             '--format', 'default',
             self.fixtures[1]
         ]
