@@ -150,3 +150,9 @@ class GithubPullRequest(object):
 
     def create_review_comment(self, body, commit_id, path, position):
         self.pull.create_review_comment(body, commit_id, path, position)
+
+    def create_checkrun(self, review):
+        url = self.pull._build_url('check-runs', base_url=self.pull._api)
+        # TODO add special header
+        self.pull._json(self.pull._post(url, data=review), 201)
+

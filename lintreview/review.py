@@ -150,6 +150,9 @@ class Review(object):
         under_threshold = (threshold is None or
                            new_problem_count < threshold)
 
+        if self.config.use_checks():
+            return self.publish_checks(problems, head_sha)
+
         if under_threshold:
             self.publish_review(problems, head_sha)
         else:
@@ -225,6 +228,25 @@ class Review(object):
             'comments': comments
         }
         return review
+
+    def publish_checkrun(self, problems, head_commit):
+        """Publish the issues contained in the problems
+        parameter. Changes is used to fetch the commit sha
+        for the comments on a given file.
+        """
+        log.info("Publishing checkrun of %s new comments for %s",
+                 len(problems),
+                 self._pr.display_name)
+        self.remove_ok_label()
+        review = self._build_checkrun(problems, head_commit)
+        if len(review['output']):
+            self._pr.create_checkrun(review)
+
+    def _build_checkrun(self, problems, head_commit):
+        """Because github3.py doesn't support creating checkruns
+        we use some workarounds.
+        """
+        pass
 
     def publish_status(self, problem_count):
         """Update the build status for the tip commit.

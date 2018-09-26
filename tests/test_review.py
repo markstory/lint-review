@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from . import load_fixture, fixer_ini
+from . import load_fixture, fixer_ini, checks_ini
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review, Problems, Comment, IssueComment
@@ -361,6 +361,54 @@ class TestReview(TestCase):
 """
         self.pr.create_comment.assert_called_with(msg)
 
+    def test_publish_checks_api(self):
+        config = build_review_config(checks_ini,
+                                     {'PULLREQUEST_STATUS': True})
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review = Review(self.repo, self.pr, config)
+        review.publish_review(problems, sha)
+
+        assert self.pr.create_checkrun.called
+        eq_(1, self.pr.create_checkrun.call_count)
+
+        assert_checkrun(
+            self.pr.create_checkrun.call_args,
+            errors,
+            sha)
+
+    def test_publish_checks_api__failure(self):
+        config = build_review_config(checks_ini,
+                                     {'PULLREQUEST_STATUS': True})
+        problems = Problems()
+
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            Comment(filename_1, 117, 117, 'Something bad'),
+            Comment(filename_1, 119, 119, 'Something bad'),
+        )
+        problems.add_many(errors)
+        sha = 'abc123'
+
+        review = Review(self.repo, self.pr, config)
+        review.publish_review(problems, sha)
+
+        assert self.pr.create_checkrun.called
+        eq_(1, self.pr.create_checkrun.call_count)
+
+        assert_checkrun(
+            self.pr.create_checkrun.call_args,
+            errors,
+            sha)
+
 
 class TestProblems(TestCase):
 
@@ -492,3 +540,25 @@ def assert_review(call_args, errors, sha, body=''):
     eq_(len(comments),
         len(actual['comments']),
         'Error and comment counts are off.')
+
+
+def assert_checkrun(call_args, errors, sha, body=''):
+    """
+    Check that the review comments match the error list.
+    """
+    actual = call_args[0][0]
+
+    actual_annotations = actual['output']['annotations']
+    expected = []
+    for error in errors:
+        value = {
+            'message': error.body,
+            'path': error.filename,
+            'start_line': error.line,
+            'start_column': error.position,
+            'annotation_level': 'warning',
+        }
+        expected.append(value)
+
+    assert len(expected) == len(actual_annotations)
+    assert expected == actual_annotations
