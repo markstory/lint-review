@@ -46,6 +46,7 @@ review_ini = """
 linters = jshint
 
 [review]
+use_checks = True
 summary_comment_threshold = 25
 fail_on_comments = False
 apply_label_on_pass = lint ok
@@ -222,3 +223,10 @@ class ReviewConfigTest(TestCase):
         ini = "[review]\nfail_on_comments = true"
         config = build_review_config(ini, app_config)
         eq_('failure', config.failed_review_status())
+
+    def test_use_checks(self):
+        config = build_review_config(review_ini, app_config)
+        assert config.use_checks()
+
+        config = build_review_config(sample_ini, app_config)
+        assert config.use_checks() is False
