@@ -13,7 +13,7 @@ class IssueLabel(object):
     def remove(self, pull_request):
         try:
             pull_request.remove_label(self.label)
-        except:
+        except Exception:
             log.warn("Failed to remove label '%s'", self.label)
 
     def publish(self, repo, pull_request):
@@ -22,7 +22,7 @@ class IssueLabel(object):
         try:
             repo.ensure_label(self.label)
             pull_request.add_label(self.label)
-        except:
+        except Exception:
             log.warn("Failed to add label '%s'", self.label)
 
 
