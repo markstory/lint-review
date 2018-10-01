@@ -167,7 +167,7 @@ class TestReview(TestCase):
         }
         config = build_review_config(fixer_ini, app_config)
         review = Review(self.repo, self.pr, config)
-        review.publish_status(0)
+        review.publish_status(False)
 
         assert self.repo.create_status.called, 'Create status called'
         assert not self.pr.create_comment.called, 'Comment not created'
@@ -182,7 +182,7 @@ class TestReview(TestCase):
         config = build_review_config(fixer_ini, app_config)
         review = Review(self.repo, self.pr, config)
         review = Review(self.repo, self.pr, config)
-        review.publish_status(0)
+        review.publish_status(False)
 
         assert self.repo.create_status.called, 'Create status not called'
         self.repo.create_status.assert_called_with(
@@ -204,7 +204,7 @@ class TestReview(TestCase):
         }
         config = build_review_config(fixer_ini, app_config)
         review = Review(self.repo, self.pr, config)
-        review.publish_status(1)
+        review.publish_status(True)
 
         assert self.repo.create_status.called, 'Create status not called'
 
@@ -226,7 +226,7 @@ class TestReview(TestCase):
         eq_('success', config.failed_review_status(), 'config object changed')
 
         review = Review(self.repo, self.pr, config)
-        review.publish_status(1)
+        review.publish_status(True)
 
         assert self.repo.create_status.called, 'Create status not called'
         self.repo.create_status.assert_called_with(
@@ -368,14 +368,14 @@ class TestReview(TestCase):
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+            Comment(filename_1, 117, 8, 'Something bad'),
+            Comment(filename_1, 119, 9, 'Something worse'),
         )
         problems.add_many(errors)
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, config)
-        review.publish_review(problems, sha)
+        review.publish_checkrun(problems, True, sha)
 
         assert self.pr.create_checkrun.called
         eq_(1, self.pr.create_checkrun.call_count)
@@ -385,28 +385,21 @@ class TestReview(TestCase):
             errors,
             sha)
 
-    def test_publish_checks_api__failure(self):
+    def test_publish_checks_api__no_problems(self):
         config = build_review_config(checks_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
-        )
-        problems.add_many(errors)
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, config)
-        review.publish_review(problems, sha)
+        review.publish_checkrun(problems, False, sha)
 
         assert self.pr.create_checkrun.called
         eq_(1, self.pr.create_checkrun.call_count)
 
         assert_checkrun(
             self.pr.create_checkrun.call_args,
-            errors,
+            [],
             sha)
 
 
@@ -555,10 +548,19 @@ def assert_checkrun(call_args, errors, sha, body=''):
             'message': error.body,
             'path': error.filename,
             'start_line': error.line,
-            'start_column': error.position,
-            'annotation_level': 'warning',
+            'end_line': error.line,
+            'start_column': 1,
+            'annotation_level': 'failure',
         }
         expected.append(value)
 
-    assert len(expected) == len(actual_annotations)
-    assert expected == actual_annotations
+    eq_(len(expected), len(actual_annotations))
+    for i, item in enumerate(expected):
+        assert item == actual_annotations[i]
+
+    conclusion = 'success' if len(expected) == 0 else 'failure'
+    assert conclusion == actual['conclusion'], 'conclusion bad'
+    assert actual['completed_at'], 'required field completed_at missing'
+    assert actual['head_sha'], 'required field head_sha missing'
+    assert actual['output']['title'], 'required field output.title missing'
+    assert 'summary' in actual['output'], 'required field output.summary missing'

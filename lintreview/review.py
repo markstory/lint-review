@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from collections import OrderedDict
+from datetime import datetime
 import logging
 
 log = logging.getLogger(__name__)
@@ -86,14 +87,29 @@ class Comment(BaseComment):
         self.body = body
         self.line = line
         self.filename = filename
-        self.position = position
+        self.position = position or 0
 
     def payload(self):
+        """Generate payload for comment based reviews"""
         return {
             'path': self.filename,
             'position': self.position,
             'body': self.body,
         }
+
+    def checkrun_payload(self):
+        """Generate payload for checks based review."""
+        payload = {
+            'path': self.filename,
+            'start_line': self.line,
+            'end_line': self.line,
+            # TODO extract this data for linters that support it
+            'start_column': 1,
+            'message': self.body,
+            # TODO extract this data for linters that support it
+            'annotation_level': 'failure',
+        }
+        return payload
 
     def key(self):
         return (self.filename, self.position)
@@ -136,12 +152,27 @@ class Review(object):
         Existing comments are loaded, and compared
         to new problems. Once the new unique problems
         are distilled new comments are published.
+
+        TODO consider extracting publishing from the
+        review and making checks/comment based publishers.
         """
+        has_problems = len(problems) > 0
+
+        if self.config.use_checks():
+            self.publish_checkrun(problems, has_problems, head_sha)
+            # TODO need to find out if the check status +
+            # build status share the same 'namespace'
+            self.publish_status(has_problems)
+            return
+
+        # If the pull request has no changes notify why
+        # We didn't review the changes.
         if not problems.has_changes():
             return self.publish_empty_comment()
 
+        # If we are submitting a comment review
+        # we drop comments that have already been posted.
         self.load_comments()
-        total_problem_count = len(problems)
         self.remove_existing(problems)
 
         new_problem_count = len(problems)
@@ -150,14 +181,11 @@ class Review(object):
         under_threshold = (threshold is None or
                            new_problem_count < threshold)
 
-        if self.config.use_checks():
-            return self.publish_checks(problems, head_sha)
-
         if under_threshold:
             self.publish_review(problems, head_sha)
         else:
             self.publish_summary(problems)
-        self.publish_status(total_problem_count)
+        self.publish_status(has_problems)
 
     def load_comments(self):
         """Load the existing comments on a pull request
@@ -229,7 +257,7 @@ class Review(object):
         }
         return review
 
-    def publish_checkrun(self, problems, head_commit):
+    def publish_checkrun(self, problems, has_problems, head_commit):
         """Publish the issues contained in the problems
         parameter. Changes is used to fetch the commit sha
         for the comments on a given file.
@@ -238,23 +266,47 @@ class Review(object):
                  len(problems),
                  self._pr.display_name)
         self.remove_ok_label()
-        review = self._build_checkrun(problems, head_commit)
+        review = self._build_checkrun(problems, has_problems, head_commit)
         if len(review['output']):
             self._pr.create_checkrun(review)
 
-    def _build_checkrun(self, problems, head_commit):
+    def _build_checkrun(self, problems, has_problems, head_commit):
         """Because github3.py doesn't support creating checkruns
         we use some workarounds.
         """
-        pass
+        body = [
+            comment.body
+            for comment in problems
+            if isinstance(comment, IssueComment)
+        ]
+        comments = [
+            comment.checkrun_payload()
+            for comment in problems
+            if isinstance(comment, Comment)
+        ]
+        conclusion = 'failure' if has_problems else 'success'
+        output = {
+            'title': 'Style Check Result',
+            'summary': "\n".join(body),
+            'annotations': comments
+        }
 
-    def publish_status(self, problem_count):
+        run = {
+            'head_sha': head_commit,
+            'name': self.config.get('APP_NAME', 'lintreview'),
+            'conclusion': conclusion,
+            'completed_at': datetime.utcnow().isoformat(),
+            'output': output,
+        }
+        return run
+
+    def publish_status(self, has_problems):
         """Update the build status for the tip commit.
         The build will be a success if there are 0 problems.
         """
         state = self.config.failed_review_status()
         description = 'Lint errors found, see pull request comments.'
-        if problem_count == 0:
+        if not has_problems:
             self.publish_ok_label()
             self.publish_ok_comment()
             state = 'success'
