@@ -158,4 +158,3 @@ class GithubPullRequest(object):
         }
         res = self.pull._post(url, data=checkrun, headers=headers)
         self.pull._json(res, 201)
-
