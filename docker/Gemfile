@@ -2,4 +2,4 @@ source 'https://rubygems.org'
 
 gem 'rubocop', '~>0.49'
 gem 'puppet-lint', '~>2.2'
-gem 'foodcritic', '~>12.0'
+gem 'foodcritic', '~>14.0'
