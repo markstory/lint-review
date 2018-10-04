@@ -122,37 +122,37 @@ class ReviewConfig(object):
     def linters(self):
         try:
             return list(self._data['linters'].keys())
-        except:
+        except Exception:
             return []
 
     def linter_config(self, tool):
         try:
             return self._data['linters'][tool]
-        except:
+        except Exception:
             return {}
 
     def fixers_enabled(self):
         try:
             return bool(self._data['fixers']['enable'])
-        except:
+        except Exception:
             return False
 
     def fixer_workflow(self):
         try:
             return self._data['fixers']['workflow']
-        except:
+        except Exception:
             return 'commit'
 
     def ignore_patterns(self):
         try:
             return self._data['files']['ignore']
-        except:
+        except Exception:
             return []
 
     def ignore_branches(self):
         try:
             return self._data['branches']['ignore']
-        except:
+        except Exception:
             return []
 
     def summary_threshold(self):
@@ -161,11 +161,11 @@ class ReviewConfig(object):
         if 'review' in self._data:
             try:
                 return int(self._data['review']['summary_comment_threshold'])
-            except:
+            except Exception:
                 pass
         try:
             return int(self._data['SUMMARY_THRESHOLD'])
-        except:
+        except Exception:
             return None
 
     def passed_review_label(self):
@@ -174,11 +174,11 @@ class ReviewConfig(object):
         if 'review' in self._data:
             try:
                 return self._data['review']['apply_label_on_pass']
-            except:
+            except KeyError:
                 pass
         try:
             return self._data['OK_LABEL']
-        except:
+        except KeyError:
             return None
 
     def failed_review_status(self):
@@ -189,12 +189,23 @@ class ReviewConfig(object):
                 value = boolean_value(self._data['review']['fail_on_comments'])
 
                 return 'failure' if value else 'success'
-            except:
+            except Exception:
                 pass
         if 'PULLREQUEST_STATUS' in self._data:
             value = boolean_value(self._data['PULLREQUEST_STATUS'])
             return 'failure' if value else 'success'
         return 'failure'
+
+    def use_checks(self):
+        """Should review results be submitted via the Checks API
+
+        This assumes that lintreview is being run as a GitHub app integration
+        and not an Oauth integration.
+        """
+        try:
+            return boolean_value(self._data['review']['use_checks'])
+        except KeyError:
+            return False
 
     def get(self, key, default=None):
         """Dict compatibility accessor for application config data

@@ -1,6 +1,6 @@
 linters:
   flake8:
-    max-line-length: 100
+    config: ./.flake8
   rubocop: {  }
 ignore:
   files:

@@ -179,6 +179,26 @@ class TestGithubPullRequest(TestCase):
             data=review)
         assert self.model._json.called
 
+    def test_create_checkrun(self):
+        self.model._post = Mock()
+        self.model._json = Mock()
+        pull = GithubPullRequest(self.model)
+        review = {
+            'commit_sha': 'abc123',
+            'conclusion': 'success',
+            'output': {
+                'title': 'Style Review',
+                'summary': '',
+                'annotations': [],
+            }
+        }
+        pull.create_checkrun(review)
+        self.model._post.assert_called_with(
+            'https://api.github.com/repos/markstory/lint-test/pulls/1/check-runs',
+            data=review,
+            headers={'Accept': 'application/vnd.github.antiope-preview+json'})
+        assert self.model._json.called
+
     def test_maintainer_can_modify__same_repo(self):
         pull = GithubPullRequest(self.model)
         eq_(True, pull.maintainer_can_modify)

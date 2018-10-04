@@ -4,7 +4,6 @@ import logging
 import os
 import collections
 from xml.etree import ElementTree
-from six.moves import map
 import six
 
 log = logging.getLogger(__name__)

@@ -79,3 +79,18 @@ fixer = true
 [fixers]
 enable = true
 """
+
+
+checks_ini = """
+[tools]
+linters = phpcs, eslint
+
+[tool_phpcs]
+fixer = true
+
+[fixers]
+enable = true
+
+[review]
+use_checks = true
+"""
