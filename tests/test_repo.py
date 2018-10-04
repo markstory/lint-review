@@ -17,7 +17,7 @@ config = load_config()
 
 class TestGithubRepository(TestCase):
     def setUp(self):
-        fixture = load_fixture('pull_request.json')
+        fixture = load_fixture('repository.json')
         self.repo_model = Repository(json.loads(fixture))
 
     @patch('lintreview.repo.github')
@@ -75,6 +75,30 @@ class TestGithubRepository(TestCase):
             None,
             'all good',
             'lintreview')
+
+    def test_create_checkrun(self):
+        model = self.repo_model
+        model._post = Mock()
+        model._json = Mock()
+        import pdb; pdb.set_trace()
+
+        repo = GithubRepository(config, 'markstory', 'lint-test')
+        repo.repository = lambda: model
+        review = {
+            'commit_sha': 'abc123',
+            'conclusion': 'success',
+            'output': {
+                'title': 'Style Review',
+                'summary': '',
+                'annotations': [],
+            }
+        }
+        repo.create_checkrun(review)
+        model._post.assert_called_with(
+            'https://api.github.com/repos/markstory/lint-test/check-runs',
+            data=review,
+            headers={'Accept': 'application/vnd.github.antiope-preview+json'})
+        assert model._json.called
 
 
 class TestGithubPullRequest(TestCase):
@@ -177,26 +201,6 @@ class TestGithubPullRequest(TestCase):
         self.model._post.assert_called_with(
             'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews',
             data=review)
-        assert self.model._json.called
-
-    def test_create_checkrun(self):
-        self.model._post = Mock()
-        self.model._json = Mock()
-        pull = GithubPullRequest(self.model)
-        review = {
-            'commit_sha': 'abc123',
-            'conclusion': 'success',
-            'output': {
-                'title': 'Style Review',
-                'summary': '',
-                'annotations': [],
-            }
-        }
-        pull.create_checkrun(review)
-        self.model._post.assert_called_with(
-            'https://api.github.com/repos/markstory/lint-test/pulls/1/check-runs',
-            data=review,
-            headers={'Accept': 'application/vnd.github.antiope-preview+json'})
         assert self.model._json.called
 
     def test_maintainer_can_modify__same_repo(self):

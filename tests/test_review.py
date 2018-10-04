@@ -362,6 +362,7 @@ class TestReview(TestCase):
         self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_checks_api(self):
+        self.repo.create_checkrun = Mock()
         config = build_review_config(checks_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
@@ -377,15 +378,16 @@ class TestReview(TestCase):
         review = Review(self.repo, self.pr, config)
         review.publish_checkrun(problems, True, sha)
 
-        assert self.pr.create_checkrun.called
-        eq_(1, self.pr.create_checkrun.call_count)
+        assert self.repo.create_checkrun.called
+        eq_(1, self.repo.create_checkrun.call_count)
 
         assert_checkrun(
-            self.pr.create_checkrun.call_args,
+            self.repo.create_checkrun.call_args,
             errors,
             sha)
 
     def test_publish_checks_api__no_problems(self):
+        self.repo.create_checkrun = Mock()
         config = build_review_config(checks_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
@@ -394,11 +396,11 @@ class TestReview(TestCase):
         review = Review(self.repo, self.pr, config)
         review.publish_checkrun(problems, False, sha)
 
-        assert self.pr.create_checkrun.called
-        eq_(1, self.pr.create_checkrun.call_count)
+        assert self.repo.create_checkrun.called
+        eq_(1, self.repo.create_checkrun.call_count)
 
         assert_checkrun(
-            self.pr.create_checkrun.call_args,
+            self.repo.create_checkrun.call_args,
             [],
             sha)
 
@@ -549,7 +551,6 @@ def assert_checkrun(call_args, errors, sha, body=''):
             'path': error.filename,
             'start_line': error.line,
             'end_line': error.line,
-            'start_column': 1,
             'annotation_level': 'failure',
         }
         expected.append(value)

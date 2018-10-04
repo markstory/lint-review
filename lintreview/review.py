@@ -103,8 +103,6 @@ class Comment(BaseComment):
             'path': self.filename,
             'start_line': self.line,
             'end_line': self.line,
-            # TODO extract this data for linters that support it
-            'start_column': 1,
             'message': self.body,
             # TODO extract this data for linters that support it
             'annotation_level': 'failure',
@@ -166,7 +164,6 @@ class Review(object):
             return
 
         # If the pull request has no changes notify why
-        # We didn't review the changes.
         if not problems.has_changes():
             return self.publish_empty_comment()
 
@@ -268,7 +265,7 @@ class Review(object):
         self.remove_ok_label()
         review = self._build_checkrun(problems, has_problems, head_commit)
         if len(review['output']):
-            self._pr.create_checkrun(review)
+            self._repo.create_checkrun(review)
 
     def _build_checkrun(self, problems, has_problems, head_commit):
         """Because github3.py doesn't support creating checkruns
@@ -295,7 +292,7 @@ class Review(object):
             'head_sha': head_commit,
             'name': self.config.get('APP_NAME', 'lintreview'),
             'conclusion': conclusion,
-            'completed_at': datetime.utcnow().isoformat(),
+            'completed_at': datetime.utcnow().isoformat() + 'Z',
             'output': output,
         }
         return run

@@ -57,6 +57,15 @@ class GithubRepository(object):
             description,
             context)
 
+    def create_checkrun(self, checkrun):
+        repo = self.repository()
+        url = repo._build_url('check-runs', base_url=repo._api)
+        headers = {
+            'Accept': 'application/vnd.github.antiope-preview+json'
+        }
+        res = repo._post(url, data=checkrun, headers=headers)
+        return repo._json(res, 201)
+
 
 class GithubPullRequest(object):
     """Abstract the underlying github models.
@@ -150,11 +159,3 @@ class GithubPullRequest(object):
 
     def create_review_comment(self, body, commit_id, path, position):
         self.pull.create_review_comment(body, commit_id, path, position)
-
-    def create_checkrun(self, checkrun):
-        url = self.pull._build_url('check-runs', base_url=self.pull._api)
-        headers = {
-            'Accept': 'application/vnd.github.antiope-preview+json'
-        }
-        res = self.pull._post(url, data=checkrun, headers=headers)
-        self.pull._json(res, 201)
