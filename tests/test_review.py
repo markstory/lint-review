@@ -385,6 +385,7 @@ class TestReview(TestCase):
             self.repo.create_checkrun.call_args,
             errors,
             sha)
+        assert self.repo.create_status.called is False, 'no status required'
 
     def test_publish_checks_api__no_problems(self):
         self.repo.create_checkrun = Mock()
@@ -403,6 +404,7 @@ class TestReview(TestCase):
             self.repo.create_checkrun.call_args,
             [],
             sha)
+        assert self.repo.create_status.called is False, 'no status required'
 
 
 class TestProblems(TestCase):
