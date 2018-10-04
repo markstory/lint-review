@@ -158,9 +158,6 @@ class Review(object):
 
         if self.config.use_checks():
             self.publish_checkrun(problems, has_problems, head_sha)
-            # TODO need to find out if the check status +
-            # build status share the same 'namespace'
-            self.publish_status(has_problems)
             return
 
         # If the pull request has no changes notify why
