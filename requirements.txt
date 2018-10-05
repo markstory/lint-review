@@ -1,4 +1,4 @@
-Flask==0.10.1
+Flask==0.12.3
 github3.py==1.0.0a4
 celery==3.1.23
 gunicorn==19.5.0
