@@ -80,7 +80,6 @@ class TestGithubRepository(TestCase):
         model = self.repo_model
         model._post = Mock()
         model._json = Mock()
-        import pdb; pdb.set_trace()
 
         repo = GithubRepository(config, 'markstory', 'lint-test')
         repo.repository = lambda: model
