@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from . import load_fixture, fixer_ini, checks_ini
+from . import load_fixture, fixer_ini
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review, Problems, Comment, IssueComment
@@ -89,7 +89,7 @@ class TestReview(TestCase):
         expected = Comment(filename_2, 88, 88, 'I <3 it')
         eq_(res[0], expected)
 
-    def test_publish_review(self):
+    def test_publish_pull_review(self):
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -101,7 +101,7 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, self.config)
-        review.publish_review(problems, sha)
+        review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called
         eq_(1, self.pr.create_review.call_count)
@@ -111,22 +111,22 @@ class TestReview(TestCase):
             errors,
             sha)
 
-    def test_publish_review__no_comments(self):
+    def test_publish_pull_review__no_comments(self):
         problems = Problems()
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, self.config)
-        review.publish_review(problems, sha)
+        review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called is False
 
-    def test_publish_review__only_issue_comment(self):
+    def test_publish_pull_review__only_issue_comment(self):
         problems = Problems()
         problems.add(IssueComment('Very bad'))
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, self.config)
-        review.publish_review(problems, sha)
+        review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called
         assert_review(
@@ -148,7 +148,7 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, self.config)
-        review.publish_review(problems, sha)
+        review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called
         eq_(1, self.pr.create_review.call_count)
@@ -236,7 +236,7 @@ class TestReview(TestCase):
         assert not self.pr.create_comment.called, 'Comment not created'
         assert not self.pr.add_label.called, 'Label added created'
 
-    def test_publish_review_remove_ok_label(self):
+    def test_publish_pull_review_remove_ok_label(self):
         problems = Problems()
 
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -250,7 +250,7 @@ class TestReview(TestCase):
 
         review = Review(self.repo, self.pr, config)
         sha = 'abc123'
-        review.publish_review(problems, sha)
+        review.publish_pull_review(problems, sha)
 
         assert self.pr.remove_label.called, 'Label should be removed'
         assert self.pr.create_review.called, 'Review should be added'
@@ -262,12 +262,12 @@ class TestReview(TestCase):
             errors,
             sha)
 
-    def test_publish_empty_comment(self):
+    def test_publish_review_empty_comment(self):
         problems = Problems(changes=[])
         review = Review(self.repo, self.pr, self.config)
 
         sha = 'abc123'
-        review.publish(problems, sha)
+        review.publish_review(problems, sha)
 
         assert self.pr.create_comment.called, 'Should create a comment'
 
@@ -275,13 +275,13 @@ class TestReview(TestCase):
                'It may be too large, or contain no reviewable changes.')
         self.pr.create_comment.assert_called_with(msg)
 
-    def test_publish_empty_comment_add_ok_label(self):
+    def test_publish_review_empty_comment_add_ok_label(self):
         problems = Problems(changes=[])
         config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
         review = Review(self.repo, self.pr, config)
 
         sha = 'abc123'
-        review.publish(problems, sha)
+        review.publish_review(problems, sha)
 
         assert self.pr.create_comment.called, 'ok comment should be added.'
         assert self.pr.remove_label.called, 'label should be removed.'
@@ -291,14 +291,14 @@ class TestReview(TestCase):
                'It may be too large, or contain no reviewable changes.')
         self.pr.create_comment.assert_called_with(msg)
 
-    def test_publish_empty_comment_with_comment_status(self):
+    def test_publish_review_empty_comment_with_comment_status(self):
         config = build_review_config(fixer_ini, {'PULLREQUEST_STATUS': True})
 
         problems = Problems(changes=[])
         review = Review(self.repo, self.pr, config)
 
         sha = 'abc123'
-        review.publish(problems, sha)
+        review.publish_review(problems, sha)
 
         assert self.pr.create_comment.called, 'Should create a comment'
 
@@ -312,7 +312,7 @@ class TestReview(TestCase):
 
         self.pr.create_comment.assert_called_with(msg)
 
-    def test_publish_comment_threshold_checks(self):
+    def test_publish_review_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
             GhIssueComment(f) for f in json.loads(fixture)]
@@ -331,7 +331,7 @@ class TestReview(TestCase):
         config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
         review = Review(self.repo, self.pr, config)
         review.publish_summary = Mock()
-        review.publish(problems, sha)
+        review.publish_review(problems, sha)
 
         assert review.publish_summary.called, 'Should have been called.'
 
@@ -361,9 +361,9 @@ class TestReview(TestCase):
 """
         self.pr.create_comment.assert_called_with(msg)
 
-    def test_publish_checks_api(self):
+    def test_publish_checkrun(self):
         self.repo.create_checkrun = Mock()
-        config = build_review_config(checks_ini,
+        config = build_review_config(fixer_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
 
@@ -376,7 +376,7 @@ class TestReview(TestCase):
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, config)
-        review.publish_checkrun(problems, True, sha)
+        review.publish_checkrun(problems, sha)
 
         assert self.repo.create_checkrun.called
         eq_(1, self.repo.create_checkrun.call_count)
@@ -387,15 +387,15 @@ class TestReview(TestCase):
             sha)
         assert self.repo.create_status.called is False, 'no status required'
 
-    def test_publish_checks_api__no_problems(self):
+    def test_publish_checkrun__no_problems(self):
         self.repo.create_checkrun = Mock()
-        config = build_review_config(checks_ini,
+        config = build_review_config(fixer_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
         sha = 'abc123'
 
         review = Review(self.repo, self.pr, config)
-        review.publish_checkrun(problems, False, sha)
+        review.publish_checkrun(problems, sha)
 
         assert self.repo.create_checkrun.called
         eq_(1, self.repo.create_checkrun.call_count)

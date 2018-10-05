@@ -196,17 +196,6 @@ class ReviewConfig(object):
             return 'failure' if value else 'success'
         return 'failure'
 
-    def use_checks(self):
-        """Should review results be submitted via the Checks API
-
-        This assumes that lintreview is being run as a GitHub app integration
-        and not an Oauth integration.
-        """
-        try:
-            return boolean_value(self._data['review']['use_checks'])
-        except KeyError:
-            return False
-
     def get(self, key, default=None):
         """Dict compatibility accessor for application config data
         """

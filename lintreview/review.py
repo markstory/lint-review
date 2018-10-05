@@ -144,8 +144,55 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish(self, problems, head_sha):
-        """Publish the review.
+    def publish_checkrun(self, problems, head_sha):
+        """Publish the review as a checkrun
+
+        GitHub check-runs require a GitHub app which isn't
+        supported by lint-review directly but is supported
+        by stickler-ci.
+        """
+        log.info("Publishing checkrun of %s new comments for %s",
+                 len(problems),
+                 self._pr.display_name)
+
+        has_problems = len(problems) > 0
+        self.remove_ok_label()
+        review = self._build_checkrun(problems, has_problems, head_sha)
+        if len(review['output']):
+            self._repo.create_checkrun(review)
+
+    def _build_checkrun(self, problems, has_problems, head_commit):
+        """Because github3.py doesn't support creating checkruns
+        we use some workarounds.
+        """
+        body = [
+            comment.body
+            for comment in problems
+            if isinstance(comment, IssueComment)
+        ]
+        comments = [
+            comment.checkrun_payload()
+            for comment in problems
+            if isinstance(comment, Comment)
+        ]
+        conclusion = 'failure' if has_problems else 'success'
+        output = {
+            'title': 'Style Check Result',
+            'summary': "\n".join(body),
+            'annotations': comments
+        }
+
+        run = {
+            'head_sha': head_commit,
+            'name': self.config.get('APP_NAME', 'lintreview'),
+            'conclusion': conclusion,
+            'completed_at': datetime.utcnow().isoformat() + 'Z',
+            'output': output,
+        }
+        return run
+
+    def publish_review(self, problems, head_sha):
+        """Publish the review as a pull request review.
 
         Existing comments are loaded, and compared
         to new problems. Once the new unique problems
@@ -154,12 +201,6 @@ class Review(object):
         TODO consider extracting publishing from the
         review and making checks/comment based publishers.
         """
-        has_problems = len(problems) > 0
-
-        if self.config.use_checks():
-            self.publish_checkrun(problems, has_problems, head_sha)
-            return
-
         # If the pull request has no changes notify why
         if not problems.has_changes():
             return self.publish_empty_comment()
@@ -169,6 +210,7 @@ class Review(object):
         self.load_comments()
         self.remove_existing(problems)
 
+        has_problems = len(problems) > 0
         new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()
@@ -176,7 +218,7 @@ class Review(object):
                            new_problem_count < threshold)
 
         if under_threshold:
-            self.publish_review(problems, head_sha)
+            self.publish_pull_review(problems, head_sha)
         else:
             self.publish_summary(problems)
         self.publish_status(has_problems)
@@ -216,7 +258,7 @@ class Review(object):
         for comment in self._comments:
             problems.remove(comment)
 
-    def publish_review(self, problems, head_commit):
+    def publish_pull_review(self, problems, head_commit):
         """Publish the issues contains in the problems
         parameter. changes is used to fetch the commit sha
         for the comments on a given file.
@@ -250,49 +292,6 @@ class Review(object):
             'comments': comments
         }
         return review
-
-    def publish_checkrun(self, problems, has_problems, head_commit):
-        """Publish the issues contained in the problems
-        parameter. Changes is used to fetch the commit sha
-        for the comments on a given file.
-        """
-        log.info("Publishing checkrun of %s new comments for %s",
-                 len(problems),
-                 self._pr.display_name)
-        self.remove_ok_label()
-        review = self._build_checkrun(problems, has_problems, head_commit)
-        if len(review['output']):
-            self._repo.create_checkrun(review)
-
-    def _build_checkrun(self, problems, has_problems, head_commit):
-        """Because github3.py doesn't support creating checkruns
-        we use some workarounds.
-        """
-        body = [
-            comment.body
-            for comment in problems
-            if isinstance(comment, IssueComment)
-        ]
-        comments = [
-            comment.checkrun_payload()
-            for comment in problems
-            if isinstance(comment, Comment)
-        ]
-        conclusion = 'failure' if has_problems else 'success'
-        output = {
-            'title': 'Style Check Result',
-            'summary': "\n".join(body),
-            'annotations': comments
-        }
-
-        run = {
-            'head_sha': head_commit,
-            'name': self.config.get('APP_NAME', 'lintreview'),
-            'conclusion': conclusion,
-            'completed_at': datetime.utcnow().isoformat() + 'Z',
-            'output': output,
-        }
-        return run
 
     def publish_status(self, has_problems):
         """Update the build status for the tip commit.
