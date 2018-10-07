@@ -87,7 +87,7 @@ class TestGithubRepository(TestCase):
             'commit_sha': 'abc123',
             'conclusion': 'success',
             'output': {
-                'title': 'Style Review',
+                'title': 'No lint errors',
                 'summary': '',
                 'annotations': [],
             }
@@ -109,7 +109,7 @@ class TestGithubRepository(TestCase):
         review = {
             'conclusion': 'success',
             'output': {
-                'title': 'Style Review',
+                'title': 'No lint errors found',
                 'summary': '',
                 'annotations': [],
             }
@@ -117,7 +117,7 @@ class TestGithubRepository(TestCase):
         repo.update_checkrun(99, review)
         model._patch.assert_called_with(
             'https://api.github.com/repos/markstory/lint-test/check-runs/99',
-            data=review,
+            data=json.dumps(review),
             headers={'Accept': 'application/vnd.github.antiope-preview+json'})
         assert model._json.called
 

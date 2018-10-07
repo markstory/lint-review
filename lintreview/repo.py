@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import lintreview.github as github
 import logging
+import json
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +73,8 @@ class GithubRepository(object):
         headers = {
             'Accept': 'application/vnd.github.antiope-preview+json'
         }
-        res = repo._patch(url, data=checkrun, headers=headers)
+        data = json.dumps(checkrun)
+        res = repo._patch(url, data=data, headers=headers)
         return repo._json(res, 200)
 
 

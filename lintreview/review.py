@@ -176,9 +176,13 @@ class Review(object):
             for comment in problems
             if isinstance(comment, Comment)
         ]
-        conclusion = 'failure' if has_problems else 'success'
+        conclusion = 'success'
+        title = 'No lint errors found'
+        if has_problems:
+            conclusion = 'failure'
+            title = 'Lint errors found, see check result'
         output = {
-            'title': 'Style Check Result',
+            'title': title,
             'summary': "\n".join(body),
             'annotations': comments
         }
