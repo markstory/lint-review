@@ -99,6 +99,28 @@ class TestGithubRepository(TestCase):
             headers={'Accept': 'application/vnd.github.antiope-preview+json'})
         assert model._json.called
 
+    def test_update_checkrun(self):
+        model = self.repo_model
+        model._patch = Mock()
+        model._json = Mock()
+
+        repo = GithubRepository(config, 'markstory', 'lint-test')
+        repo.repository = lambda: model
+        review = {
+            'conclusion': 'success',
+            'output': {
+                'title': 'Style Review',
+                'summary': '',
+                'annotations': [],
+            }
+        }
+        repo.update_checkrun(99, review)
+        model._patch.assert_called_with(
+            'https://api.github.com/repos/markstory/lint-test/check-runs/99',
+            data=review,
+            headers={'Accept': 'application/vnd.github.antiope-preview+json'})
+        assert model._json.called
+
 
 class TestGithubPullRequest(TestCase):
 

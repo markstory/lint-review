@@ -144,24 +144,25 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish_checkrun(self, problems, head_sha):
+    def publish_checkrun(self, problems, check_run_id):
         """Publish the review as a checkrun
 
         GitHub check-runs require a GitHub app which isn't
         supported by lint-review directly but is supported
         by stickler-ci.
         """
-        log.info("Publishing checkrun of %s new comments for %s",
+        log.info("Publishing result for checkrun=%s. %s new comments for %s",
+                 check_run_id,
                  len(problems),
                  self._pr.display_name)
 
         has_problems = len(problems) > 0
         self.remove_ok_label()
-        review = self._build_checkrun(problems, has_problems, head_sha)
+        review = self._build_checkrun(problems, has_problems)
         if len(review['output']):
-            self._repo.create_checkrun(review)
+            self._repo.update_checkrun(check_run_id, review)
 
-    def _build_checkrun(self, problems, has_problems, head_commit):
+    def _build_checkrun(self, problems, has_problems):
         """Because github3.py doesn't support creating checkruns
         we use some workarounds.
         """
@@ -183,8 +184,6 @@ class Review(object):
         }
 
         run = {
-            'head_sha': head_commit,
-            'name': self.config.get('APP_NAME', 'lintreview'),
             'conclusion': conclusion,
             'completed_at': datetime.utcnow().isoformat() + 'Z',
             'output': output,
