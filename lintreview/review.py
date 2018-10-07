@@ -151,7 +151,8 @@ class Review(object):
         supported by lint-review directly but is supported
         by stickler-ci.
         """
-        log.info("Publishing checkrun of %s new comments for %s",
+        log.info("Publishing result for checkrun=%s. %s new comments for %s",
+                 check_run_id,
                  len(problems),
                  self._pr.display_name)
 
@@ -159,8 +160,6 @@ class Review(object):
         self.remove_ok_label()
         review = self._build_checkrun(problems, has_problems)
         if len(review['output']):
-            # TODO this has to be an update, and the review
-            # needs access to the check_run_id
             self._repo.update_checkrun(check_run_id, review)
 
     def _build_checkrun(self, problems, has_problems):
