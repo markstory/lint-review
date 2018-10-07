@@ -66,6 +66,15 @@ class GithubRepository(object):
         res = repo._post(url, data=checkrun, headers=headers)
         return repo._json(res, 201)
 
+    def update_checkrun(self, run_id, checkrun):
+        repo = self.repository()
+        url = repo._build_url('check-runs', run_id, base_url=repo._api)
+        headers = {
+            'Accept': 'application/vnd.github.antiope-preview+json'
+        }
+        res = repo._patch(url, data=checkrun, headers=headers)
+        return repo._json(res, 200)
+
 
 class GithubPullRequest(object):
     """Abstract the underlying github models.

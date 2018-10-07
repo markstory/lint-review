@@ -373,18 +373,18 @@ class TestReview(TestCase):
             Comment(filename_1, 119, 9, 'Something worse'),
         )
         problems.add_many(errors)
-        sha = 'abc123'
+        run_id = 42
 
         review = Review(self.repo, self.pr, config)
-        review.publish_checkrun(problems, sha)
+        review.publish_checkrun(problems, run_id)
 
-        assert self.repo.create_checkrun.called
-        eq_(1, self.repo.create_checkrun.call_count)
+        assert self.repo.update_checkrun.called
+        eq_(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
-            self.repo.create_checkrun.call_args,
+            self.repo.update_checkrun.call_args,
             errors,
-            sha)
+            run_id)
         assert self.repo.create_status.called is False, 'no status required'
 
     def test_publish_checkrun__no_problems(self):
@@ -392,18 +392,18 @@ class TestReview(TestCase):
         config = build_review_config(fixer_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
-        sha = 'abc123'
+        run_id = 42
 
         review = Review(self.repo, self.pr, config)
-        review.publish_checkrun(problems, sha)
+        review.publish_checkrun(problems, run_id)
 
-        assert self.repo.create_checkrun.called
-        eq_(1, self.repo.create_checkrun.call_count)
+        assert self.repo.update_checkrun.called
+        eq_(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
-            self.repo.create_checkrun.call_args,
+            self.repo.update_checkrun.call_args,
             [],
-            sha)
+            run_id)
         assert self.repo.create_status.called is False, 'no status required'
 
 
@@ -539,12 +539,13 @@ def assert_review(call_args, errors, sha, body=''):
         'Error and comment counts are off.')
 
 
-def assert_checkrun(call_args, errors, sha, body=''):
+def assert_checkrun(call_args, errors, run_id, body=''):
     """
     Check that the review comments match the error list.
     """
-    actual = call_args[0][0]
+    eq_(run_id, call_args[0][0], 'Runid should match')
 
+    actual = call_args[0][1]
     actual_annotations = actual['output']['annotations']
     expected = []
     for error in errors:
@@ -564,6 +565,5 @@ def assert_checkrun(call_args, errors, sha, body=''):
     conclusion = 'success' if len(expected) == 0 else 'failure'
     assert conclusion == actual['conclusion'], 'conclusion bad'
     assert actual['completed_at'], 'required field completed_at missing'
-    assert actual['head_sha'], 'required field head_sha missing'
     assert actual['output']['title'], 'required field output.title missing'
     assert 'summary' in actual['output'], 'required field output.summary missing'

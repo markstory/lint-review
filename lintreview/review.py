@@ -144,7 +144,7 @@ class Review(object):
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish_checkrun(self, problems, head_sha):
+    def publish_checkrun(self, problems, check_run_id):
         """Publish the review as a checkrun
 
         GitHub check-runs require a GitHub app which isn't
@@ -157,11 +157,13 @@ class Review(object):
 
         has_problems = len(problems) > 0
         self.remove_ok_label()
-        review = self._build_checkrun(problems, has_problems, head_sha)
+        review = self._build_checkrun(problems, has_problems)
         if len(review['output']):
-            self._repo.create_checkrun(review)
+            # TODO this has to be an update, and the review
+            # needs access to the check_run_id
+            self._repo.update_checkrun(check_run_id, review)
 
-    def _build_checkrun(self, problems, has_problems, head_commit):
+    def _build_checkrun(self, problems, has_problems):
         """Because github3.py doesn't support creating checkruns
         we use some workarounds.
         """
@@ -183,8 +185,6 @@ class Review(object):
         }
 
         run = {
-            'head_sha': head_commit,
-            'name': self.config.get('APP_NAME', 'lintreview'),
             'conclusion': conclusion,
             'completed_at': datetime.utcnow().isoformat() + 'Z',
             'output': output,

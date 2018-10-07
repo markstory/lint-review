@@ -79,6 +79,13 @@ class Processor(object):
                      'rolling back working tree. Got %s', e)
             fixers.rollback_changes(self._target_path)
 
-    def publish(self):
+    def publish(self, check_run_id=None):
         self.problems.limit_to_changes()
-        self._review.publish(self.problems, self._pull_request.head)
+        if check_run_id:
+            self._review.publish_checkrun(
+                self.problems,
+                check_run_id)
+        else:
+            self._review.publish_review(
+                self.problems,
+                self._pull_request.head)

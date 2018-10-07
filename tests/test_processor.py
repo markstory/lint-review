@@ -8,7 +8,6 @@ from lintreview.fixers.error import ConfigurationError, WorkflowError
 from github3.pulls import PullRequest
 from mock import patch, sentinel, Mock, ANY
 from nose.tools import eq_, raises
-import os
 import json
 
 
@@ -174,8 +173,28 @@ class TestProcessor(object):
             subject.problems.limit_to_changes.called,
             'Problems should be filtered.')
         eq_(True,
-            subject._review.publish.called,
+            subject._review.publish_review.called,
             'Review should be published.')
-        subject._review.publish.assert_called_with(
+        subject._review.publish_review.assert_called_with(
             subject.problems,
             pull.head)
+
+    def test_publish_checkrun(self):
+        pull = self.get_pull_request()
+        repo = Mock()
+
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
+        subject.problems = Mock()
+        subject._review = Mock()
+
+        subject.publish(check_run_id=9)
+        eq_(True,
+            subject.problems.limit_to_changes.called,
+            'Problems should be filtered.')
+        eq_(True,
+            subject._review.publish_checkrun.called,
+            'Review should be published.')
+        subject._review.publish_checkrun.assert_called_with(
+            subject.problems,
+            9)
