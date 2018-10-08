@@ -462,3 +462,9 @@ Uses [luacheck](https://github.com/mpeterv/luacheck) to lint Lua code.
 
 * `config` Provide a path to the config file for luacheck.
 
+
+### Elixir
+
+#### Credo
+
+Uses [credo](https://github.com/rrrene/credo) to lint Elixir code.
