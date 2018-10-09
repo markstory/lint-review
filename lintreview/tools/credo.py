@@ -30,9 +30,8 @@ class Credo(Tool):
         Run code checks with credo.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        log.debug(self.base_path)
         credo_options = []
-        command = ['mix', 'credo', 'list', '--strict', '--format', 'flycheck']
+        command = ['mix', 'credo', 'list', '--format', 'flycheck']
         for option, value in self.options.items():
             if option in credo_options:
                 command += [u'--{}'.format(option), value]
