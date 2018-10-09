@@ -180,7 +180,7 @@ class Review(object):
         title = 'No lint errors found'
         if has_problems:
             conclusion = 'failure'
-            title = 'Lint errors found, see check result.'
+            title = 'Lint errors found'
         output = {
             'title': title,
             'summary': "\n".join(body),
