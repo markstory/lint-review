@@ -95,6 +95,7 @@ class TestYamllint(TestCase):
         assert_in(
             '`yamllint` failed with the following error:\n'
             '```\n'
-            "IOError: [Errno 2] No such file or directory: '/src/tests/fixtures/yamllint/lol.yaml'\n"
+            "IOError: [Errno 2] No such file or directory: "
+            "'/src/tests/fixtures/yamllint/lol.yaml'\n"
             '```\n',
             problems[0].body)

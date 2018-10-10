@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_checkstyle
+from lintreview.tools import Tool
 
 
 log = logging.getLogger(__name__)
