@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import functools
 import logging
 import os
 from lintreview.tools import Tool, process_quickfix
