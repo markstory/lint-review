@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import os
 import lintreview.fixers as fixers
 from lintreview.config import build_review_config
 from lintreview.diff import parse_diff, Diff
@@ -11,7 +10,7 @@ from nose.tools import (
     eq_,
     with_setup
 )
-from .. import requires_image, root_dir, load_fixture, fixtures_path, fixer_ini
+from .. import requires_image, load_fixture, fixtures_path, fixer_ini
 from ..test_git import setup_repo, teardown_repo, clone_path
 
 
