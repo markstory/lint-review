@@ -30,11 +30,19 @@ class Credo(Tool):
         Run code checks with credo.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        credo_options = []
+        credo_options = ['checks',
+                         'config-name',
+                         'ignore-checks']
+        credo_flags = ['all',
+                       'all-priorities',
+                       'strict']
         command = ['mix', 'credo', 'list', '--format', 'flycheck']
         for option, value in self.options.items():
             if option in credo_options:
                 command += [u'--{}'.format(option), value]
+            elif option in credo_flags:
+                if self.parse_ini_bool(value):
+                    command += [u'--{}'.format(option)]
             else:
                 log.error('%s is not a valid option to credo', option)
         command += files
@@ -60,3 +68,7 @@ class Credo(Tool):
             return ':'.join(parts)
         except ValueError:
             return message
+
+    def parse_ini_bool(self, string):
+        true = ['1', 'yes', 'true', 'on']
+        return string.lower() in true
