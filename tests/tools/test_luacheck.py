@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.luacheck import Luacheck
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -76,3 +76,16 @@ class Testluacheck(TestCase):
 
         problems = self.problems.all(self.fixtures[2])
         eq_(1, len(problems), 'Config file should lower error count.')
+
+    @requires_image('luacheck')
+    def test_process_files_with_missing_config(self):
+        config = {
+            'config': 'not_a_file'
+        }
+        tool = Luacheck(self.problems, config, root_dir)
+        tool.process_files(self.fixtures)
+
+        problems = self.problems.all()
+        eq_(1, len(problems),
+            "Couldn't load configuration from")
+        assert_in("Couldn't find configuration file", problems[0].body)
