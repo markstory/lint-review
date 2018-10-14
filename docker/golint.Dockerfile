@@ -7,7 +7,7 @@ RUN mkdir /tool \
   && apk update \
   && apk add build-base go git \
   # Install golint
-  && go get github.com/golang/lint/golint \
+  && go get -u golang.org/x/lint/golint \
   && ln -s /tool/golang/bin/golint /usr/bin/golint \
   # Cleanup
   && apk del build-base git curl \
