@@ -219,7 +219,7 @@ These options are passed into flake8 as cli options.
 
 #### pep8
 
-Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code. 
+Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code.
 
 *Options*
 
@@ -236,7 +236,7 @@ Uses the [pep8](http://pypi.python.org/pypi/pep8/1.2) module to check code.
 Uses [pylint](https://www.pylint.org/) to check for Python 3 compatibility
 issues.
 
-*Options* 
+*Options*
 
 * `ignore` A comma separated list of error codes you wish to ignore.
 
@@ -309,7 +309,7 @@ you can use this linter you'll need to install nodejs and the standard npm packa
 
 #### JSON Lint
 
-Uses the jsonlint script from [demjson](https://pypi.python.org/pypi/demjson) python module 
+Uses the jsonlint script from [demjson](https://pypi.python.org/pypi/demjson) python module
 to check javascript object notation files.
 
 *Options*
@@ -462,3 +462,19 @@ Uses [luacheck](https://github.com/mpeterv/luacheck) to lint Lua code.
 
 * `config` Provide a path to the config file for luacheck.
 
+
+### Elixir
+
+#### Credo
+
+Uses [credo](https://github.com/rrrene/credo) to lint Elixir code. Runs `mix
+credo list` to get results by files.
+
+*Options*
+
+* `checks` Only include checks that match the given strings
+* `config-name` Use the given config instead of "default"
+* `ignore-checks` Ignore checks that match the given strings
+* `all` Show all issues
+* `all-priorities` Show all issues including low priority ones
+* `strict` Show all issues and all priorities
