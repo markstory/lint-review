@@ -88,4 +88,6 @@ class Testluacheck(TestCase):
         problems = self.problems.all()
         eq_(1, len(problems),
             "Couldn't load configuration from")
-        assert_in("Couldn't find configuration file", problems[0].body)
+        assert_in("Couldn't", problems[0].body)
+        assert_in("not_a_file", problems[0].body)
+        assert_in("configuration file", problems[0].body)
