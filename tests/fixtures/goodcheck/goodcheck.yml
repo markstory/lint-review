@@ -1,0 +1,38 @@
+rules:
+  - id: test.1
+    pattern: Github
+    message: Write "GitHub", not "Github"
+    glob:
+      - "**/*.rb"
+      - "**/*.yaml"
+      - "**/*.yml"
+      - "**/*.html"
+    fail:
+      - Signup via Github
+    pass:
+      - Signup via GitHub
+
+  - id: test.2
+    pattern:
+      regexp: (10|172|192)(\.?\d{1,3}){3}
+    message: Use hostnames, not RFC 1918 IPs
+    justification:
+      - Unless you can't find another way
+      - some other reason
+    glob:
+      - "**/*.yml"
+    fail:
+      - 10.2.0.9
+      - 192.168.1.1
+    pass:
+      - foo.com
+
+  - id: test.3
+    pattern: no match
+    message: this won't match
+    glob:
+      - "**/*.yml"
+    fail:
+      - no match
+    pass:
+      - something
