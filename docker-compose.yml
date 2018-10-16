@@ -54,6 +54,7 @@ services:
       C_FORCE_ROOT: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - "${LINTREVIEW_WORKSPACE:-/tmp/workspace}:${LINTREVIEW_WORKSPACE:-/tmp/workspace}"
     links:
       - broker
     networks:
