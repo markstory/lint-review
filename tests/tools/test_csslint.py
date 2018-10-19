@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.csslint import Csslint
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -40,13 +40,13 @@ class TestCsslint(TestCase):
         eq_(2, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(fname, 1, 1, "Warning - Don't use IDs in selectors.")
-        eq_(expected, problems[0])
+        eq_(fname, problems[0].filename)
+        eq_(1, problems[0].line)
+        assert_in("Warning - Don't use IDs in selectors.", problems[0].body)
 
-        expected = Comment(fname, 2, 2,
-                           "Warning - Using width with padding can"
-                           " sometimes make elements larger than you expect.")
-        eq_(expected, problems[1])
+        eq_(fname, problems[1].filename)
+        eq_(2, problems[1].line)
+        assert_in("Warning - Using width with padding", problems[1].body)
 
     @requires_image('nodejs')
     def test_process_files_two_files(self):

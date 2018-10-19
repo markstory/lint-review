@@ -4,6 +4,7 @@
   var thing = function() {
     foo += 1;
   };
+
   if (foo === null) {
     thing();
   }
