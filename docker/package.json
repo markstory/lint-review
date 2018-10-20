@@ -1,12 +1,9 @@
 {
-  "name": "lint-review",
-  "version": "0.1.14",
+  "name": "lintreview",
+  "version": "0.1.16",
   "private": true,
   "dependencies": {
     "csslint": "^1.0.0",
-    "eslint": "5.x",
-    "eslint-plugin-ember": "^5.2",
-    "eslint-plugin-html": "4.x",
     "jscs": "^3.0",
     "jscs-ember-deprecations": "2.3.0",
     "jshint": "^2.9.0",
@@ -16,10 +13,8 @@
     "typescript": "^3.1",
     "xo": "^0.23"
   },
+  "jscsConfig": {},
   "eslintConfig": {
     "extends": "eslint:recommended"
-  },
-  "xo": {
-    "space": true
   }
 }
