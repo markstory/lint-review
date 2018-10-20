@@ -140,10 +140,4 @@ class TestTslint(TestCase):
         tool.process_files([FILE_WITH_ERRORS])
 
         problems = self.problems.all()
-        eq_(1, len(problems), 'Invalid config should report an error')
-
-        error = problems[0]
-        ok_('Your tslint configuration output the following error:'
-            in error.body)
-        ok_('Invalid "extends" configuration value' in error.body)
-        ok_('could not require "tslint-react"' in error.body)
+        eq_(0, len(problems), 'Invalid config file has no errors')
