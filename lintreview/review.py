@@ -176,11 +176,11 @@ class Review(object):
             for comment in problems
             if isinstance(comment, Comment)
         ]
-        conclusion = 'success'
-        title = 'No lint errors found'
-        if has_problems:
-            conclusion = 'failure'
-            title = 'Lint errors found'
+        conclusion = self.config.failed_review_status()
+        title = 'Lint errors found'
+        if not has_problems:
+            conclusion = 'success'
+            title = 'No lint errors found'
         output = {
             'title': title,
             'summary': "\n".join(body),

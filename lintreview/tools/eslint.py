@@ -45,7 +45,7 @@ class Eslint(Tool):
         container_name = self._container_name(files)
 
         self.install_plugins(container_name)
-        image_name = container_name or 'nodejs'
+        image_name = container_name or 'eslint'
 
         output = docker.run(
             image_name,
@@ -61,7 +61,7 @@ class Eslint(Tool):
         container_name = self._container_name(files)
 
         self.install_plugins(container_name)
-        image_name = container_name or 'nodejs'
+        image_name = container_name or 'eslint'
 
         docker.run(
             image_name,
@@ -83,7 +83,7 @@ class Eslint(Tool):
         if self.installed_plugins is False:
             log.info('Installing eslint plugins into %s', container_name)
             docker.run(
-                'nodejs',
+                'eslint',
                 ['eslint-install'],
                 source_dir=self.base_path,
                 name=container_name)

@@ -3,7 +3,7 @@ from lintreview.review import Problems
 from lintreview.review import Comment
 from lintreview.tools.jscs import Jscs
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -41,21 +41,23 @@ class TestJscs(TestCase):
         eq_(8, len(problems))
 
         fname = self.fixtures[1]
-        expected = Comment(
-            fname, 1, 1, 'Illegal space before opening round brace')
-        eq_(expected, problems[0])
+        eq_(fname, problems[0].filename)
+        eq_(1, problems[0].line)
+        assert_in('Illegal space before opening round brace', problems[0].body)
 
-        expected = Comment(fname, 7, 7, 'Expected indentation of 4 characters')
-        eq_(expected, problems[6])
+        eq_(fname, problems[6].filename)
+        eq_(7, problems[6].line)
+        assert_in('Expected indentation of 2 characters', problems[6].body)
 
     @requires_image('nodejs')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        problems = self.problems.all(self.fixtures[0])
+        eq_(0, len(problems))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        assert len(problems) > 6, 'Has problems.'
 
     @requires_image('nodejs')
     def test_process_files_with_config(self):
@@ -67,4 +69,5 @@ class TestJscs(TestCase):
 
         problems = self.problems.all(self.fixtures[0])
 
-        eq_(1, len(problems))
+        eq_(2, len(problems))
+        assert_in('Missing space before opening round brace', problems[0].body)

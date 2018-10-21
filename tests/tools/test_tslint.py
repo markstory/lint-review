@@ -146,4 +146,4 @@ class TestTslint(TestCase):
         ok_('Your tslint configuration output the following error:'
             in error.body)
         ok_('Invalid "extends" configuration value' in error.body)
-        ok_('could not require "tslint-react"' in error.body)
+        ok_('could not require "tslint-lol"' in error.body)

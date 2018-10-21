@@ -366,7 +366,6 @@ class TestReview(TestCase):
         config = build_review_config(fixer_ini,
                                      {'PULLREQUEST_STATUS': True})
         problems = Problems()
-
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
             Comment(filename_1, 117, 8, 'Something bad'),
@@ -386,6 +385,29 @@ class TestReview(TestCase):
             errors,
             run_id)
         assert self.repo.create_status.called is False, 'no status required'
+
+    def test_publish_checkrun__has_errors_force_success_status(self):
+        self.repo.create_checkrun = Mock()
+        config = build_review_config(fixer_ini, {'PULLREQUEST_STATUS': False})
+        eq_('success', config.failed_review_status(), 'config object changed')
+
+        review = Review(self.repo, self.pr, config)
+
+        problems = Problems()
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = (
+            Comment(filename_1, 117, 8, 'Something bad'),
+            Comment(filename_1, 119, 9, 'Something worse'),
+        )
+        problems.add_many(errors)
+        run_id = 42
+        review.publish_checkrun(problems, run_id)
+
+        assert self.repo.create_status.called is False, 'no status required'
+
+        checkrun = self.repo.update_checkrun.call_args[0][1]
+        eq_('success', checkrun['conclusion'])
+        assert len(checkrun['output']['annotations']) > 0
 
     def test_publish_checkrun__no_problems(self):
         self.repo.create_checkrun = Mock()

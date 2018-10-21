@@ -40,16 +40,16 @@ class TestEslint(TestCase):
         self.assertTrue(tool.match_file('test.js'))
         self.assertTrue(tool.match_file('test.jsm'))
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files_pass(self):
         self.tool.process_files(FILE_WITH_NO_ERRORS)
         eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files_fail(self):
         self.tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
@@ -64,7 +64,7 @@ class TestEslint(TestCase):
         expected = Comment(FILE_WITH_ERRORS, 4, 4, msg)
         eq_(expected, problems[1])
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files__config_file_missing(self):
         tool = Eslint(self.problems,
                       options={'config': 'invalid-file'},
@@ -77,7 +77,7 @@ class TestEslint(TestCase):
         expected = [IssueComment(msg)]
         eq_(expected, problems)
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files__config_file_syntax_error(self):
         tool = Eslint(self.problems,
                       options={
@@ -90,14 +90,14 @@ class TestEslint(TestCase):
         assert_in('Your ESLint configuration is not valid', problems[0].body)
         assert_in('YAMLException: Cannot read', problems[0].body)
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files_uses_default_config(self):
         tool = Eslint(self.problems, options={}, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(2, len(problems), 'With no config file there should be errors.')
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files__invalid_config(self):
         options = {'config': 'tests/fixtures/eslint/invalid.json'}
         tool = Eslint(self.problems, options, root_dir)
@@ -109,7 +109,7 @@ class TestEslint(TestCase):
             in error.body)
         ok_("Cannot find module 'eslint-config-invalid-rules'" in error.body)
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files__missing_plugin(self):
         options = {'config': 'tests/fixtures/eslint/missingplugin.json'}
         tool = Eslint(self.problems, options, root_dir)
@@ -122,7 +122,7 @@ class TestEslint(TestCase):
         ok_('ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
             in error.body)
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_process_files_with_config(self):
         options = {
             'config': 'tests/fixtures/eslint/config.json'
@@ -146,7 +146,7 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, {'fixer': True}, root_dir)
         eq_(True, tool.has_fixer())
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_execute_fixer(self):
         tool = Eslint(self.problems, {
             'config': 'tests/fixtures/eslint/recommended_config.json',
@@ -159,7 +159,7 @@ class TestEslint(TestCase):
         assert original != updated, 'File content should change.'
         eq_(0, len(self.problems.all()), 'No errors should be recorded')
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_execute_fixer__no_problems_remain(self):
         tool = Eslint(self.problems, {
             'config': 'tests/fixtures/eslint/recommended_config.json',
@@ -174,7 +174,7 @@ class TestEslint(TestCase):
         read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
         eq_(0, len(self.problems.all()), 'All errors should be autofixed')
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_execute__install_plugins(self):
         custom_dir = root_dir + '/tests/fixtures/eslint_custom'
         tool = Eslint(self.problems, {
@@ -190,9 +190,9 @@ class TestEslint(TestCase):
         assert_in('Unexpected var', problems[0].body)
 
         ok_(docker.image_exists('nodejs'), 'original image is present')
-        assert_not_in('eslint', docker.images(), 'no eslint image remains')
+        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_execute_fixer__install_plugins(self):
         custom_dir = root_dir + '/tests/fixtures/eslint_custom'
         tool = Eslint(self.problems, {
@@ -210,9 +210,9 @@ class TestEslint(TestCase):
 
         read_and_restore_file(target, original)
         eq_(0, len(self.problems.all()), 'All errors should be autofixed')
-        assert_not_in('eslint', docker.images(), 'no eslint image remains')
+        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
 
-    @requires_image('nodejs')
+    @requires_image('eslint')
     def test_execute__install_plugins_cleanup_image_on_failure(self):
         custom_dir = root_dir + '/tests/fixtures/eslint_custom'
         tool = Eslint(self.problems, {
@@ -227,5 +227,5 @@ class TestEslint(TestCase):
         eq_(1, len(problems))
         assert_in('Cannot find module', problems[0].body)
 
-        ok_(docker.image_exists('nodejs'), 'original image is present')
-        assert_not_in('eslint', docker.images(), 'no eslint image remains')
+        ok_(docker.image_exists('eslint'), 'original image is present')
+        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
