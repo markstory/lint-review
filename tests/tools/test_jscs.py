@@ -54,10 +54,10 @@ class TestJscs(TestCase):
         self.tool.process_files(self.fixtures)
 
         problems = self.problems.all(self.fixtures[0])
-        eq_(6, len(problems))
+        eq_(0, len(problems))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(8, len(problems))
+        assert len(problems) > 6, 'Has problems.'
 
     @requires_image('nodejs')
     def test_process_files_with_config(self):
