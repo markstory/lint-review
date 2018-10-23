@@ -123,6 +123,20 @@ class TestEslint(TestCase):
             in error.body)
 
     @requires_image('eslint')
+    def test_process_files__deprecated_option(self):
+        options = {'config': 'tests/fixtures/eslint/deprecatedoption.json'}
+        tool = Eslint(self.problems, options, root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+        problems = self.problems.all()
+        ok_(len(problems), 'Invalid config should report an error')
+        error = problems[0]
+        ok_('Your eslint configuration output the following error'
+            in error.body)
+        ok_('DeprecationWarning' in error.body)
+        style_error = problems[1]
+        assert_not_in('DeprecationWarning', style_error.body)
+
+    @requires_image('eslint')
     def test_process_files_with_config(self):
         options = {
             'config': 'tests/fixtures/eslint/config.json'
