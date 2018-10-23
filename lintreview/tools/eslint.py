@@ -123,9 +123,26 @@ class Eslint(Tool):
         docker.rm_image(container_name)
 
     def _process_output(self, output, files):
-        if '<?xml' not in output:
+        # Strip deprecations off as they break XML parsing
+        if re.match(r'.*?DeprecationWarning', output):
+            output = self._handle_deprecation_warning(output)
+
+        if not output.strip().startswith('<?xml'):
             return self._config_error(output)
         process_checkstyle(self.problems, output, docker.strip_base)
+
+    def _handle_deprecation_warning(self, output):
+        lines = output.split('\n')
+        warnings = [line for line in lines if 'DeprecationWarning' in line]
+        skip_lines = len(warnings)
+        msg = u'Your eslint configuration output the following error:\n' \
+              '```\n' \
+              '{}\n' \
+              '```\n'
+        warnings = '\n'.join(warnings)
+        self.problems.add(IssueComment(msg.format(warnings)))
+
+        return '\n'.join(lines[skip_lines:])
 
     def _config_error(self, output):
         if 'Cannot read config file' in output:
