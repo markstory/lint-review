@@ -1,0 +1,85 @@
+from __future__ import absolute_import
+from lintreview.review import Comment, Problems
+from lintreview.tools.goodcheck import Goodcheck
+from tests import (
+    root_dir, requires_image
+)
+from unittest import TestCase
+from nose.tools import eq_, assert_in
+
+
+class TestGoodcheck(TestCase):
+
+    fixtures = [
+        'tests/fixtures/goodcheck/no_errors.yml',
+        'tests/fixtures/goodcheck/has_errors.yml',
+    ]
+
+    def setUp(self):
+        self.problems = Problems()
+        config = {
+            'config': 'tests/fixtures/goodcheck/goodcheck.yml'
+        }
+        self.tool = Goodcheck(self.problems, config, root_dir)
+
+    def test_match_file(self):
+        self.assertTrue(self.tool.match_file('test.rb'))
+        self.assertTrue(self.tool.match_file('dir/name/test.yaml'))
+
+    @requires_image('ruby2')
+    def test_process_files__one_file_pass(self):
+        self.tool.process_files([self.fixtures[0]])
+        eq_([], self.problems.all(self.fixtures[0]))
+
+    @requires_image('ruby2')
+    def test_process_files__one_file_fail(self):
+        self.tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+        expected = Comment(
+            self.fixtures[1],
+            2,
+            2,
+            'Write "GitHub", not "Github"')
+        eq_(expected, problems[0])
+
+    @requires_image('ruby2')
+    def test_process_files__two_files(self):
+        self.tool.process_files(self.fixtures)
+
+        linty_filename = self.fixtures[1]
+        eq_(2, len(self.problems.all(linty_filename)))
+
+        freshly_laundered_filename = self.fixtures[0]
+        eq_([], self.problems.all(freshly_laundered_filename))
+
+    @requires_image('ruby2')
+    def test_process_specific_rules(self):
+        options = {
+            'rules': 'test.2, test.3',
+            'config': 'tests/fixtures/goodcheck/goodcheck.yml'
+        }
+        self.tool = Goodcheck(self.problems, options, root_dir)
+        self.tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+        expected = Comment(
+            self.fixtures[1],
+            3,
+            3,
+            'Use hostnames, not RFC 1918 IPs')
+        eq_(expected, problems[0])
+
+    @requires_image('ruby2')
+    def test_add_justifications_to_comments(self):
+        options = {
+            'add_justifications_to_comments': True,
+            'config': 'tests/fixtures/goodcheck/goodcheck.yml'
+        }
+        self.tool = Goodcheck(self.problems, options, root_dir)
+        self.tool.process_files([self.fixtures[1]])
+
+        problem_body = self.problems.all(self.fixtures[1])[1].body
+
+        assert_in(" - Unless you can't find another way", problem_body)
+        assert_in(" - some other reason", problem_body)
