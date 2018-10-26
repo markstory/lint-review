@@ -98,24 +98,23 @@ class GithubPullRequest(object):
         return self.pull.number
 
     @property
-    def is_private(self):
-        data = self.pull.as_dict()
-        return data['head']['repo']['private']
-
-    @property
     def head(self):
         data = self.pull.as_dict()
         return data['head']['sha']
 
     @property
     def clone_url(self):
-        data = self.pull.as_dict()
-        return data['head']['repo']['clone_url']
+        """Get the clone url
 
-    @property
-    def base_repo_url(self):
+        If this pull is from a private fork, we read
+        from the base repository to get around permission
+        issues where github applications don't have access
+        to forked repositories.
+        """
         data = self.pull.as_dict()
-        return data['base']['repo']['clone_url']
+        if self.from_private_fork:
+            return data['base']['repo']['clone_url']
+        return data['head']['repo']['clone_url']
 
     @property
     def target_branch(self):
@@ -124,8 +123,28 @@ class GithubPullRequest(object):
 
     @property
     def head_branch(self):
+        """Get the head branch name
+
+        If the pull request is from a private fork, the
+        head branch will be pull ref so we can read it
+        from the base repo.
+        """
         data = self.pull.as_dict()
+        if self.from_private_fork:
+            return u'refs/pull/{}/head'.format(self.number)
         return data['head']['ref']
+
+    @property
+    def from_private_fork(self):
+        data = self.pull.as_dict()
+        head = data['head']['repo']
+        base = data['base']['repo']
+
+        # If the base and head are the same its not a fork
+        if base['full_name'] == head['full_name']:
+            return False
+        # Private head repo or forked head counts
+        return head['private'] or head['fork']
 
     @property
     def maintainer_can_modify(self):

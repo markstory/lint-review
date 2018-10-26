@@ -128,10 +128,6 @@ class TestGithubPullRequest(TestCase):
         fixture = load_fixture('pull_request.json')
         self.model = PullRequest(json.loads(fixture)['pull_request'])
 
-    def test_is_private(self):
-        pull = GithubPullRequest(self.model)
-        assert False is pull.is_private
-
     def test_display_name(self):
         pull = GithubPullRequest(self.model)
         assert 'markstory/lint-test/pull/1' == pull.display_name
@@ -149,11 +145,6 @@ class TestGithubPullRequest(TestCase):
         pull = GithubPullRequest(self.model)
         expected = 'https://github.com/contributor/lint-test.git'
         assert expected == pull.clone_url
-
-    def test_base_repo_url(self):
-        pull = GithubPullRequest(self.model)
-        expected = 'https://github.com/markstory/lint-test.git'
-        assert expected == pull.base_repo_url
 
     def test_target_branch(self):
         pull = GithubPullRequest(self.model)
@@ -253,6 +244,20 @@ class TestGithubPullRequest(TestCase):
         data['maintainer_can_modify'] = True
         pull = GithubPullRequest(PullRequest(data))
         eq_(True, pull.maintainer_can_modify)
+
+    def test_clone_url__private_fork(self):
+        fixture = load_fixture('pull_request.json')
+        data = json.loads(fixture)['pull_request']
+
+        # Make head a private fork.
+        data['head']['repo']['full_name'] = 'contributor/lint-test'
+        data['head']['repo']['clone_url'] = 'secret-repo'
+        data['head']['repo']['fork'] = True
+        data['head']['repo']['private'] = True
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(True, pull.from_private_fork)
+        eq_(data['base']['repo']['clone_url'], pull.clone_url)
+        eq_('refs/pull/1/head', pull.head_branch)
 
 
 @contextmanager

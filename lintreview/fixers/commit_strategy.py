@@ -23,6 +23,11 @@ class CommitStrategy(object):
                    'as this pull request cannot be '
                    'modified by maintainers.')
             raise WorkflowError(msg)
+        if self.pull_request.from_private_fork:
+            msg = ('Cannot apply automatic fixing, '
+                   'as this pull request comes from a private fork.')
+            raise WorkflowError(msg)
+
         git.create_branch(self.path, 'stylefixes')
         git.checkout(self.path, 'stylefixes')
         for diff in diffs:
