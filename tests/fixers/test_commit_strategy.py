@@ -25,6 +25,7 @@ def test_init_key_requirements():
 def test_execute__git_flow(mock_apply, mock_push, mock_commit):
     mock_pull = Mock(
         head_branch='patch-1',
+        from_private_fork=False,
         maintainer_can_modify=True)
     context = {
         'repo_path': clone_path,
@@ -56,7 +57,8 @@ def test_execute__git_flow(mock_apply, mock_push, mock_commit):
 def test_execute__no_maintainer_modify(mock_commit):
     mock_pull = Mock(
         head_branch='patch-1',
-        maintainer_can_modify=False)
+        maintainer_can_modify=False,
+        from_private_fork=False)
     context = {
         'repo_path': clone_path,
         'author_name': 'lintbot',
@@ -72,4 +74,28 @@ def test_execute__no_maintainer_modify(mock_commit):
 
     assert_in('Cannot apply automatic fixing', str(err.exception))
     assert_in('modified by maintainers', str(err.exception))
+    eq_(0, mock_commit.call_count)
+
+
+@patch('lintreview.git.commit')
+def test_execute__private_fork(mock_commit):
+    mock_pull = Mock(
+        head_branch='patch-1',
+        maintainer_can_modify=True,
+        from_private_fork=True)
+    context = {
+        'repo_path': clone_path,
+        'author_name': 'lintbot',
+        'author_email': 'lint@example.com',
+        'pull_request': mock_pull
+    }
+    strategy = CommitStrategy(context)
+
+    diff = Mock()
+    diff.as_diff.return_value = sentinel.diff
+    with assert_raises(WorkflowError) as err:
+        strategy.execute([diff])
+
+    assert_in('Cannot apply automatic fixing', str(err.exception))
+    assert_in('private fork', str(err.exception))
     eq_(0, mock_commit.call_count)
