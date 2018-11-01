@@ -144,7 +144,7 @@ class GithubPullRequest(object):
         if base['full_name'] == head['full_name']:
             return False
         # Private head repo or forked head counts
-        return head['private'] or head['fork']
+        return head['private'] and head['fork']
 
     @property
     def maintainer_can_modify(self):

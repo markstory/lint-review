@@ -245,11 +245,29 @@ class TestGithubPullRequest(TestCase):
         pull = GithubPullRequest(PullRequest(data))
         eq_(True, pull.maintainer_can_modify)
 
+    def test_clone_url__private_fork__not_a_fork(self):
+        fixture = load_fixture('pull_request.json')
+        data = json.loads(fixture)['pull_request']
+
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(False, pull.from_private_fork)
+        eq_(data['head']['repo']['clone_url'], pull.clone_url)
+        eq_('test', pull.head_branch)
+
+    def test_clone_url__private_fork__forked(self):
+        fixture = load_fixture('pull_request.json')
+        data = json.loads(fixture)['pull_request']
+
+        data['head']['repo']['full_name'] = 'contributor/lint-test'
+        data['head']['repo']['fork'] = True
+
+        pull = GithubPullRequest(PullRequest(data))
+        eq_(False, pull.from_private_fork)
+
     def test_clone_url__private_fork(self):
         fixture = load_fixture('pull_request.json')
         data = json.loads(fixture)['pull_request']
 
-        # Make head a private fork.
         data['head']['repo']['full_name'] = 'contributor/lint-test'
         data['head']['repo']['clone_url'] = 'secret-repo'
         data['head']['repo']['fork'] = True
