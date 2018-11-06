@@ -215,6 +215,7 @@ class Review(object):
         has_problems = len(problems) > 0
 
         self.remove_existing(problems)
+
         new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()

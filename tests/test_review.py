@@ -335,6 +335,32 @@ class TestReview(TestCase):
 
         assert review.publish_summary.called, 'Should have been called.'
 
+    def test_publish_review_no_count_change(self):
+        fixture = load_fixture('comments_current.json')
+        self.pr.review_comments.return_value = [
+            GhIssueComment(f) for f in json.loads(fixture)]
+
+        problems = Problems()
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+
+        errors = (
+            Comment(filename_1, 117, 117, '1. Something bad'),
+            Comment(filename_1, 119, 119, '2. Something bad'),
+        )
+        problems.add_many(errors)
+        problems.set_changes([1])
+        sha = 'abc123'
+
+        config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
+        review = Review(self.repo, self.pr, config)
+        review.publish_summary = Mock()
+        review.publish_status = Mock()
+        review._comments.add(errors[0])
+        review._comments.add(errors[1])
+        review.publish_review(problems, sha)
+
+        review.publish_status.assert_called_with(True)
+
     def test_publish_summary(self):
         problems = Problems()
 
