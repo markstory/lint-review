@@ -211,9 +211,10 @@ class Review(object):
         # If we are submitting a comment review
         # we drop comments that have already been posted.
         self.load_comments()
-        self.remove_existing(problems)
 
         has_problems = len(problems) > 0
+
+        self.remove_existing(problems)
         new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()
