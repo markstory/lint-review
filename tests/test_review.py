@@ -339,13 +339,14 @@ class TestReview(TestCase):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
             GhIssueComment(f) for f in json.loads(fixture)]
-
         problems = Problems()
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
 
+        # Match the line/positions in comments_current.json
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
-            Comment(filename_1, 117, 117, '1. Something bad'),
-            Comment(filename_1, 119, 119, '2. Something bad'),
+            Comment(filename_1, 40, 40, '2. Something bad'),
+            Comment(filename_1, 87, 87, '1. Something bad'),
+            Comment(filename_1, 89, 89, '2. Something bad'),
         )
         problems.add_many(errors)
         problems.set_changes([1])
@@ -355,10 +356,9 @@ class TestReview(TestCase):
         review = Review(self.repo, self.pr, config)
         review.publish_summary = Mock()
         review.publish_status = Mock()
-        review._comments.add(errors[0])
-        review._comments.add(errors[1])
-        review.publish_review(problems, sha)
 
+        review.publish_review(problems, sha)
+        # Ensure publish_status(True) means the status=failed
         review.publish_status.assert_called_with(True)
 
     def test_publish_summary(self):

@@ -208,14 +208,15 @@ class Review(object):
         if not problems.has_changes():
             return self.publish_empty_comment()
 
+        has_problems = len(problems) > 0
+
         # If we are submitting a comment review
         # we drop comments that have already been posted.
         self.load_comments()
 
-        has_problems = len(problems) > 0
-
+        # Remove comments we made in the past, so that we only
+        # post previously un-reported issues
         self.remove_existing(problems)
-
         new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()
