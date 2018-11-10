@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import logging
 import os
-from tempfile import NamedTemporaryFile
 import jprops
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -50,12 +49,19 @@ class Checkstyle(Tool):
                    "the `config` option to a valid checkstyle XML file.")
             return self.problems.add(IssueComment(msg))
 
-        with NamedTemporaryFile(dir=self.base_path,
-                                suffix='.properties') as f:
+        props_path = os.path.join(self.base_path, '_lintreview.properties')
+        # Close the file before trying to read.
+        # There have been problems with reading properties while
+        # the file handle is still open.
+        with open(props_path, 'w+') as f:
             self.setup_properties(f)
             properties_filename = os.path.basename(f.name)
-            command = self.create_command(properties_filename, files)
-            output = docker.run('checkstyle', command, self.base_path)
+
+        command = self.create_command(properties_filename, files)
+        output = docker.run('checkstyle', command, self.base_path)
+
+        # Cleanup the generated properties file.
+        os.remove(props_path)
 
         # Only one line is generally a config error. Replay the error
         # to the user.

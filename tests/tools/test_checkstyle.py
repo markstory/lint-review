@@ -84,7 +84,7 @@ class TestCheckstyle(TestCase):
     @requires_image('checkstyle')
     def test_process_files__missing_config(self):
         config = {'config': 'badness.xml'}
-        tool = Checkstyle(self.problems, config)
+        tool = Checkstyle(self.problems, config, root_dir)
         tool.process_files(self.fixtures)
 
         problems = self.problems.all()
