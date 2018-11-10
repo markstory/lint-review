@@ -1,0 +1,7 @@
+run:
+  output:
+    format: checkstyle
+
+linters:
+  disable:
+    - megacheck
