@@ -185,17 +185,25 @@ def run(lint_tools, files, commits):
         tool.execute_commits(commits)
 
 
-def process_quickfix(problems, output, filename_converter):
+def process_quickfix(problems, output, filename_converter, columns=3):
     """
     Process vim quickfix style results.
 
     Each element in `output` should be formatted like::
 
         <filename>:<line>:<col>:[ ]<message>
+
+    The `columns` parameter can be used to parse quickfix
+    output that contains start/end column numbers allowing formats
+    like:
+
+        <filename>:<line>:<start>:<end>[ ]<message>
+
+    to be parsed.
     """
     for line in output:
-        parts = line.split(':', 3)
-        if len(parts) < 3:
+        parts = line.split(':', columns)
+        if len(parts) < columns:
             continue
         message = parts[-1].strip()
         filename = filename_converter(parts[0].strip())
