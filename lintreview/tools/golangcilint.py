@@ -40,9 +40,9 @@ class Golangcilint(Tool):
             return
         if "Can't read config" in lines[0]:
             msg = (u'Golangci-lint failed and output the following:\n'
-                  '```\n'
-                  '{}\n'
-                  '```\n')
+                   '```\n'
+                   '{}\n'
+                   '```\n')
             self.problems.add(IssueComment(msg.format(lines[0])))
             return
         warnings = []
@@ -55,9 +55,9 @@ class Golangcilint(Tool):
 
         if len(warnings):
             msg = (u'Golangci-lint emit the following warnings:\n'
-                  '```\n'
-                  '{}\n'
-                  '```\n')
+                   '```\n'
+                   '{}\n'
+                   '```\n')
             '\n'.join(warnings)
             self.problems.add(IssueComment(msg.format(warnings)))
         process_quickfix(self.problems, errors, docker.strip_base)

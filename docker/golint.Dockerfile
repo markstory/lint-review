@@ -10,7 +10,7 @@ RUN mkdir /tool \
   && go get -u golang.org/x/lint/golint \
   && ln -s /tool/golang/bin/golint /usr/bin/golint \
   # Install golangci-lint
- && curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.12 \
+  && curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.12 \
   && ln -s /tool/golang/bin/golangci-lint /usr/bin/golangci-lint \
   # Cleanup
   && apk del build-base git curl \

@@ -391,7 +391,7 @@ class Problems(object):
             return [error
                     for error in self
                     if hasattr(error, 'filename') and
-                        error.filename == filename]
+                    error.filename == filename]
         return list(self._items.values())
 
     def add(self, filename, line=None, body=None, position=None):
