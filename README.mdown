@@ -452,6 +452,14 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 
 * `min_confidence` Set the confidence level of a problem before it is reported.
 
+#### Golangci-lint
+
+Uses [golangci-lint](https://github.com/golangci/golangci-lint) to lint go code.
+
+*Options*
+
+* `config` Specify a configuration file to use.
+
 ### Lua
 
 #### Luacheck
