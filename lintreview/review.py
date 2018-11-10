@@ -390,7 +390,8 @@ class Problems(object):
         if filename:
             return [error
                     for error in self
-                    if error.filename == filename]
+                    if hasattr(error, 'filename') and
+                    error.filename == filename]
         return list(self._items.values())
 
     def add(self, filename, line=None, body=None, position=None):

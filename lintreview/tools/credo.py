@@ -51,23 +51,11 @@ class Credo(Tool):
             log.debug('No credo errors found.')
             return False
 
-        output = map(self.transform_flycheck_range, output.strip().splitlines())
-        process_quickfix(self.problems, output, docker.strip_base)
-
-    def transform_flycheck_range(self, message):
-        """
-        Flycheck format can have a range (filename:start:end:message).
-        We don't care about the end anyway, so we remove it if present.
-        """
-        parts = message.split(':')
-        if len(parts) <= 3:
-            return message
-        try:
-            int(parts[2])
-            parts.pop(2)
-            return ':'.join(parts)
-        except ValueError:
-            return message
+        process_quickfix(
+            self.problems,
+            output.strip().splitlines(),
+            docker.strip_base,
+            columns=4)
 
     def parse_ini_bool(self, string):
         true = ['1', 'yes', 'true', 'on']
