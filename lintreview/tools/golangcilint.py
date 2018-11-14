@@ -58,7 +58,7 @@ class Golangcilint(Tool):
                    '```\n'
                    '{}\n'
                    '```\n')
-            '\n'.join(warnings)
+            warnings = '\n'.join(warnings)
             self.problems.add(IssueComment(msg.format(warnings)))
         process_quickfix(self.problems, errors, docker.strip_base)
 
