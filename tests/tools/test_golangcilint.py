@@ -1,22 +1,26 @@
 from __future__ import absolute_import
+
 from lintreview.review import Problems, Comment
 from lintreview.tools.golangcilint import Golangcilint
 from unittest import TestCase
 from nose.tools import eq_, assert_in
-from tests import requires_image, root_dir
+from tests import requires_image, test_dir
+
+import os.path
 
 
 class TestGolangcilint(TestCase):
 
     fixtures = [
-        'tests/fixtures/golangcilint/no_errors.go',
-        'tests/fixtures/golangcilint/has_errors.go',
-        'tests/fixtures/golangcilint/http.go',
+        'no_errors.go',
+        'has_errors.go',
+        'http.go',
     ]
 
     def setUp(self):
+        self.fixture_path = os.path.join(test_dir, 'fixtures', 'golangcilint')
         self.problems = Problems()
-        self.tool = Golangcilint(self.problems, {}, root_dir)
+        self.tool = Golangcilint(self.problems, {}, self.fixture_path)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.go'))
@@ -75,18 +79,18 @@ class TestGolangcilint(TestCase):
     @requires_image('golint')
     def test_process_files_with_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/golangci.yml'
+            'config': 'golangci.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(3, len(self.problems))
 
     @requires_image('golint')
     def test_process_files_with_corrupt_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/corrupt.yml'
+            'config': 'corrupt.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(1, len(self.problems))
         error = self.problems.all()[0]
@@ -99,9 +103,9 @@ class TestGolangcilint(TestCase):
     @requires_image('golint')
     def test_process_files_with_missing_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/not-found.yml'
+            'config': 'not/found.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(1, len(self.problems))
         error = self.problems.all()[0]

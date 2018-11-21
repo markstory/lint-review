@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import hashlib
 import logging
 import os
 import lintreview.docker as docker
@@ -6,6 +7,11 @@ from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
+
+class ConfigError(Exception):
+    pass
+
+VALID_INSTALLERS = ('mod', 'dep', 'govendor')
 
 
 class Golangcilint(Tool):
@@ -30,9 +36,55 @@ class Golangcilint(Tool):
         """
         Run code checks with golangci-lint.
         """
+        try:
+            container_name = self._container_name(files)
+            self.install_dependencies(container_name)
+        except ConfigError as e:
+            self.problems.add(IssueComment(str(e)))
+            return
+
         command = self.create_command(files)
-        output = docker.run('golint', command, self.base_path)
+        output = docker.run(container_name, command, self.base_path)
+        self._cleanup(container_name)
         self._process_output(output)
+
+    def _container_name(self, files):
+        """Get the persistent container name
+        This is used to store the installed application
+        dependencies
+        """
+        m = hashlib.md5()
+        m.update('-'.join(files).encode('utf8'))
+        return 'golint-' + m.hexdigest()
+
+    def _cleanup(self, container_name):
+        """Remove the named container and temporary image
+        """
+        # Don't remove the base golint image.
+        if container_name == 'golint':
+            return
+        log.info('Removing temporary image %s', container_name)
+        docker.rm_image(container_name)
+
+    def install_dependencies(self, container_name):
+        """Run container command to install dependencies
+        """
+        log.info('Installing golang dependencies into %s',
+                 container_name)
+        installer = self.options.get('installer', 'mod')
+        if installer not in VALID_INSTALLERS:
+            msg = (u"The installer '{}' is not supported. "
+                   u"Use one of {}")
+            raise ConfigError(
+                msg.format(installer, ','.join(VALID_INSTALLERS)))
+        docker.run(
+            'golint',
+            ['golang-install', installer],
+            source_dir=self.base_path,
+            name=container_name)
+
+        docker.commit(container_name)
+        docker.rm_container(container_name)
 
     def _process_output(self, output):
         lines = output.strip().splitlines()
