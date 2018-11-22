@@ -8,8 +8,10 @@ from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
 
+
 class ConfigError(Exception):
     pass
+
 
 VALID_INSTALLERS = ('mod', 'dep', 'govendor')
 
