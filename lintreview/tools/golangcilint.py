@@ -122,7 +122,7 @@ class Golangcilint(Tool):
         ]
         if 'config' in self.options:
             command += ['--config', self.options.get('config')]
-        command += files
+        command.append('./...')
         return command
 
     def has_fixer(self):

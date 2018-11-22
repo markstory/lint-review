@@ -14,7 +14,6 @@ class TestGolangcilint(TestCase):
     fixtures = [
         'no_errors.go',
         'has_errors.go',
-        'http.go',
     ]
 
     def setUp(self):
@@ -66,15 +65,6 @@ class TestGolangcilint(TestCase):
         eq_(3, len(problems))
         first = problems[0]
         assert_in('method is missing receiver (typecheck)', first.body)
-
-    @requires_image('golint')
-    def test_process_files_in_different_packages(self):
-        self.tool.process_files([self.fixtures[1], self.fixtures[2]])
-
-        problems = self.problems.all()
-        eq_(6, len(problems))
-        eq_(3, len(self.problems.all(self.fixtures[1])))
-        eq_(1, len(self.problems.all(self.fixtures[2])))
 
     @requires_image('golint')
     def test_process_files_with_config(self):

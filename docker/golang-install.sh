@@ -15,6 +15,6 @@ elif [[ $installer == "mod" ]]
 then
 	go get ./...
 else
-	echo "Could not install dependencies."
+	echo "Could not install dependencies, unknown installer choice $installer."
 	exit 1
 fi
