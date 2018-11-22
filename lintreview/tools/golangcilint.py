@@ -73,10 +73,10 @@ class Golangcilint(Tool):
                  container_name)
         installer = self.options.get('installer', 'mod')
         if installer not in VALID_INSTALLERS:
-            msg = (u"The installer '{}' is not supported. "
-                   u"Use one of {}")
+            msg = (u"The installer `{}` is not supported. "
+                   u"Use one of {}.")
             raise ConfigError(
-                msg.format(installer, ','.join(VALID_INSTALLERS)))
+                msg.format(installer, ', '.join(VALID_INSTALLERS)))
         docker.run(
             'golint',
             ['golang-install', installer],

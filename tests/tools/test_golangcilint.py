@@ -105,6 +105,20 @@ class TestGolangcilint(TestCase):
         )
         assert_in("Can't read config", error.body)
 
+    @requires_image('golint')
+    def test_process_files_invalid_installer(self):
+        config = {
+            'installer': 'nope'
+        }
+        tool = Golangcilint(self.problems, config, self.fixture_path)
+        tool.process_files([self.fixtures[1]])
+        eq_(1, len(self.problems))
+        error = self.problems.all()[0]
+        assert_in(
+            'The installer `nope` is not supported. Use one of mod, dep, govendor.',
+            error.body
+        )
+
     def test_has_fixer__not_enabled(self):
         tool = Golangcilint(self.problems, {})
         eq_(False, tool.has_fixer())
