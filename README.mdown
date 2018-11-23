@@ -458,6 +458,8 @@ Uses [golangci-lint](https://github.com/golangci/golangci-lint) to lint go code.
 
 *Options*
 
+* `installer` Choose the go installer to use. Supports `mod`, `dep` and
+  `govendor`.
 * `config` Specify a configuration file to use.
 
 ### Lua
