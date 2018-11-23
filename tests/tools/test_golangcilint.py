@@ -1,22 +1,25 @@
 from __future__ import absolute_import
+
 from lintreview.review import Problems, Comment
 from lintreview.tools.golangcilint import Golangcilint
 from unittest import TestCase
 from nose.tools import eq_, assert_in
-from tests import requires_image, root_dir
+from tests import requires_image, test_dir
+
+import os.path
 
 
 class TestGolangcilint(TestCase):
 
     fixtures = [
-        'tests/fixtures/golangcilint/no_errors.go',
-        'tests/fixtures/golangcilint/has_errors.go',
-        'tests/fixtures/golangcilint/http.go',
+        'no_errors.go',
+        'has_errors.go',
     ]
 
     def setUp(self):
+        self.fixture_path = os.path.join(test_dir, 'fixtures', 'golangcilint')
         self.problems = Problems()
-        self.tool = Golangcilint(self.problems, {}, root_dir)
+        self.tool = Golangcilint(self.problems, {}, self.fixture_path)
 
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.go'))
@@ -64,29 +67,20 @@ class TestGolangcilint(TestCase):
         assert_in('method is missing receiver (typecheck)', first.body)
 
     @requires_image('golint')
-    def test_process_files_in_different_packages(self):
-        self.tool.process_files([self.fixtures[1], self.fixtures[2]])
-
-        problems = self.problems.all()
-        eq_(6, len(problems))
-        eq_(3, len(self.problems.all(self.fixtures[1])))
-        eq_(1, len(self.problems.all(self.fixtures[2])))
-
-    @requires_image('golint')
     def test_process_files_with_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/golangci.yml'
+            'config': 'golangci.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(3, len(self.problems))
 
     @requires_image('golint')
     def test_process_files_with_corrupt_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/corrupt.yml'
+            'config': 'corrupt.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(1, len(self.problems))
         error = self.problems.all()[0]
@@ -99,9 +93,9 @@ class TestGolangcilint(TestCase):
     @requires_image('golint')
     def test_process_files_with_missing_config(self):
         config = {
-            'config': 'tests/fixtures/golangcilint/not-found.yml'
+            'config': 'not/found.yml'
         }
-        tool = Golangcilint(self.problems, config, root_dir)
+        tool = Golangcilint(self.problems, config, self.fixture_path)
         tool.process_files([self.fixtures[1]])
         eq_(1, len(self.problems))
         error = self.problems.all()[0]
@@ -110,6 +104,20 @@ class TestGolangcilint(TestCase):
             error.body
         )
         assert_in("Can't read config", error.body)
+
+    @requires_image('golint')
+    def test_process_files_invalid_installer(self):
+        config = {
+            'installer': 'nope'
+        }
+        tool = Golangcilint(self.problems, config, self.fixture_path)
+        tool.process_files([self.fixtures[1]])
+        eq_(1, len(self.problems))
+        error = self.problems.all()[0]
+        assert_in(
+            'The installer `nope` is not supported. Use one of mod, dep, govendor.',
+            error.body
+        )
 
     def test_has_fixer__not_enabled(self):
         tool = Golangcilint(self.problems, {})

@@ -12,3 +12,4 @@ tags
 /bundle
 /.bundle
 output.log
+go.sum
