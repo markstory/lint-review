@@ -451,7 +451,7 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 *Options*
 
 * `min_confidence` Set the confidence level of a problem before it is reported.
-
+* `ignore` A list of regular expressions, that allow you to ignore warnings.
 
 
 ### Lua

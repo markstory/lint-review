@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.golint import Golint
 from unittest import TestCase
-from nose.tools import eq_
+from nose.tools import eq_, assert_in
 from mock import patch
 from tests import requires_image, root_dir, read_file, read_and_restore_file
 
@@ -100,6 +100,33 @@ class TestGolint(TestCase):
         tool = Golint(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
         eq_(2, len(self.problems))
+
+    @requires_image('golint')
+    def test_process_files_with_ignores(self):
+        config = {
+            'min_confidence': 0.3,
+            'ignore': [
+                'exported function \w+ should have comment',
+                'has_errors\.go'
+            ]
+        }
+        tool = Golint(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+        eq_(0, len(self.problems))
+
+    @requires_image('golint')
+    def test_process_files_with_invalid_ignore_pattern(self):
+        config = {
+            'min_confidence': 0.3,
+            'ignore': [
+                '(.*',
+            ]
+        }
+        tool = Golint(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+        problems = self.problems.all()
+        assert_in('Invalid golint ignore rule `(.*`', problems[0].body)
+        assert_in('exported function', problems[1].body)
 
     def test_has_fixer__not_enabled(self):
         tool = Golint(self.problems, {})

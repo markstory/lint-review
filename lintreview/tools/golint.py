@@ -1,7 +1,10 @@
 from __future__ import absolute_import
 import logging
 import os
+import re
+
 import lintreview.docker as docker
+from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
@@ -42,6 +45,7 @@ class Golint(Tool):
                      output[0])
             self.run_individual_files(files, docker.strip_base)
         else:
+            output = self.apply_ignore_rules(output)
             process_quickfix(self.problems, output, docker.strip_base)
 
     def create_command(self, files):
@@ -61,6 +65,7 @@ class Golint(Tool):
             command = self.create_command([filename])
             output = docker.run('golint', command, self.base_path)
             output = output.split("\n")
+            output = self.apply_ignore_rules(output)
             process_quickfix(self.problems, output, filename_converter)
 
     def has_fixer(self):
@@ -81,3 +86,25 @@ class Golint(Tool):
         command = ['gofmt', '-w']
         command += docker.replace_basedir(self.base_path, files)
         return command
+
+    def apply_ignore_rules(self, output):
+        if 'ignore' not in self.options:
+            return output
+        log.info('Filtering golint output with %s rules', len(self.options['ignore']))
+        rules = []
+        for pattern in self.options['ignore']:
+            try:
+                rules.append(re.compile(pattern))
+            except:
+                msg = (u'Invalid golint ignore rule `{}` found. '
+                       'Ignore rules were skipped.').format(pattern)
+                self.problems.add(IssueComment(msg))
+                return output
+
+        def matches_rule(line, rules):
+            for rule in rules:
+                if rule.search(line):
+                    return True
+            return False
+
+        return [line for line in output if not matches_rule(line, rules)]
