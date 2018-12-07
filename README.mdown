@@ -451,16 +451,8 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 *Options*
 
 * `min_confidence` Set the confidence level of a problem before it is reported.
+* `ignore` A list of regular expressions, that allow you to ignore warnings.
 
-#### Golangci-lint
-
-Uses [golangci-lint](https://github.com/golangci/golangci-lint) to lint go code.
-
-*Options*
-
-* `installer` Choose the go installer to use. Supports `mod`, `dep` and
-  `govendor`.
-* `config` Specify a configuration file to use.
 
 ### Lua
 
