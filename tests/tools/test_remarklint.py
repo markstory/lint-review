@@ -37,6 +37,22 @@ class TestRemarklint(TestCase):
         eq_(2, len(problems))
         assert_in('Incorrect list-item', problems[0].body)
 
+    @requires_image('nodejs')
+    def test_process_files__missing_plugin(self):
+        tool = Remarklint(self.problems, {'fixer': True}, root_dir)
+
+        config = 'tests/fixtures/remarklint/.remarkrc'
+        original = read_file(config)
+        with open(config, 'w') as f:
+            f.write('{"plugins": ["unknown-preset"]}')
+        tool.process_files([self.fixtures[1]])
+
+        with open(config, 'w') as f:
+            f.write(original)
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Should have an error')
+        assert_in('unknown-preset', problems[0].body)
+
     def test_process_files__config(self):
         pass
 
