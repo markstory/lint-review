@@ -4,7 +4,6 @@ import os
 import re
 
 import lintreview.docker as docker
-from lintreview.review import IssueComment
 from lintreview.tools import Tool
 
 log = logging.getLogger(__name__)
