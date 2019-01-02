@@ -1,0 +1,77 @@
+from __future__ import absolute_import
+from lintreview.review import Problems
+from lintreview.tools.remarklint import Remarklint
+from unittest import TestCase
+from nose.tools import eq_, assert_in
+from tests import root_dir, read_file, read_and_restore_file, requires_image
+
+
+class TestRemarklint(TestCase):
+
+    fixtures = [
+        'tests/fixtures/remarklint/no_errors.md',
+        'tests/fixtures/remarklint/has_errors.md',
+    ]
+
+    def setUp(self):
+        self.problems = Problems()
+        self.tool = Remarklint(self.problems, {}, root_dir)
+
+    def test_match_file(self):
+        self.assertFalse(self.tool.match_file('test.txt'))
+        self.assertFalse(self.tool.match_file('test.rst'))
+        self.assertFalse(self.tool.match_file('dir/name/test.rst'))
+        self.assertTrue(self.tool.match_file('test.md'))
+        self.assertTrue(self.tool.match_file('dir/name/test.md'))
+
+    @requires_image('nodejs')
+    def test_process_files__one_file_pass(self):
+        self.tool.process_files([self.fixtures[0]])
+        eq_([], self.problems.all(self.fixtures[0]))
+
+    @requires_image('nodejs')
+    def test_process_files__one_file_file(self):
+        self.tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all()
+        eq_(2, len(problems))
+        assert_in('Incorrect list-item', problems[0].body)
+
+    @requires_image('nodejs')
+    def test_process_files__missing_plugin(self):
+        tool = Remarklint(self.problems, {'fixer': True}, root_dir)
+
+        config = 'tests/fixtures/remarklint/.remarkrc'
+        original = read_file(config)
+        with open(config, 'w') as f:
+            f.write('{"plugins": ["unknown-preset"]}')
+        tool.process_files([self.fixtures[1]])
+
+        with open(config, 'w') as f:
+            f.write(original)
+        problems = self.problems.all()
+        eq_(1, len(problems), 'Should have an error')
+        assert_in('unknown-preset', problems[0].body)
+
+    def test_process_files__config(self):
+        pass
+
+    def test_has_fixer__not_enabled(self):
+        tool = Remarklint(self.problems)
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Remarklint(self.problems, {'fixer': True})
+        eq_(True, tool.has_fixer())
+
+    @requires_image('nodejs')
+    def test_execute_fixer(self):
+        tool = Remarklint(self.problems, {'fixer': True}, root_dir)
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+        tool.process_files(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        eq_(1, len(self.problems.all()), 'Fewer errors should be recorded')

@@ -24,9 +24,8 @@ class Black(Tool):
 
     def process_files(self, files):
         """
-        Run code checks with pep8.
-        Only a single process is made for all files
-        to save resources.
+        Run code checks with black.
+        Only a single process is made for all files to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command()
