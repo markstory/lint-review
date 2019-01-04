@@ -467,3 +467,17 @@ credo list` to get results by files.
 * `all` Show all issues
 * `all-priorities` Show all issues including low priority ones
 * `strict` Show all issues and all priorities
+
+
+### Markdown
+
+#### Remarklint
+
+Uses [remark-lint](https://github.com/remarkjs/remark-lint) to lint markdown
+files. Will use the `.remarkrc` files in your project. 
+The `remark-preset-lint-recommended` package is installed, other presets require
+customizing the nodejs docker image.
+
+*Options*
+
+* No options at this time.
