@@ -6,6 +6,7 @@ from nose.tools import assert_in, assert_raises, with_setup, eq_
 from ..test_git import setup_repo, teardown_repo, clone_path
 
 
+
 def test_init_key_requirements():
     keys = ('repo_path', 'author_email', 'author_name',
             'pull_request')
@@ -16,6 +17,31 @@ def test_init_key_requirements():
         del context[key]
         with assert_raises(KeyError):
             CommitStrategy(context)
+
+@with_setup(setup_repo, teardown_repo)
+@patch('lintreview.git.commit')
+@patch('lintreview.git.push')
+@patch('lintreview.git.apply_cached')
+def test_execute__push_error(mock_apply, mock_push, mock_commit):
+    mock_push.side_effect = IOError(
+            '! [remote rejected] stylefixes -> add_date_to_obs (permission denied)'
+            '\nerror: failed to push some refs to')
+    mock_pull = Mock(
+        head_branch='patch-1',
+        from_private_fork=False,
+        maintainer_can_modify=True)
+    context = {
+        'repo_path': clone_path,
+        'author_name': 'lintbot',
+        'author_email': 'lint@example.com',
+        'pull_request': mock_pull
+    }
+    strategy = CommitStrategy(context)
+
+    diff = Mock()
+    diff.as_diff.return_value = sentinel.diff
+    with assert_raises(WorkflowError):
+        strategy.execute([diff])
 
 
 @with_setup(setup_repo, teardown_repo)

@@ -172,9 +172,12 @@ def branch_exists(path, name):
     return len(matching) == 1
 
 
-@log_io_error
 def push(path, remote, branch):
     """Push a branch to the named remote
+
+    This method does not use the `log_io_error` decorator
+    because the caller should handle what happens when a
+    push fails.
     """
     command = ['git', 'push', remote, branch]
     return_code, output = _process(command, chdir=path)
