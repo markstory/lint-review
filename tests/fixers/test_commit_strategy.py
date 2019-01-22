@@ -6,7 +6,6 @@ from nose.tools import assert_in, assert_raises, with_setup, eq_
 from ..test_git import setup_repo, teardown_repo, clone_path
 
 
-
 def test_init_key_requirements():
     keys = ('repo_path', 'author_email', 'author_name',
             'pull_request')
@@ -17,6 +16,7 @@ def test_init_key_requirements():
         del context[key]
         with assert_raises(KeyError):
             CommitStrategy(context)
+
 
 @with_setup(setup_repo, teardown_repo)
 @patch('lintreview.git.commit')

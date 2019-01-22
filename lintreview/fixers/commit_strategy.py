@@ -48,4 +48,3 @@ class CommitStrategy(object):
             if '[remote rejected]' in message:
                 raise WorkflowError('Could not push fix commit because it was not a fast-forward')
             raise err
-
