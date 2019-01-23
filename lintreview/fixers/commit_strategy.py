@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from lintreview.fixers.error import WorkflowError
 import lintreview.git as git
 import logging
+import six
 
 log = logging.getLogger(__name__)
 
@@ -37,4 +38,13 @@ class CommitStrategy(object):
         remote_branch = self.pull_request.head_branch
 
         git.commit(self.path, author, 'Fixing style errors.')
-        git.push(self.path, 'origin', u'stylefixes:{}'.format(remote_branch))
+        try:
+            git.push(self.path, 'origin', u'stylefixes:{}'.format(remote_branch))
+        except IOError as err:
+            message = six.text_type(err)
+            log.debug(message)
+            if '(permission denied)' in message:
+                raise WorkflowError('Could not push fix commit because permission was denied')
+            if '[remote rejected]' in message:
+                raise WorkflowError('Could not push fix commit because it was not a fast-forward')
+            raise err
