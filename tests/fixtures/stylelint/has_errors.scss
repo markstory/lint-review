@@ -1,11 +1,14 @@
 .container {
-  padding: 100px;
-  width: 100px;
-  -webkit-border-radius: 3px;
+  @include thing();
 
-  @include foo(green);
+     padding: 100px;
+  width: 100px;
+  color: #y3;
+  -webkit-border-radius: 3px;
 }
 
-@mixin foo($color) {
-  color: $color;
+@media (mIn-WiDtH: 500px) {
+  .container {
+    color: red;
+  }
 }
