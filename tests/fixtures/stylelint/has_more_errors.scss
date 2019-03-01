@@ -1,0 +1,9 @@
+.thinger {
+  padding: 100px;
+  width: 100px;
+  @include bar(green);
+}
+
+@mixin bar($color) {
+  color: $color;
+}

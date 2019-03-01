@@ -20,9 +20,10 @@ RUN ln -s /tool/node_modules/.bin/csslint /usr/bin/csslint \
   && ln -s /tool/node_modules/.bin/jshint /usr/bin/jshint \
   && ln -s /tool/node_modules/.bin/sass-lint /usr/bin/sass-lint \
   && ln -s /tool/node_modules/.bin/standard /usr/bin/standard \
+  && ln -s /tool/node_modules/.bin/stylelint /usr/bin/stylelint \
   && ln -s /tool/node_modules/.bin/tslint /usr/bin/tslint \
   # Copy package.json so that it is an ancestor of /src allowing
-  # jscs and xo to use it for config
+  # stylelint can use it for config
   && cp /tool/package.json /
 
 WORKDIR /src

@@ -10,11 +10,14 @@
     "remark-preset-lint-recommended": "^3.0.2",
     "sass-lint": "^1.12.0",
     "standard": "^12.0.0",
+    "stylelint": "^9.10.0",
+    "stylelint-config-standard": "^18.2.0",
+    "stylelint-config-recommended": "^2.1.0",
+    "stylelint-scss": "^3.5.4",
     "tslint": "^5.1",
     "typescript": "^3.1"
   },
-  "jscsConfig": {},
-  "eslintConfig": {
-    "extends": "eslint:recommended"
+  "stylelint": {
+    "extends": "stylelint-config-recommended"
   }
 }
