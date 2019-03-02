@@ -1,0 +1,14 @@
+.container {
+  @include thing();
+
+     padding: 100px;
+  width: 100px;
+  color: #y3;
+  -webkit-border-radius: 3px;
+}
+
+@media (mIn-WiDtH: 500px) {
+  .container {
+    color: red;
+  }
+}
