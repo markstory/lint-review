@@ -337,16 +337,24 @@ code review comments for specific rules, you should ignore them.
 #### scss-lint
 
 Uses the [sass-lint](https://www.npmjs.com/package/sass-lint) npm module to check scss and sass files.
-you can use this linter you'll need to install nodejs and the `sass-lint` npm package:
-
-    cd path/to/lintreview
-    npm install
 
 *Options*
 
 * `ignore` A comma separated list of files to ignore.
 * `config` Project relative path to the sass-lint config file you want
   applied.
+
+#### Stylelint
+
+Uses [stylelint](https://github.com/stylelint/stylelint) to check, scss, sass,
+less or css files.
+
+*Options*
+
+* `config` Provide a path to your stylelint configuration file. If none is
+  provided then stylelint's default config file lookup behavior will be used,
+  and falling back to the `stylelint-config-recommended` will be used.
+
 
 ### Ruby:
 
