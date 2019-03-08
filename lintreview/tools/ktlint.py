@@ -30,9 +30,9 @@ class Ktlint(Tool):
         Run code checks with ktlint.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        
+        command = self._create_command()
         command += files
-        
+
         output = docker.run('ktlint', command, self.base_path)
         process_checkstyle(self.problems, output, docker.strip_base)
 

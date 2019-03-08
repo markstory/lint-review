@@ -16,7 +16,7 @@ class TestKtlint(TestCase):
     def setUp(self):
         self.problems = Problems()
         options = {}
-        self.tool = Ktlint(self.problems, options)
+        self.tool = Ktlint(self.problems, options, root_dir)
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.rb'))
