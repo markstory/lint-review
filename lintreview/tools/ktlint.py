@@ -44,7 +44,7 @@ class Ktlint(Tool):
 
     def has_fixer(self):
         """
-        ktlin has a fixer that can be enabled through configuration.
+        ktlint has a fixer that can be enabled through configuration.
         """
         return bool(self.options.get('fixer', False))
 
