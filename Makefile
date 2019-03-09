@@ -13,6 +13,7 @@ images:
 	cd docker && docker build -t gpg -f gpg.Dockerfile .
 	cd docker && docker build -t credo -f credo.Dockerfile .
 	cd docker && docker build -t eslint -f eslint.Dockerfile .
+	cd docker && docker build -t ktlint -f ktlint.Dockerfile .
 
 
 # Utility target for checking required parameters
