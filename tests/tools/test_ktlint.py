@@ -41,7 +41,7 @@ class TestKtlint(TestCase):
         problems = self.problems.all(FILE_WITH_ERRORS)
         eq_(2, len(problems))
 
-        expected = Comment(FILE_WITH_ERRORS, 2, 2, 'Redundant "toString()" call in string template')
+        expected = Comment(FILE_WITH_ERRORS, 1, 1, 'Redundant "toString()" call in string template')
         eq_(expected, problems[0])
-        expected = Comment(FILE_WITH_ERRORS, 4, 4, 'Redundant curly braces')
+        expected = Comment(FILE_WITH_ERRORS, 2, 2, 'Redundant curly braces')
         eq_(expected, problems[1])
