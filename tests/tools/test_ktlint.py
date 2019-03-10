@@ -3,15 +3,19 @@ from unittest import TestCase
 
 from lintreview.review import Problems, Comment
 from lintreview.tools.ktlint import Ktlint
-from tests import root_dir, requires_image
+from tests import (
+    root_dir, requires_image, read_file, read_and_restore_file
+)
 from nose.tools import eq_
 
 
-FILE_WITH_NO_ERRORS = 'tests/fixtures/ktlint/no_errors.kt',
-FILE_WITH_ERRORS = 'tests/fixtures/ktlint/has_errors.kt'
-
-
 class TestKtlint(TestCase):
+
+    fixtures = [
+        'tests/fixtures/ktlint/no_errors.kt',
+        'tests/fixtures/ktlint/has_errors.kt',
+        'tests/fixtures/ktlint/android_has_errors.kt',
+    ]
 
     def setUp(self):
         self.problems = Problems()
@@ -32,16 +36,64 @@ class TestKtlint(TestCase):
 
     @requires_image('ktlint')
     def test_process_files_pass(self):
-        self.tool.process_files(FILE_WITH_NO_ERRORS)
-        eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
+        file_no_errors = self.fixtures[0]
+        self.tool.process_files(file_no_errors)
+        eq_([], self.problems.all(file_no_errors))
 
     @requires_image('ktlint')
     def test_process_files_fail(self):
-        self.tool.process_files([FILE_WITH_ERRORS])
-        problems = self.problems.all(FILE_WITH_ERRORS)
+        file_has_errors = self.fixtures[1]
+        self.tool.process_files([file_has_errors])
+        problems = self.problems.all(file_has_errors)
         eq_(2, len(problems))
 
-        expected = Comment(FILE_WITH_ERRORS, 1, 1, 'Redundant "toString()" call in string template')
+        expected = Comment(file_has_errors, 1, 1, 'Redundant "toString()" call in string template')
         eq_(expected, problems[0])
-        expected = Comment(FILE_WITH_ERRORS, 2, 2, 'Redundant curly braces')
+        expected = Comment(file_has_errors, 2, 2, 'Redundant curly braces')
         eq_(expected, problems[1])
+
+    @requires_image('ktlint')
+    def test_process_files_with_android(self):
+        file_android_has_errors = self.fixtures[2]
+        tool = Ktlint(self.problems, {'android': True}, root_dir)
+        tool.process_files([file_android_has_errors])
+        problems = self.problems.all(file_android_has_errors)
+        eq_(3, len(problems))
+
+        expected = Comment(file_android_has_errors, 1, 1,
+                           'class AndroidActivity should be declared in a file named AndroidActivity.kt (cannot be auto-corrected)')
+        eq_(expected, problems[0])
+        expected = Comment(file_android_has_errors, 9, 9,
+                           'Wildcard import (cannot be auto-corrected)')
+        eq_(expected, problems[1])
+        # Android options should lint max line length in a file
+        expected = Comment(file_android_has_errors, 51, 51,
+                           'Exceeded max line length (100) (cannot be auto-corrected)')
+        eq_(expected, problems[2])
+
+    @requires_image('ktlint')
+    def test_process_files_multiple_files(self):
+        self.tool.process_files(self.fixtures)
+        eq_([], self.problems.all(self.fixtures[0]))
+        eq_(2, len(self.problems.all(self.fixtures[1])))
+        # Without android options should only display 2 errors
+        eq_(2, len(self.problems.all(self.fixtures[2])))
+
+    def test_has_fixer__not_enabled(self):
+        tool = Ktlint(self.problems, {}, root_dir)
+        eq_(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Ktlint(self.problems, {'fixer': True}, root_dir)
+        eq_(True, tool.has_fixer())
+
+    @requires_image('ktlint')
+    def test_execute_fixer(self):
+        tool = Ktlint(self.problems, {'fixer': True}, root_dir)
+        target = root_dir + '/' + self.fixtures[1]
+        original = read_file(target)
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(target, original)
+        assert original != updated, 'File content should change.'
+        eq_(0, len(self.problems.all()), 'No errors should be recorded')
