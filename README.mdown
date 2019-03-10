@@ -449,6 +449,18 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 * `ignore` A list of regular expressions, that allow you to ignore warnings.
 
 
+### Kotlin
+
+#### Ktlint
+
+Uses [ktlint](https://github.com/shyiko/ktlint) to lint kotlin code.
+
+*Options*
+
+* `config` Provide a path to the config file for ktlint.
+* `android` Set to `true` to pass rule set in error messages.
+
+
 ### Lua
 
 #### Luacheck
