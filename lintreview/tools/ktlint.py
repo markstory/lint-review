@@ -55,7 +55,7 @@ class Ktlint(Tool):
         docker.run('ktlint', command, self.base_path)
 
     def create_fixer_command(self, files):
-        command = self._create_command()
-        command.append('--F')
+        command = ['ktlint']
+        command.append('-F')
         command += files
         return command
