@@ -88,6 +88,17 @@ class TestKtlint(TestCase):
         eq_(True, tool.has_fixer())
 
     @requires_image('ktlint')
+    def test_process_files__with_ruleset(self):
+        tool = Ktlint(self.problems, {'ruleset': '/path/to/custom/rulseset.jar'}, root_dir)
+        eq_(['ktlint', '--color', '--reporter=checkstyle', '-R', '/path/to/custom/rulseset.jar'], tool._create_command())
+
+    @requires_image('ktlint')
+    def test_process_files__valid_config(self):
+        editor_config = 'tests/fixtures/ktlint/.editorconfig'
+        tool = Ktlint(self.problems, {'config': editor_config}, root_dir)
+        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config], tool._create_command())
+
+    @requires_image('ktlint')
     def test_execute_fixer(self):
         tool = Ktlint(self.problems, {'fixer': True}, root_dir)
         target = root_dir + '/' + self.fixtures[1]
