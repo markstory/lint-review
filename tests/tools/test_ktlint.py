@@ -61,7 +61,8 @@ class TestKtlint(TestCase):
         eq_(3, len(problems))
 
         expected = Comment(file_android_has_errors, 1, 1,
-                           'class AndroidActivity should be declared in a file named AndroidActivity.kt (cannot be auto-corrected)')
+                           'class AndroidActivity should be declared in a file named AndroidActivity.kt '+
+                           '(cannot be auto-corrected)')
         eq_(expected, problems[0])
         expected = Comment(file_android_has_errors, 9, 9,
                            'Wildcard import (cannot be auto-corrected)')
@@ -90,13 +91,15 @@ class TestKtlint(TestCase):
     @requires_image('ktlint')
     def test_process_files__with_ruleset(self):
         tool = Ktlint(self.problems, {'ruleset': '/path/to/custom/rulseset.jar'}, root_dir)
-        eq_(['ktlint', '--color', '--reporter=checkstyle', '-R', '/path/to/custom/rulseset.jar'], tool._create_command())
+        eq_(['ktlint', '--color', '--reporter=checkstyle', '-R', '/path/to/custom/rulseset.jar'],
+        tool._create_command())
 
     @requires_image('ktlint')
     def test_process_files__valid_config(self):
         editor_config = 'tests/fixtures/ktlint/.editorconfig'
         tool = Ktlint(self.problems, {'config': editor_config}, root_dir)
-        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config], tool._create_command())
+        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config],
+        tool._create_command())
 
     @requires_image('ktlint')
     def test_execute_fixer(self):
