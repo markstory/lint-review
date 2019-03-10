@@ -98,7 +98,7 @@ class TestKtlint(TestCase):
     def test_process_files__valid_config(self):
         editor_config = 'tests/fixtures/ktlint/.editorconfig'
         tool = Ktlint(self.problems, {'config': editor_config}, root_dir)
-        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config], 
+        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config],
             tool._create_command())
 
     @requires_image('ktlint')
