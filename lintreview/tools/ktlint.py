@@ -40,6 +40,10 @@ class Ktlint(Tool):
         command = ['ktlint', '--color', '--reporter=checkstyle']
         if self.options.get('android', False):
             command.append('--android')
+        if self.options.get('ruleset'):
+            command += ['-R', self.options.get('ruleset')]
+        if self.options.get('config'):
+            command += ['--editorconfig=', self.options.get('config')]
         return command
 
     def has_fixer(self):
