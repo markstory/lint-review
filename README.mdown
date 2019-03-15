@@ -240,6 +240,19 @@ issues.
 
 * `ignore` A comma separated list of error codes you wish to ignore.
 
+#### pylint
+
+Uses [pylint](https://www.pylint.org/) to check python files.
+
+*Options*
+
+* `disable` A comma separated list of error codes you wish to ignore. Passed as
+   a command line option to pylint.
+* `enable` A comma separated list of error codes you wish to include. Best if
+   used with `disable: "all"`. Passed as a command line option to
+   pylint
+* `config` Provide a path to the pylintrc config file for pylint.
+
 ### PHP
 
 #### PHPCS
