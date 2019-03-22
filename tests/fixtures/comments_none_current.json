@@ -2,10 +2,15 @@
   {
     "original_commit_id": "bfad76e1ec505e8611145dbee20388a6abef2758",
     "url": "https://api.github.com/repos/markstory/asset_compress/pulls/comments/2745637",
+    "html_url": "https://github.com/markstory/asset_compress/pull/147#discussion_r2745637",
+    "issue_url": "https://api.github.com/repos/markstory/asset_compress/pulls/147",
     "original_position": 13,
     "position": null,
     "path": "View/Helper/AssetCompressHelper.php",
     "body": "Spacing is off here.  AssetCompress uses tabs for indentation.",
+    "body_html": "<p>Spacing is off here.  AssetCompress uses tabs for indentation.</p>",
+    "body_text": "Spacing is off here.  AssetCompress uses tabs for indentation.",
+    "author_association": "OWNER",
     "_links": {
       "pull_request": {
         "href": "https://api.github.com/repos/markstory/asset_compress/pulls/147"
@@ -22,6 +27,7 @@
       "events_url": "https://api.github.com/users/markstory/events{/privacy}",
       "followers_url": "https://api.github.com/users/markstory/followers",
       "url": "https://api.github.com/users/markstory",
+      "html_url": "https://github.com/markstory",
       "gravatar_id": "669144d1ab0a861af5d54175371bc586",
       "subscriptions_url": "https://api.github.com/users/markstory/subscriptions",
       "following_url": "https://api.github.com/users/markstory/following",
@@ -42,10 +48,15 @@
   {
     "original_commit_id": "bfad76e1ec505e8611145dbee20388a6abef2758",
     "url": "https://api.github.com/repos/markstory/asset_compress/pulls/comments/2746207",
+    "html_url": "https://github.com/markstory/asset_compress/pull/147#discussion_r2746207",
+    "issue_url": "https://api.github.com/repos/markstory/asset_compress/pulls/147",
     "original_position": 13,
     "position": null,
     "path": "View/Helper/AssetCompressHelper.php",
     "body": "I changed the spaces to tabs.",
+    "body_html": "<p>I changed the spaces to tabs.</p>",
+    "body_text": "I changed the spaces to tabs.",
+    "author_association": "CONTRIBUTOR",
     "_links": {
       "pull_request": {
         "href": "https://api.github.com/repos/markstory/asset_compress/pulls/147"
@@ -62,6 +73,7 @@
       "events_url": "https://api.github.com/users/renatodinhani/events{/privacy}",
       "followers_url": "https://api.github.com/users/renatodinhani/followers",
       "url": "https://api.github.com/users/renatodinhani",
+      "html_url": "https://github.com/renatodinhani",
       "gravatar_id": "343063dd1f8a4cd5cb59d926722c6d59",
       "subscriptions_url": "https://api.github.com/users/renatodinhani/subscriptions",
       "following_url": "https://api.github.com/users/renatodinhani/following",

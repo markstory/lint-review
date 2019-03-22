@@ -4,7 +4,8 @@ import json
 import lintreview.git as git
 import lintreview.docker as docker
 from github3.pulls import PullFile
-from github3.repos.commit import RepoCommit
+from github3.repos.commit import ShortCommit
+from github3.session import GitHubSession
 from unittest import skipIf
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,11 +20,13 @@ def load_fixture(filename):
 
 
 def create_pull_files(data):
-    return [PullFile(f) for f in json.loads(data)]
+    session = GitHubSession()
+    return [PullFile(f, session) for f in json.loads(data)]
 
 
 def create_commits(data):
-    return [RepoCommit(f) for f in json.loads(data)]
+    session = GitHubSession()
+    return [ShortCommit(f, session) for f in json.loads(data)]
 
 
 def read_file(path):

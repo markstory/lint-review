@@ -6,6 +6,7 @@ from lintreview.processor import Processor
 from lintreview.repo import GithubPullRequest
 from lintreview.fixers.error import ConfigurationError, WorkflowError
 from github3.pulls import PullRequest
+from github3.session import GitHubSession
 from mock import patch, sentinel, Mock, ANY
 from nose.tools import eq_, raises
 import json
@@ -19,10 +20,12 @@ app_config = {
 
 
 class TestProcessor(object):
+    def setUp(self):
+        self.session = GitHubSession()
 
     def get_pull_request(self):
         fixture = load_fixture('pull_request.json')
-        model = PullRequest(json.loads(fixture)['pull_request'])
+        model = PullRequest.from_json(fixture, self.session)
 
         files = load_fixture('one_file_pull_request.json')
         model.files = lambda: create_pull_files(files)

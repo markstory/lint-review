@@ -2,14 +2,19 @@
   {
     "original_commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
     "url": "https://api.github.com/repos/markstory/asset_compress/pulls/comments/1460069",
+    "html_url": "https://github.com/markstory/asset_compress/pull/125#discussion_r1460094",
+    "issue_url": "https://api.github.com/repos/markstory/asset_compress/pulls/125",
     "original_position": 87,
     "position": 87,
     "path": "Routing/Filter/AssetCompressor.php",
     "body": "A pithy remark",
+    "body_html": "<p>A pithy remark</p>",
+    "body_text": "A pithy remark",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
       "url": "https://api.github.com/users/markstory",
+      "html_url": "https://github.com/markstory",
       "gravatar_id": "669144d1ab0a861af5d54175371bc586",
       "received_events_url": "https://api.github.com/users/markstory/received_events",
       "subscriptions_url": "https://api.github.com/users/markstory/subscriptions",
@@ -24,6 +29,7 @@
       "repos_url": "https://api.github.com/users/markstory/repos"
     },
     "commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
+    "author_association": "OWNER",
     "_links": {
       "pull_request": {
         "href": "https://api.github.com/repos/markstory/asset_compress/pulls/125"
@@ -42,14 +48,19 @@
   {
     "original_commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
     "url": "https://api.github.com/repos/markstory/asset_compress/pulls/comments/1460089",
+    "html_url": "https://github.com/markstory/asset_compress/pull/125#discussion_r1460089",
+    "issue_url": "https://api.github.com/repos/markstory/asset_compress/pulls/125",
     "original_position": 40,
     "position": 40,
     "path": "View/Helper/AssetCompressHelper.php",
     "body": "Some witty comment.",
+    "body_html": "<p>Some witty comment.</p>",
+    "body_text": "Some witty comment.",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
       "url": "https://api.github.com/users/markstory",
+      "html_url": "https://github.com/markstory",
       "gravatar_id": "669144d1ab0a861af5d54175371bc586",
       "received_events_url": "https://api.github.com/users/markstory/received_events",
       "subscriptions_url": "https://api.github.com/users/markstory/subscriptions",
@@ -64,6 +75,7 @@
       "repos_url": "https://api.github.com/users/markstory/repos"
     },
     "commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
+    "author_association": "OWNER",
     "_links": {
       "pull_request": {
         "href": "https://api.github.com/repos/markstory/asset_compress/pulls/125"
@@ -82,14 +94,19 @@
   {
     "original_commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
     "url": "https://api.github.com/repos/markstory/asset_compress/pulls/comments/1460094",
+    "html_url": "https://github.com/markstory/asset_compress/pull/125#discussion_r1460094",
+    "issue_url": "https://api.github.com/repos/markstory/asset_compress/pulls/125",
     "original_position": 89,
     "position": 89,
     "path": "View/Helper/AssetCompressHelper.php",
     "body": "Not such a good comment",
+    "body_html": "<p>Not such a good comment</p>",
+    "body_text": "Not such a good comment",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
       "url": "https://api.github.com/users/markstory",
+      "html_url": "https://github.com/markstory",
       "gravatar_id": "669144d1ab0a861af5d54175371bc586",
       "received_events_url": "https://api.github.com/users/markstory/received_events",
       "subscriptions_url": "https://api.github.com/users/markstory/subscriptions",
@@ -104,6 +121,7 @@
       "repos_url": "https://api.github.com/users/markstory/repos"
     },
     "commit_id": "63f91ca44680f654573ad1b8943e915aec9f16ce",
+    "author_association": "OWNER",
     "_links": {
       "pull_request": {
         "href": "https://api.github.com/repos/markstory/asset_compress/pulls/125"
