@@ -21,7 +21,8 @@
         "url": "https://api.github.com/repos/octocat/Hello-World/tree/6dcb09b5b57875f334f61aebed695e2e4193db5e",
         "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
       },
-      "comment_count": 0
+      "comment_count": 0,
+      "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
     },
     "author": {
       "login": "octocat",
@@ -65,6 +66,23 @@
       {
         "url": "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
         "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+      }
+    ],
+    "stats": {
+      "additions": 104,
+      "deletions": 4,
+      "total": 108
+    },
+    "files": [
+      {
+        "filename": "file1.txt",
+        "additions": 10,
+        "deletions": 2,
+        "changes": 12,
+        "status": "modified",
+        "raw_url": "https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt",
+        "blob_url": "https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt",
+        "patch": "@@ -29,7 +29,7 @@\n....."
       }
     ]
   }

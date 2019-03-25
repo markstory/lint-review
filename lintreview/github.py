@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 import logging
 import github3
-from functools import partial
+import requests
+from requests.packages.urllib3.util.retry import Retry
 
 log = logging.getLogger(__name__)
 
@@ -12,13 +13,33 @@ def get_client(config):
     """
     Factory for the Github client
     """
-    login = github3.login
-    if config.get('GITHUB_URL', GITHUB_BASE_URL) != GITHUB_BASE_URL:
-        login = partial(github3.enterprise_login, url=config['GITHUB_URL'])
     if 'GITHUB_OAUTH_TOKEN' not in config:
         raise KeyError('Missing GITHUB_OAUTH_TOKEN in application config. '
                        'Update your settings.py file.')
-    return login(token=config['GITHUB_OAUTH_TOKEN'])
+
+    session = get_session(config.get('GITHUB_CLIENT_RETRY_OPTIONS', None))
+
+    if config.get('GITHUB_URL', GITHUB_BASE_URL) != GITHUB_BASE_URL:
+        client = github3.GitHubEnterprise(
+            config['GITHUB_URL'],
+            token=config['GITHUB_OAUTH_TOKEN'],
+            session=session)
+    else:
+        client = github3.GitHub(
+            token=config['GITHUB_OAUTH_TOKEN'],
+            session=session)
+    return client
+
+
+def get_session(retry_options=None):
+    if retry_options is None or not isinstance(retry_options, dict):
+        retry_options = {}
+    session = github3.session.GitHubSession()
+    retry_adapter = requests.adapters.HTTPAdapter(
+        max_retries=Retry(**retry_options))
+    session.mount('http://', retry_adapter)
+    session.mount('https://', retry_adapter)
+    return session
 
 
 def get_repository(config, user, repo):

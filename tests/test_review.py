@@ -8,6 +8,7 @@ from mock import Mock
 from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
+from github3.session import GitHubSession
 from unittest import TestCase
 import json
 
@@ -27,10 +28,12 @@ class TestReview(TestCase):
         self.repo, self.pr = repo, pr
         self.config = build_review_config(fixer_ini, config)
 
+        self.session = GitHubSession()
+
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
         self.pr.review_comments.return_value = [
-                GhIssueComment(f) for f in json.loads(fixture_data)]
+                GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
 
         review = Review(self.repo, self.pr, self.config)
         review.load_comments()
@@ -40,7 +43,7 @@ class TestReview(TestCase):
     def test_load_comments__loads_comments(self):
         fixture_data = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f) for f in json.loads(fixture_data)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
         review = Review(self.repo, self.pr, self.config)
         review.load_comments()
 
@@ -62,7 +65,7 @@ class TestReview(TestCase):
     def test_filter_existing__removes_duplicates(self):
         fixture_data = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f) for f in json.loads(fixture_data)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
         problems = Problems()
         review = Review(self.repo, self.pr, self.config)
         filename_1 = "Routing/Filter/AssetCompressor.php"
@@ -315,7 +318,7 @@ class TestReview(TestCase):
     def test_publish_review_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f) for f in json.loads(fixture)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture)]
 
         problems = Problems()
 
@@ -338,7 +341,7 @@ class TestReview(TestCase):
     def test_publish_review_no_count_change(self):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f) for f in json.loads(fixture)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture)]
         problems = Problems()
 
         # Match the line/positions in comments_current.json
@@ -464,6 +467,7 @@ class TestProblems(TestCase):
 
     def setUp(self):
         self.problems = Problems()
+        self.session = GitHubSession()
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
@@ -501,7 +505,7 @@ class TestProblems(TestCase):
         eq_(expected, result[0].body)
 
     def test_add__with_diff_containing_block_offset(self):
-        res = [PullFile(f) for f in json.loads(self.block_offset)]
+        res = [PullFile(f, self.session) for f in json.loads(self.block_offset)]
         changes = DiffCollection(res)
 
         problems = Problems(changes=changes)
@@ -524,7 +528,7 @@ class TestProblems(TestCase):
         eq_(errors, result)
 
     def test_limit_to_changes__remove_problems(self):
-        res = [PullFile(f) for f in json.loads(self.two_files_json)]
+        res = [PullFile(f, self.session) for f in json.loads(self.two_files_json)]
         changes = DiffCollection(res)
 
         # Setup some fake problems.

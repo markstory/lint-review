@@ -21,6 +21,16 @@ def test_get_client():
     assert isinstance(gh, GitHub)
 
 
+def test_get_client__retry_opts():
+    conf = config.copy()
+    conf['GITHUB_OAUTH_TOKEN'] = 'an-oauth-token'
+    conf['GITHUB_CLIENT_RETRY_OPTIONS'] = {'backoff_factor': 42}
+    gh = github.get_client(conf)
+
+    for proto in ('https://', 'http://'):
+        eq_(gh.session.get_adapter(proto).max_retries.backoff_factor, 42)
+
+
 def test_get_lintrc():
     repo = Mock(spec=github3.repos.repo.Repository)
     github.get_lintrc(repo, 'HEAD')
@@ -52,8 +62,9 @@ def test_register_hook():
 def test_register_hook__already_exists():
     repo = Mock(spec=github3.repos.repo.Repository,
                 full_name='mark/lint-review')
+    session = github.get_session()
     repo.hooks.return_value = [
-            github3.repos.hook.Hook(f)
+            github3.repos.hook.Hook(f, session)
             for f in json.loads(load_fixture('webhook_list.json'))
         ]
     url = 'http://example.com/review/start'
@@ -65,8 +76,9 @@ def test_register_hook__already_exists():
 def test_unregister_hook__success():
     repo = Mock(spec=github3.repos.repo.Repository,
                 full_name='mark/lint-review')
+    session = github3.session.GitHubSession()
     hooks = [
-        github3.repos.hook.Hook(f)
+        github3.repos.hook.Hook(f, session)
         for f in json.loads(load_fixture('webhook_list.json'))
         ]
     repo.hooks.return_value = hooks

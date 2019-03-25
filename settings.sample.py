@@ -1,4 +1,5 @@
 import os
+import json
 
 
 def env(key, default=None, cast=str):
@@ -75,6 +76,19 @@ GITHUB_URL = env('GITHUB_URL', 'https://api.github.com/')
 # uncomment this line. Using a token will take precedence
 # over a username and password.
 GITHUB_OAUTH_TOKEN = env('GITHUB_OAUTH_TOKEN', None)
+
+# This is a dictionary used to initialize the Retry object used by
+# the Github3.py GitHub client object. Specify valid keyword args
+# to customize retry behavior.
+# eg GITHUB_CLIENT_RETRY_OPTIONS='{"backoff_factor" : 0.3}'
+#
+# NOTE: the value of the GITHUB_CLIENT_RETRY_OPTIONS environment variable
+# MUST be valid json.
+#
+# See documentation for urllib3.util.retry.Retry for available options.
+#
+# Default Retry settings are used if no config is provided.
+GITHUB_CLIENT_RETRY_OPTIONS = env('GITHUB_CLIENT_RETRY_OPTIONS', None, json.loads)
 
 # Set to a path containing a custom CA bundle.
 # This is useful when you have github:enterprise on an internal

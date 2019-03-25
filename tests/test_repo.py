@@ -5,6 +5,7 @@ from . import load_fixture
 from contextlib import contextmanager
 from github3.repos.repo import Repository
 from github3.pulls import PullRequest
+from github3.session import GitHubSession
 from lintreview.config import load_config
 from lintreview.repo import GithubRepository
 from lintreview.repo import GithubPullRequest
@@ -18,7 +19,8 @@ config = load_config()
 class TestGithubRepository(TestCase):
     def setUp(self):
         fixture = load_fixture('repository.json')
-        self.repo_model = Repository(json.loads(fixture))
+        self.session = GitHubSession()
+        self.repo_model = Repository.from_json(fixture, self.session)
 
     @patch('lintreview.repo.github')
     def test_repository(self, github_mock):
@@ -126,7 +128,8 @@ class TestGithubPullRequest(TestCase):
 
     def setUp(self):
         fixture = load_fixture('pull_request.json')
-        self.model = PullRequest(json.loads(fixture)['pull_request'])
+        self.session = GitHubSession()
+        self.model = PullRequest.from_json(fixture, self.session)
 
     def test_display_name(self):
         pull = GithubPullRequest(self.model)
@@ -138,7 +141,7 @@ class TestGithubPullRequest(TestCase):
 
     def test_head(self):
         pull = GithubPullRequest(self.model)
-        expected = '53cb70abadcb3237dcb2aa2b1f24dcf7bcc7d68e'
+        expected = 'a840e46033fab78c30fccb31d4d58dd0a8160d40'
         assert expected == pull.head
 
     def test_clone_url(self):
@@ -220,59 +223,59 @@ class TestGithubPullRequest(TestCase):
         eq_(True, pull.maintainer_can_modify)
 
         fixture = load_fixture('pull_request.json')
-        data = json.loads(fixture)['pull_request']
+        data = json.loads(fixture)
         data['maintainer_can_modify'] = False
 
-        model = PullRequest(data)
+        model = PullRequest(data, self.session)
         pull = GithubPullRequest(model)
         eq_(True, pull.maintainer_can_modify)
 
     def test_maintainer_can_modify__forked_repo(self):
         fixture = load_fixture('pull_request.json')
-        data = json.loads(fixture)['pull_request']
+        data = json.loads(fixture)
 
         # Make repo different
         data['head']['repo']['full_name'] = 'contributor/lint-test'
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(True, pull.maintainer_can_modify, 'reflects flag')
 
         # Different repo reflects flag data
         data['maintainer_can_modify'] = False
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(False, pull.maintainer_can_modify)
 
         data['maintainer_can_modify'] = True
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(True, pull.maintainer_can_modify)
 
     def test_clone_url__private_fork__not_a_fork(self):
         fixture = load_fixture('pull_request.json')
-        data = json.loads(fixture)['pull_request']
+        data = json.loads(fixture)
 
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(False, pull.from_private_fork)
         eq_(data['head']['repo']['clone_url'], pull.clone_url)
         eq_('test', pull.head_branch)
 
     def test_clone_url__private_fork__forked(self):
         fixture = load_fixture('pull_request.json')
-        data = json.loads(fixture)['pull_request']
+        data = json.loads(fixture)
 
         data['head']['repo']['full_name'] = 'contributor/lint-test'
         data['head']['repo']['fork'] = True
 
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(False, pull.from_private_fork)
 
     def test_clone_url__private_fork(self):
         fixture = load_fixture('pull_request.json')
-        data = json.loads(fixture)['pull_request']
+        data = json.loads(fixture)
 
         data['head']['repo']['full_name'] = 'contributor/lint-test'
         data['head']['repo']['clone_url'] = 'secret-repo'
         data['head']['repo']['fork'] = True
         data['head']['repo']['private'] = True
-        pull = GithubPullRequest(PullRequest(data))
+        pull = GithubPullRequest(PullRequest(data, self.session))
         eq_(True, pull.from_private_fork)
         eq_(data['base']['repo']['clone_url'], pull.clone_url)
         eq_('refs/pull/1/head', pull.head_branch)
