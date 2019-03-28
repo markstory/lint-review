@@ -2,10 +2,10 @@ from __future__ import absolute_import
 from lintreview.review import Comment, Problems
 from lintreview.tools.goodcheck import Goodcheck
 from tests import (
-    root_dir, requires_image
+    root_dir,
+    requires_image,
 )
 from unittest import TestCase
-from nose.tools import eq_, assert_in
 
 
 class TestGoodcheck(TestCase):
@@ -29,7 +29,7 @@ class TestGoodcheck(TestCase):
     @requires_image('ruby2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('ruby2')
     def test_process_files__one_file_fail(self):
@@ -41,17 +41,17 @@ class TestGoodcheck(TestCase):
             2,
             2,
             'Write "GitHub", not "Github"')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
     @requires_image('ruby2')
     def test_process_files__two_files(self):
         self.tool.process_files(self.fixtures)
 
         linty_filename = self.fixtures[1]
-        eq_(2, len(self.problems.all(linty_filename)))
+        self.assertEqual(2, len(self.problems.all(linty_filename)))
 
         freshly_laundered_filename = self.fixtures[0]
-        eq_([], self.problems.all(freshly_laundered_filename))
+        self.assertEqual([], self.problems.all(freshly_laundered_filename))
 
     @requires_image('ruby2')
     def test_process_specific_rules(self):
@@ -68,7 +68,7 @@ class TestGoodcheck(TestCase):
             3,
             3,
             'Use hostnames, not RFC 1918 IPs')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
     @requires_image('ruby2')
     def test_add_justifications_to_comments(self):
@@ -81,5 +81,5 @@ class TestGoodcheck(TestCase):
 
         problem_body = self.problems.all(self.fixtures[1])[1].body
 
-        assert_in(" - Unless you can't find another way", problem_body)
-        assert_in(" - some other reason", problem_body)
+        self.assertIn(" - Unless you can't find another way", problem_body)
+        self.assertIn(" - some other reason", problem_body)

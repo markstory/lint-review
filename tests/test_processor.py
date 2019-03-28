@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from . import load_fixture, fixer_ini, create_pull_files
+from unittest import TestCase
 from lintreview.config import build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.processor import Processor
@@ -8,8 +9,6 @@ from lintreview.fixers.error import ConfigurationError, WorkflowError
 from github3.pulls import PullRequest
 from github3.session import GitHubSession
 from mock import patch, sentinel, Mock, ANY
-from nose.tools import eq_, raises
-import json
 
 
 app_config = {
@@ -19,9 +18,18 @@ app_config = {
 }
 
 
-class TestProcessor(object):
+class TestProcessor(TestCase):
+
     def setUp(self):
         self.session = GitHubSession()
+        self.tool_patcher = patch('lintreview.processor.tools')
+        self.tool_stub = self.tool_patcher.start()
+        self.fixer_patcher = patch('lintreview.processor.fixers')
+        self.fixer_stub = self.fixer_patcher.start()
+
+    def tearDown(self):
+        self.tool_patcher.stop()
+        self.fixer_patcher.stop()
 
     def get_pull_request(self):
         fixture = load_fixture('pull_request.json')
@@ -40,21 +48,19 @@ class TestProcessor(object):
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
 
-        eq_(1, len(subject._changes), 'File count is wrong')
+        self.assertEqual(1, len(subject._changes), 'File count is wrong')
         assert isinstance(subject._changes, DiffCollection)
 
-    @raises(RuntimeError)
     def test_run_tools__no_changes(self):
         pull = self.get_pull_request()
         repo = Mock()
 
         config = build_review_config('', app_config)
         subject = Processor(repo, pull, './tests', config)
-        subject.run_tools()
+        self.assertRaises(RuntimeError,
+                          subject.run_tools)
 
-    @patch('lintreview.processor.tools')
-    @patch('lintreview.processor.fixers')
-    def test_run_tools__ignore_patterns(self, fixer_stub, tool_stub):
+    def test_run_tools__ignore_patterns(self):
         pull = self.get_pull_request()
         repo = Mock()
 
@@ -65,21 +71,21 @@ class TestProcessor(object):
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
         subject.run_tools()
-        tool_stub.run.assert_called_with(
+
+        self.tool_stub.run.assert_called_with(
             ANY,
             [],
-            ANY)
+            ANY
+        )
 
-    @patch('lintreview.processor.tools')
-    @patch('lintreview.processor.fixers')
-    def test_run_tools__execute_fixers(self, fixer_stub, tool_stub):
+    def test_run_tools__execute_fixers(self):
         pull = self.get_pull_request()
         repo = Mock()
 
-        tool_stub.factory.return_value = sentinel.tools
+        self.tool_stub.factory.return_value = sentinel.tools
 
-        fixer_stub.create_context.return_value = sentinel.context
-        fixer_stub.run_fixers.return_value = sentinel.diff
+        self.fixer_stub.create_context.return_value = sentinel.context
+        self.fixer_stub.run_fixers.return_value = sentinel.diff
 
         config = build_review_config(fixer_ini, app_config)
         subject = Processor(repo, pull, './tests', config)
@@ -87,80 +93,76 @@ class TestProcessor(object):
         subject.run_tools()
 
         file_path = 'View/Helper/AssetCompressHelper.php'
-        fixer_stub.create_context.assert_called_with(
+        self.fixer_stub.create_context.assert_called_with(
             config,
             './tests',
             repo,
-            pull)
-        fixer_stub.run_fixers.assert_called_with(
+            pull
+        )
+        self.fixer_stub.run_fixers.assert_called_with(
             sentinel.tools,
             './tests',
-            [file_path])
-        fixer_stub.apply_fixer_diff.assert_called_with(
+            [file_path]
+        )
+        self.fixer_stub.apply_fixer_diff.assert_called_with(
             subject._changes,
             sentinel.diff,
-            sentinel.context)
-        assert tool_stub.run.called, 'Should have ran'
-
-    @patch('lintreview.processor.tools')
-    @patch('lintreview.processor.fixers')
-    def test_run_tools__execute_fixers_fail(self, fixer_stub, tool_stub):
-        pull = self.get_pull_request()
-        repo = Mock()
-
-        tool_stub.factory.return_value = sentinel.tools
-
-        fixer_stub.create_context.return_value = sentinel.context
-        fixer_stub.run_fixers.side_effect = RuntimeError
-
-        config = build_review_config(fixer_ini, app_config)
-        subject = Processor(repo, pull, './tests', config)
-        subject.load_changes()
-        subject.run_tools()
-
-        assert fixer_stub.create_context.called
-        assert fixer_stub.run_fixers.called
-        eq_(False, fixer_stub.apply_fixer_diff.called)
-        eq_(True,
-            fixer_stub.rollback_changes.called,
-            'Runtime error should trigger git reset.')
-        assert tool_stub.run.called, 'Should have ran'
-
-    def test_run_tools__fixer_errors(self):
-        error_message = 'A bad thing'
-        cases = (
-            WorkflowError(error_message),
-            ConfigurationError(error_message)
+            sentinel.context
         )
-        for case in cases:
-            yield self._test_run_tools_fixer_error_scenario, case
+        self.tool_stub.run.assert_called()
 
-    @patch('lintreview.processor.tools')
-    @patch('lintreview.processor.fixers')
-    def _test_run_tools_fixer_error_scenario(self, error,
-                                             fixer_stub, tool_stub):
+    def test_run_tools__execute_fixers_fail(self):
         pull = self.get_pull_request()
         repo = Mock()
 
-        tool_stub.factory.return_value = sentinel.tools
+        self.tool_stub.factory.return_value = sentinel.tools
 
-        fixer_stub.create_context.return_value = sentinel.context
-        fixer_stub.apply_fixer_diff.side_effect = error
+        self.fixer_stub.create_context.return_value = sentinel.context
+        self.fixer_stub.run_fixers.side_effect = RuntimeError
 
         config = build_review_config(fixer_ini, app_config)
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
         subject.run_tools()
 
-        assert fixer_stub.create_context.called
-        assert fixer_stub.run_fixers.called
-        assert tool_stub.run.called, 'Should have ran'
-        eq_(False,
-            fixer_stub.rollback_changes.called,
-            'No rollback on strategy failure')
-        eq_(1, len(subject.problems), 'strategy error adds pull comment')
-        eq_('Unable to apply fixers. ' + str(error),
-            subject.problems.all()[0].body)
+        self.fixer_stub.create_context.assert_called()
+        self.fixer_stub.run_fixers.assert_called()
+        self.fixer_stub.apply_fixer_diff.assert_not_called()
+        self.fixer_stub.rollback_changes.assert_called()
+        self.tool_stub.run_assert_called()
+
+    def test_run_tools_fixer_error_scenario(self):
+        errors = [
+            WorkflowError('A bad workflow thing'),
+            ConfigurationError('A bad configuration thing'),
+        ]
+        for error in errors:
+            self.tool_stub.reset()
+            self.fixer_stub.reset()
+            self._test_run_tools_fixer_error_scenario(error)
+
+    def _test_run_tools_fixer_error_scenario(self, error):
+        pull = self.get_pull_request()
+        repo = Mock()
+
+        self.tool_stub.factory.return_value = sentinel.tools
+
+        self.fixer_stub.create_context.return_value = sentinel.context
+        self.fixer_stub.apply_fixer_diff.side_effect = error
+
+        config = build_review_config(fixer_ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
+        subject.load_changes()
+        subject.run_tools()
+
+        self.fixer_stub.create_context.assert_called()
+        self.fixer_stub.run_fixers.assert_called()
+        self.tool_stub.run.assert_called()
+        self.fixer_stub.rollback_changes.assert_not_called()
+        self.assertEqual(1, len(subject.problems),
+                         'strategy error adds pull comment')
+        self.assertEqual('Unable to apply fixers. ' + str(error),
+                         subject.problems.all()[0].body)
 
     def test_publish(self):
         pull = self.get_pull_request()
@@ -172,12 +174,10 @@ class TestProcessor(object):
         subject._review = Mock()
 
         subject.publish()
-        eq_(True,
-            subject.problems.limit_to_changes.called,
-            'Problems should be filtered.')
-        eq_(True,
-            subject._review.publish_review.called,
-            'Review should be published.')
+        self.assertTrue(subject.problems.limit_to_changes.called,
+                        'Problems should be filtered.')
+        self.assertTrue(subject._review.publish_review.called,
+                        'Review should be published.')
         subject._review.publish_review.assert_called_with(
             subject.problems,
             pull.head)
@@ -192,12 +192,12 @@ class TestProcessor(object):
         subject._review = Mock()
 
         subject.publish(check_run_id=9)
-        eq_(True,
-            subject.problems.limit_to_changes.called,
-            'Problems should be filtered.')
-        eq_(True,
-            subject._review.publish_checkrun.called,
-            'Review should be published.')
+        self.assertEqual(True,
+                         subject.problems.limit_to_changes.called,
+                         'Problems should be filtered.')
+        self.assertEqual(True,
+                         subject._review.publish_checkrun.called,
+                         'Review should be published.')
         subject._review.publish_checkrun.assert_called_with(
             subject.problems,
             9)

@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.pep8 import Pep8
 from unittest import TestCase
-from nose.tools import eq_, assert_in, assert_not_in
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
@@ -27,57 +26,57 @@ class TestPep8(TestCase):
     @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(6, len(problems))
+        self.assertEqual(6, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(fname, 2, 2, 'E401 multiple imports on one line')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
         expected = Comment(fname, 11, 11, "W603 '<>' is deprecated, use '!='")
-        eq_(expected, problems[5])
+        self.assertEqual(expected, problems[5])
 
     @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(6, len(problems))
+        self.assertEqual(6, len(problems))
         expected = Comment(self.fixtures[1], 2, 2,
                            'E401 multiple imports on one line')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
         expected = Comment(self.fixtures[1], 11, 11,
                            "W603 '<>' is deprecated, use '!='")
-        eq_(expected, problems[5])
+        self.assertEqual(expected, problems[5])
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_process_files_two_files__python3(self):
         self.tool.options['python'] = 3
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
 
-        eq_(2, problems[0].line)
-        eq_(2, problems[0].position)
-        assert_in('multiple imports on one line', problems[0].body)
+        self.assertEqual(2, problems[0].line)
+        self.assertEqual(2, problems[0].position)
+        self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
     def test_process_absolute_container_path(self):
         fixtures = ['/src/' + path for path in self.fixtures]
         self.tool.process_files(fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
@@ -90,10 +89,10 @@ class TestPep8(TestCase):
         self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(4, len(problems))
+        self.assertEqual(4, len(problems))
         for p in problems:
-            assert_not_in('E2', p.body)
-            assert_not_in('W603', p.body)
+            self.assertNotIn('E2', p.body)
+            self.assertNotIn('W603', p.body)
 
     @requires_image('python2')
     def test_process_files__line_length(self):
@@ -103,10 +102,10 @@ class TestPep8(TestCase):
         self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(10, len(problems))
+        self.assertEqual(10, len(problems))
         expected = Comment(self.fixtures[1], 1, 1,
                            'E501 line too long (23 > 10 characters)')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
     @requires_image('python2')
     def test_process_files__select(self):
@@ -116,17 +115,17 @@ class TestPep8(TestCase):
         self.tool = Pep8(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(1, len(problems))
+        self.assertEqual(1, len(problems))
         for p in problems:
-            assert_in('W603', p.body)
+            self.assertIn('W603', p.body)
 
     def test_has_fixer__not_enabled(self):
         tool = Pep8(self.problems, {})
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Pep8(self.problems, {'fixer': True})
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('python2')
     def test_execute_fixer(self):
@@ -137,7 +136,8 @@ class TestPep8(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
     @requires_image('python2')
     def test_execute_fixer__options(self):
@@ -152,7 +152,8 @@ class TestPep8(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
     @requires_image('python2')
     def test_execute_fixer__fewer_problems_remain(self):
@@ -164,11 +165,10 @@ class TestPep8(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        assert len(self.problems.all()) > 0, 'Most errors should be fixed'
-        text = [c.body for c in self.problems.all()]
-        assert_in("'<>' is deprecated", ' '.join(text))
+        self.assertGreaterEqual(len(self.problems.all()), 0,
+                                'Most errors should be fixed')
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_execute_fixer__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Pep8(self.problems, options, root_dir)
@@ -178,9 +178,10 @@ class TestPep8(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_execute_fixer__fewer_problems_remain__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Pep8(self.problems, options, root_dir)
@@ -191,7 +192,8 @@ class TestPep8(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        assert 1 < len(self.problems.all()), 'Most errors should be fixed'
+        self.assertLessEqual(1, len(self.problems.all()),
+                             'Most errors should be fixed')
 
         text = [c.body for c in self.problems.all()]
-        assert_in("'<>' is deprecated", ' '.join(text))
+        self.assertIn("'<>' is deprecated", ' '.join(text))

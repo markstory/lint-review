@@ -2,15 +2,14 @@ from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.tools.flake8 import Flake8
 from unittest import TestCase
-from nose.tools import eq_, assert_in
 from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
 class TestFlake8(TestCase):
 
     fixtures = [
-        'tests/fixtures/pep8/no_errors.py',
-        'tests/fixtures/pep8/has_errors.py',
+        'tests/fixtures/flake8/no_errors.py',
+        'tests/fixtures/flake8/has_errors.py',
     ]
 
     def setUp(self):
@@ -27,7 +26,7 @@ class TestFlake8(TestCase):
     @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('python2')
     def test_process_files__one_file_fail(self):
@@ -35,36 +34,36 @@ class TestFlake8(TestCase):
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
 
-        eq_(2, problems[0].line)
-        eq_(2, problems[0].position)
-        assert_in('multiple imports on one line', problems[0].body)
+        self.assertEqual(7, problems[0].line)
+        self.assertEqual(7, problems[0].position)
+        self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
 
-        eq_(2, problems[0].line)
-        eq_(2, problems[0].position)
-        assert_in('multiple imports on one line', problems[0].body)
+        self.assertEqual(7, problems[0].line)
+        self.assertEqual(7, problems[0].position)
+        self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
     def test_process_absolute_container_path(self):
         fixtures = ['/src/' + path for path in self.fixtures]
         self.tool.process_files(fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
 
-        eq_(2, problems[0].line)
-        eq_(2, problems[0].position)
-        assert_in('multiple imports on one line', problems[0].body)
+        self.assertEqual(7, problems[0].line)
+        self.assertEqual(7, problems[0].position)
+        self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
     def test_execute_config_with_format(self):
@@ -79,19 +78,19 @@ class TestFlake8(TestCase):
         for issue in problems:
             assert 'W302' not in issue.body
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_process_files_two_files__python3(self):
         self.tool.options['python'] = 3
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
         assert len(problems) >= 6
 
-        eq_(2, problems[0].line)
-        eq_(2, problems[0].position)
-        assert_in('multiple imports on one line', problems[0].body)
+        self.assertEqual(7, problems[0].line)
+        self.assertEqual(7, problems[0].position)
+        self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
     def test_config_options_and_process_file(self):
@@ -122,7 +121,7 @@ class TestFlake8(TestCase):
             '--isolated',
             self.fixtures[1]
         ]
-        eq_(set(expected), set(out))
+        self.assertEqual(set(expected), set(out))
 
     def test_make_command__config(self):
         options = {
@@ -142,15 +141,15 @@ class TestFlake8(TestCase):
             '--format', 'default',
             self.fixtures[1]
         ]
-        eq_(set(expected), set(out))
+        self.assertEqual(set(expected), set(out))
 
     def test_has_fixer__not_enabled(self):
         tool = Flake8(self.problems, {}, root_dir)
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Flake8(self.problems, {'fixer': True}, root_dir)
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('python2')
     def test_execute_fixer(self):
@@ -161,7 +160,8 @@ class TestFlake8(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
     @requires_image('python2')
     def test_execute_fixer__fewer_problems_remain(self):
@@ -176,9 +176,9 @@ class TestFlake8(TestCase):
         assert 1 < len(self.problems.all()), 'Most errors should be fixed'
 
         text = [c.body for c in self.problems.all()]
-        assert_in("'<>' is deprecated", ' '.join(text))
+        self.assertIn("'<>' is deprecated", ' '.join(text))
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_execute_fixer__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Flake8(self.problems, options, root_dir)
@@ -188,9 +188,10 @@ class TestFlake8(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
-    @requires_image('python3')
+    @requires_image('python2')
     def test_execute_fixer__fewer_problems_remain__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Flake8(self.problems, options, root_dir)
@@ -201,7 +202,8 @@ class TestFlake8(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        assert 1 < len(self.problems.all()), 'Most errors should be fixed'
+        self.assertGreaterEqual(len(self.problems.all()), 1,
+                                'Most errors should be fixed')
 
         text = [c.body for c in self.problems.all()]
-        assert_in("'<>' is deprecated", ' '.join(text))
+        self.assertIn("'<>' is deprecated", ' '.join(text))

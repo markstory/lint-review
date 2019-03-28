@@ -1,7 +1,5 @@
-from __future__ import absolute_import
 from lintreview import web
 from mock import patch, Mock
-from nose.tools import eq_
 from unittest import TestCase
 import json
 
@@ -11,7 +9,9 @@ test_data = {
         'number': '3',
         'head': {
             'ref': 'master',
+            "sha": "53cb70abadcb3237dcb2aa2b1f24dcf7bcc7d68e",
             'repo': {
+                'clone_url': 'https://github.com/contributor/lint-test.git',
                 'git_url': 'git://github.com/other/testing',
                 'name': 'testing',
                 'owner': {
@@ -22,6 +22,7 @@ test_data = {
         'base': {
             'ref': 'master',
             'repo': {
+                'clone_url': 'https://github.com/contributor/lint-test.git',
                 'name': 'testing',
                 'git_url': 'git://github.com/mark/testing',
                 'owner': {
@@ -40,19 +41,23 @@ class WebTest(TestCase):
 
     def test_ping(self):
         res = self.app.get('/ping')
-        eq_("lint-review: {} pong\n".format(web.version),
-            res.data.decode('utf-8'))
+        self.assertEqual("lint-review: {} pong\n".format(web.version),
+                         res.data.decode('utf-8'))
 
     def test_start_request_no_get(self):
         res = self.app.get('/review/start')
-        eq_(405, res.status_code)
+        self.assertEqual(405, res.status_code)
 
     def test_start_request__json_fail(self):
         data = {'herp': 'derp'}
         data = json.dumps(data)
         res = self.app.post('/review/start',
-                            content_type='application/json', data=data)
-        eq_(403, res.status_code)
+                            content_type='application/json',
+                            data=data,
+                            headers={
+                                'X-Github-Event': 'pull_request'
+                            })
+        self.assertEqual(403, res.status_code)
 
     @patch('lintreview.web.process_pull_request')
     def test_start_request__ignore_unknown_action(self, task):
@@ -62,10 +67,14 @@ class WebTest(TestCase):
             payload['action'] = action
             data = json.dumps(payload)
             res = self.app.post('/review/start',
-                                content_type='application/json', data=data)
-            eq_(204, res.status_code)
-            eq_('', res.data.decode('utf-8'))
-            assert not(task.called)
+                                content_type='application/json',
+                                data=data,
+                                headers={
+                                    'X-Github-Event': 'pull_request'
+                                })
+            self.assertEqual(204, res.status_code)
+            self.assertEqual('', res.data.decode('utf-8'))
+            self.assertFalse(task.called)
 
     @patch('lintreview.web.get_lintrc')
     @patch('lintreview.web.process_pull_request')
@@ -74,8 +83,12 @@ class WebTest(TestCase):
 
         data = json.dumps(test_data)
         self.app.post('/review/start',
-                      content_type='application/json', data=data)
-        assert not(task.called), 'No task should have been queued'
+                      content_type='application/json',
+                      data=data,
+                      headers={
+                          'X-Github-Event': 'pull_request'
+                      })
+        self.assertFalse(task.called, 'No task should have been queued')
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -92,10 +105,14 @@ class WebTest(TestCase):
 linters = pep8"""
 
         res = self.app.post('/review/start',
-                            content_type='application/json', data=data)
-        assert task.delay.called, 'Process request should be called'
-        eq_(204, res.status_code)
-        eq_('', res.data.decode('utf-8'))
+                            content_type='application/json',
+                            data=data,
+                            headers={
+                                'X-Github-Event': 'pull_request'
+                            })
+        self.assertTrue(task.delay.called, 'Process request should be called')
+        self.assertEqual(204, res.status_code)
+        self.assertEqual('', res.data.decode('utf-8'))
 
     @patch('lintreview.web.get_repository')
     @patch('lintreview.web.get_lintrc')
@@ -112,7 +129,11 @@ linters = pep8"""
 linters = pep8"""
 
         res = self.app.post('/review/start',
-                            content_type='application/json', data=data)
-        assert task.delay.called, 'Process request should be called'
-        eq_(204, res.status_code)
-        eq_('', res.data.decode('utf-8'))
+                            content_type='application/json',
+                            data=data,
+                            headers={
+                                'X-Github-Event': 'pull_request'
+                            })
+        self.assertTrue(task.delay.called, 'Process request should be called')
+        self.assertEqual(204, res.status_code)
+        self.assertEqual('', res.data.decode('utf-8'))

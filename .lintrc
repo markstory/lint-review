@@ -1,2 +1,5 @@
 [tools]
 linters = flake8, jsonlint, yamllint
+
+[tool_flake8]
+exclude = has_errors.py

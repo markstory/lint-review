@@ -4,7 +4,6 @@ from unittest import TestCase
 from lintreview.review import Problems, Comment
 from lintreview.tools.swiftlint import Swiftlint
 from tests import root_dir, requires_image
-from nose.tools import eq_
 
 
 FILE_WITH_NO_ERRORS = 'tests/fixtures/swiftlint/no_errors.swift',
@@ -32,15 +31,15 @@ class TestSwiftlint(TestCase):
     @requires_image('swiftlint')
     def test_process_files_pass(self):
         self.tool.process_files(FILE_WITH_NO_ERRORS)
-        eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
+        self.assertEqual([], self.problems.all(FILE_WITH_NO_ERRORS))
 
     @requires_image('swiftlint')
     def test_process_files_fail(self):
         self.tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
-        eq_(1, len(problems))
+        self.assertEqual(1, len(problems))
 
         msg = ("Colons should be next to the identifier when specifying "
                "a type and next to the key in dictionary literals.")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
-        eq_(expected, problems)
+        self.assertEqual(expected, problems)

@@ -2,8 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs
 from unittest import TestCase
-from nose.tools import eq_, ok_
-from tests import requires_image, root_dir, read_file, read_and_restore_file
+from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
 class Testphpcs(TestCase):
@@ -31,13 +30,13 @@ class Testphpcs(TestCase):
     @requires_image('phpcs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('phpcs')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(3, len(problems))
+        self.assertEqual(3, len(problems))
 
         fname = self.fixtures[1]
         expected = Comment(
@@ -45,23 +44,23 @@ class Testphpcs(TestCase):
             14,
             14,
             'Opening brace should be on a new line')
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
         expected = Comment(
             fname,
             16,
             16,
             "Spaces must be used to indent lines; tabs are not allowed")
-        eq_(expected, problems[2])
+        self.assertEqual(expected, problems[2])
 
     @requires_image('phpcs')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(3, len(problems))
+        self.assertEqual(3, len(problems))
 
     @requires_image('phpcs')
     def test_process_files__with_config(self):
@@ -73,7 +72,8 @@ class Testphpcs(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(3, len(problems), 'Changing standards changes error counts')
+        self.assertEqual(3, len(problems),
+                         'Changing standards changes error counts')
 
     @requires_image('phpcs')
     def test_process_files__with_ignore(self):
@@ -86,7 +86,8 @@ class Testphpcs(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(0, len(problems), 'ignore option should exclude files')
+        self.assertEqual(0, len(problems),
+                         'ignore option should exclude files')
 
     @requires_image('phpcs')
     def test_process_files__with_exclude(self):
@@ -99,7 +100,8 @@ class Testphpcs(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        eq_(1, len(problems), 'exclude option should reduce errors.')
+        self.assertEqual(1, len(problems),
+                         'exclude option should reduce errors.')
 
     @requires_image('phpcs')
     def test_process_files__with_invalid_exclude(self):
@@ -111,11 +113,13 @@ class Testphpcs(TestCase):
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all()
-        eq_(1, len(problems), 'A failure comment should be logged.')
+        self.assertEqual(1, len(problems),
+                         'A failure comment should be logged.')
 
         error = problems[0].body
-        ok_('Your PHPCS configuration output the following error' in error)
-        ok_('Derpity.Derp' in error)
+        self.assertIn('Your PHPCS configuration output the following error',
+                      error)
+        self.assertIn('Derpity.Derp', error)
 
     def test_create_command__with_builtin_standard(self):
         config = {
@@ -132,7 +136,7 @@ class Testphpcs(TestCase):
             '--tab-width=4',
             '/src/some/file.php'
         ]
-        eq_(result, expected)
+        self.assertEqual(result, expected)
 
     def test_create_command__with_path_based_standard(self):
         config = {
@@ -149,7 +153,7 @@ class Testphpcs(TestCase):
             '--tab-width=4',
             '/src/some/file.php'
         ]
-        eq_(result, expected)
+        self.assertEqual(result, expected)
 
     def test_create_command__ignore_option_as_list(self):
         config = {
@@ -169,15 +173,15 @@ class Testphpcs(TestCase):
             '--extensions=php,ctp',
             '/src/some/file.php'
         ]
-        eq_(result, expected)
+        self.assertEqual(result, expected)
 
     def test_has_fixer__not_enabled(self):
         tool = Phpcs(self.problems, {})
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Phpcs(self.problems, {'fixer': True})
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('phpcs')
     def test_execute_fixer(self):
@@ -188,7 +192,8 @@ class Testphpcs(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
     @requires_image('phpcs')
     def test_execute_fixer__no_problems_remain(self):
@@ -200,4 +205,5 @@ class Testphpcs(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        eq_(0, len(self.problems.all()), 'All errors should be autofixed')
+        self.assertEqual(0, len(self.problems.all()),
+                         'All errors should be autofixed')

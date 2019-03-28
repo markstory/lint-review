@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.tools.remarklint import Remarklint
 from unittest import TestCase
-from nose.tools import eq_, assert_in
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
@@ -27,15 +26,15 @@ class TestRemarklint(TestCase):
     @requires_image('nodejs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('nodejs')
     def test_process_files__one_file_file(self):
         self.tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all()
-        eq_(2, len(problems))
-        assert_in('Incorrect list-item', problems[0].body)
+        self.assertEqual(2, len(problems))
+        self.assertIn('Incorrect list-item', problems[0].body)
 
     @requires_image('nodejs')
     def test_process_files__missing_plugin(self):
@@ -50,19 +49,19 @@ class TestRemarklint(TestCase):
         with open(config, 'w') as f:
             f.write(original)
         problems = self.problems.all()
-        eq_(1, len(problems), 'Should have an error')
-        assert_in('unknown-preset', problems[0].body)
+        self.assertEqual(1, len(problems), 'Should have an error')
+        self.assertIn('unknown-preset', problems[0].body)
 
     def test_process_files__config(self):
         pass
 
     def test_has_fixer__not_enabled(self):
         tool = Remarklint(self.problems)
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Remarklint(self.problems, {'fixer': True})
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('nodejs')
     def test_execute_fixer(self):
@@ -74,4 +73,5 @@ class TestRemarklint(TestCase):
 
         updated = read_and_restore_file(self.fixtures[1], original)
         assert original != updated, 'File content should change.'
-        eq_(1, len(self.problems.all()), 'Fewer errors should be recorded')
+        self.assertEqual(1, len(self.problems.all()),
+                         'Fewer errors should be recorded')

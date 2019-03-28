@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.jsonlint import Jsonlint
 from unittest import TestCase
-from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -28,56 +27,56 @@ class TestJsonlint(TestCase):
     @requires_image('python2')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('python2')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
         fname = self.fixtures[1]
 
         msg = ("Warning: String literals must use "
                "double quotation marks in strict JSON")
         expected = Comment(fname, 2, 2, msg)
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
         msg = ("Warning: JSON does not allow identifiers "
                "to be used as strings: u'three'\n"
                "Warning: Strict JSON does not allow a final comma "
                "in an object (dictionary) literal")
-        eq_(3, problems[1].line)
-        eq_(3, problems[1].position)
-        assert_in("Warning: JSON does not allow identifiers",
-                  problems[1].body)
-        assert_in("Warning: Strict JSON does not allow a final comma",
-                  problems[1].body)
+        self.assertEqual(3, problems[1].line)
+        self.assertEqual(3, problems[1].position)
+        self.assertIn("Warning: JSON does not allow identifiers",
+                      problems[1].body)
+        self.assertIn("Warning: Strict JSON does not allow a final comma",
+                      problems[1].body)
 
     @requires_image('python2')
     def test_process_files_three_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         fname = self.fixtures[1]
         problems = self.problems.all(fname)
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
         msg = ("Warning: String literals must use "
                "double quotation marks in strict JSON")
         expected = Comment(fname, 2, 2, msg)
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
-        eq_(3, problems[1].line)
-        eq_(3, problems[1].position)
-        assert_in('JSON does not allow identifiers to be used',
-                  problems[1].body)
+        self.assertEqual(3, problems[1].line)
+        self.assertEqual(3, problems[1].position)
+        self.assertIn('JSON does not allow identifiers to be used',
+                      problems[1].body)
 
         fname = self.fixtures[2]
         problems = self.problems.all(fname)
-        eq_(1, len(problems))
+        self.assertEqual(1, len(problems))
 
-        eq_(1, problems[0].line)
-        eq_(1, problems[0].position)
-        assert_in('Unknown identifier', problems[0].body)
+        self.assertEqual(1, problems[0].line)
+        self.assertEqual(1, problems[0].position)
+        self.assertIn('Unknown identifier', problems[0].body)

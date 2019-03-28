@@ -21,8 +21,10 @@ RUN apt-get update && \
 
 WORKDIR /code
 
+# This allows us to cache the pip install stage
+ADD requirements.txt /
+RUN pip install -r /requirements.txt
+
 ADD . /code
-ADD requirements.txt /code/
-RUN cd /code && pip install -r requirements.txt
-RUN cd /code && pip install .
+RUN pip install -e .
 RUN cp /code/settings.sample.py /code/settings.py

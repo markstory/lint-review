@@ -4,11 +4,10 @@ from unittest import TestCase
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
 import lintreview.docker as docker
-from nose.tools import eq_, ok_, assert_in, assert_not_in
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
-FILE_WITH_NO_ERRORS = 'tests/fixtures/eslint/no_errors.js',
+FILE_WITH_NO_ERRORS = 'tests/fixtures/eslint/no_errors.js'
 FILE_WITH_ERRORS = 'tests/fixtures/eslint/has_errors.js'
 FILE_WITH_FIXER_ERRORS = 'tests/fixtures/eslint/fixer_errors.js'
 
@@ -46,23 +45,24 @@ class TestEslint(TestCase):
 
     @requires_image('eslint')
     def test_process_files_pass(self):
-        self.tool.process_files(FILE_WITH_NO_ERRORS)
-        eq_([], self.problems.all(FILE_WITH_NO_ERRORS))
+        self.tool.process_files([FILE_WITH_NO_ERRORS])
+        actual = self.problems.all(FILE_WITH_NO_ERRORS)
+        self.assertEqual([], actual)
 
     @requires_image('eslint')
     def test_process_files_fail(self):
         self.tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
         msg = ("'foo' is assigned a value but never used. (no-unused-vars)\n"
                "'bar' is not defined. (no-undef)")
         expected = Comment(FILE_WITH_ERRORS, 2, 2, msg)
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
-        msg = ("'alert' is not defined. (no-undef)")
+        msg = "'alert' is not defined. (no-undef)"
         expected = Comment(FILE_WITH_ERRORS, 4, 4, msg)
-        eq_(expected, problems[1])
+        self.assertEqual(expected, problems[1])
 
     @requires_image('eslint')
     def test_process_files__config_file_missing(self):
@@ -71,11 +71,11 @@ class TestEslint(TestCase):
                       base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        eq_(1, len(problems), 'Invalid config returns 1 error')
+        self.assertEqual(1, len(problems), 'Invalid config returns 1 error')
         msg = ('Your eslint config file is missing or invalid. '
                'Please ensure that `invalid-file` exists and is valid.')
         expected = [IssueComment(msg)]
-        eq_(expected, problems)
+        self.assertEqual(expected, problems)
 
     @requires_image('eslint')
     def test_process_files__config_file_syntax_error(self):
@@ -86,16 +86,18 @@ class TestEslint(TestCase):
                       base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        eq_(1, len(problems), 'Invalid config returns 1 error')
-        assert_in('Your ESLint configuration is not valid', problems[0].body)
-        assert_in('YAMLException: Cannot read', problems[0].body)
+        self.assertEqual(1, len(problems), 'Invalid config returns 1 error')
+        self.assertIn('Your ESLint configuration is not valid',
+                      problems[0].body)
+        self.assertIn('YAMLException: Cannot read', problems[0].body)
 
     @requires_image('eslint')
     def test_process_files_uses_default_config(self):
         tool = Eslint(self.problems, options={}, base_path=root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all(FILE_WITH_ERRORS)
-        eq_(2, len(problems), 'With no config file there should be errors.')
+        self.assertEqual(2, len(problems),
+                         'With no config file there should be errors.')
 
     @requires_image('eslint')
     def test_process_files__invalid_config(self):
@@ -103,11 +105,13 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        eq_(1, len(problems), 'Invalid config should report an error')
+        self.assertEqual(1, len(problems),
+                         'Invalid config should report an error')
         error = problems[0]
-        ok_('Your eslint configuration output the following error'
-            in error.body)
-        ok_("Cannot find module 'eslint-config-invalid-rules'" in error.body)
+        self.assertIn('Your eslint configuration output the following error',
+                      error.body)
+        self.assertIn("Cannot find module 'eslint-config-invalid-rules'",
+                      error.body)
 
     @requires_image('eslint')
     def test_process_files__missing_plugin(self):
@@ -115,12 +119,13 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        eq_(1, len(problems), 'Invalid config should report an error')
+        self.assertEqual(1, len(problems),
+                         'Invalid config should report an error')
         error = problems[0]
-        ok_('Your eslint configuration output the following error'
-            in error.body)
-        ok_('ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
-            in error.body)
+        self.assertIn('Your eslint configuration output the following error',
+                      error.body)
+        expected = 'ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
+        self.assertIn(expected, error.body)
 
     @requires_image('eslint')
     def test_process_files__deprecated_option(self):
@@ -128,13 +133,14 @@ class TestEslint(TestCase):
         tool = Eslint(self.problems, options, root_dir)
         tool.process_files([FILE_WITH_ERRORS])
         problems = self.problems.all()
-        ok_(len(problems), 'Invalid config should report an error')
+        self.assertGreater(len(problems), 0,
+                           'Invalid config should report an error')
         error = problems[0]
-        ok_('Your eslint configuration output the following error'
-            in error.body)
-        ok_('DeprecationWarning' in error.body)
+        self.assertIn('Your eslint configuration output the following error',
+                      error.body)
+        self.assertIn('DeprecationWarning', error.body)
         style_error = problems[1]
-        assert_not_in('DeprecationWarning', style_error.body)
+        self.assertNotIn('DeprecationWarning', style_error.body)
 
     @requires_image('eslint')
     def test_process_files_with_config(self):
@@ -150,15 +156,15 @@ class TestEslint(TestCase):
                "'bar' is not defined. (no-undef)\n"
                "Missing semicolon. (semi)")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
-        eq_(expected, problems)
+        self.assertEqual(expected, problems)
 
     def test_has_fixer__not_enabled(self):
         tool = Eslint(self.problems, {})
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Eslint(self.problems, {'fixer': True}, root_dir)
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('eslint')
     def test_execute_fixer(self):
@@ -171,7 +177,8 @@ class TestEslint(TestCase):
 
         updated = read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
 
     @requires_image('eslint')
     def test_execute_fixer__no_problems_remain(self):
@@ -186,7 +193,8 @@ class TestEslint(TestCase):
         tool.process_files([FILE_WITH_FIXER_ERRORS])
 
         read_and_restore_file(FILE_WITH_FIXER_ERRORS, original)
-        eq_(0, len(self.problems.all()), 'All errors should be autofixed')
+        self.assertEqual(0, len(self.problems.all()),
+                         'All errors should be autofixed')
 
     @requires_image('eslint')
     def test_execute__install_plugins(self):
@@ -200,11 +208,12 @@ class TestEslint(TestCase):
         tool.process_files([target])
 
         problems = self.problems.all()
-        eq_(2, len(problems), 'Should find errors')
-        assert_in('Unexpected var', problems[0].body)
+        self.assertEqual(2, len(problems), 'Should find errors')
+        self.assertIn('Unexpected var', problems[0].body)
 
-        ok_(docker.image_exists('nodejs'), 'original image is present')
-        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
+        self.assertTrue(docker.image_exists('nodejs'),
+                        'original image is present')
+        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
 
     @requires_image('eslint')
     def test_execute_fixer__install_plugins(self):
@@ -223,8 +232,9 @@ class TestEslint(TestCase):
         tool.process_files(['fixer_errors.js'])
 
         read_and_restore_file(target, original)
-        eq_(0, len(self.problems.all()), 'All errors should be autofixed')
-        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
+        self.assertEqual(0, len(self.problems.all()),
+                         'All errors should be autofixed')
+        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
 
     @requires_image('eslint')
     def test_execute__install_plugins_cleanup_image_on_failure(self):
@@ -238,8 +248,9 @@ class TestEslint(TestCase):
         tool.process_files([target])
 
         problems = self.problems.all()
-        eq_(1, len(problems))
-        assert_in('Cannot find module', problems[0].body)
+        self.assertEqual(1, len(problems))
+        self.assertIn('Cannot find module', problems[0].body)
 
-        ok_(docker.image_exists('eslint'), 'original image is present')
-        assert_not_in('eslint-', docker.images(), 'no eslint image remains')
+        self.assertTrue(docker.image_exists('eslint'),
+                        'original image is present')
+        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
