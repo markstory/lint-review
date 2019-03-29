@@ -27,7 +27,7 @@ class TestCredo(TestCase):
         self.assertTrue(self.tool.match_file('dir/name/test.exs'))
 
     def test_create_command_types(self):
-        self.tool.config = {
+        self.tool.options = {
             'all': True,
             'all-priorities': 'yes',
             'strict': 1,
