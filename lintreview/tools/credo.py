@@ -30,6 +30,20 @@ class Credo(Tool):
         Run code checks with credo.
         """
         log.debug('Processing %s files with %s', files, self.name)
+        command = self.create_command()
+        command += files
+        output = docker.run('credo', command, self.base_path)
+        if not output:
+            log.debug('No credo errors found.')
+            return False
+
+        process_quickfix(
+            self.problems,
+            output.strip().splitlines(),
+            docker.strip_base,
+            columns=4)
+
+    def create_command(self):
         credo_options = ['checks',
                          'config-name',
                          'ignore-checks']
@@ -43,20 +57,12 @@ class Credo(Tool):
             elif option in credo_flags:
                 if self.parse_ini_bool(value):
                     command += [u'--{}'.format(option)]
-            else:
-                log.error('%s is not a valid option to credo', option)
-        command += files
-        output = docker.run('credo', command, self.base_path)
-        if not output:
-            log.debug('No credo errors found.')
-            return False
+        return command
 
-        process_quickfix(
-            self.problems,
-            output.strip().splitlines(),
-            docker.strip_base,
-            columns=4)
-
-    def parse_ini_bool(self, string):
+    def parse_ini_bool(self, value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            return True if value == 1 else False
         true = ['1', 'yes', 'true', 'on']
-        return string.lower() in true
+        return value.lower() in true

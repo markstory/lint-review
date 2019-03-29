@@ -26,6 +26,17 @@ class TestCredo(TestCase):
         self.assertTrue(self.tool.match_file('dir/name/test.ex'))
         self.assertTrue(self.tool.match_file('dir/name/test.exs'))
 
+    def test_create_command_types(self):
+        self.tool.config = {
+            'all': True,
+            'all-priorities': 'yes',
+            'strict': 1,
+        }
+        command = self.tool.create_command()
+        self.assertTrue('--all' in command)
+        self.assertTrue('--all-priorities' in command)
+        self.assertTrue('--strict' in command)
+
     @requires_image('credo')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
