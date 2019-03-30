@@ -1,5 +1,6 @@
 -r requirements.txt
-nose>=1.2.1,<2.0.0
-mock>=1.0.1,<2.0.0
+pytest~=4.3
+pytest-cov~=2.6
+mock~=2.0
 codecov
 coverage

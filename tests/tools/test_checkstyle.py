@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.checkstyle import Checkstyle
 from unittest import TestCase
-from nose.tools import eq_, assert_in
 from tests import root_dir, requires_image
 
 
@@ -11,7 +10,7 @@ class TestCheckstyle(TestCase):
     fixtures = [
         'tests/fixtures/checkstyle/no_errors.java',
         'tests/fixtures/checkstyle/has_errors.java',
-        u'tests/fixtures/checkstyle/\u6c92\u6709\u932f\u8aa4.java',
+        'tests/fixtures/checkstyle/\u6c92\u6709\u932f\u8aa4.java',
     ]
 
     def setUp(self):
@@ -35,13 +34,13 @@ class TestCheckstyle(TestCase):
     @requires_image('checkstyle')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('checkstyle')
     def test_process_files__multiple_error(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(4, len(problems))
+        self.assertEqual(4, len(problems))
 
         fname = self.fixtures[1]
 
@@ -51,7 +50,7 @@ class TestCheckstyle(TestCase):
             1,
             "Missing a Javadoc comment.\n"
             "Utility classes should not have a public or default constructor.")
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
         expected = Comment(
             fname,
@@ -60,16 +59,16 @@ class TestCheckstyle(TestCase):
             "Missing a Javadoc comment.\n"
             "Parameter args should be final."
         )
-        eq_(expected, problems[2])
+        self.assertEqual(expected, problems[2])
 
     @requires_image('checkstyle')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(4, len(problems))
+        self.assertEqual(4, len(problems))
 
     @requires_image('checkstyle')
     def test_process_files__no_config_comment(self):
@@ -78,8 +77,8 @@ class TestCheckstyle(TestCase):
         tool.process_files(self.fixtures)
 
         problems = self.problems.all()
-        eq_(1, len(problems))
-        assert_in('could not run `checkstyle`', problems[0].body)
+        self.assertEqual(1, len(problems))
+        self.assertIn('could not run `checkstyle`', problems[0].body)
 
     @requires_image('checkstyle')
     def test_process_files__missing_config(self):
@@ -88,9 +87,9 @@ class TestCheckstyle(TestCase):
         tool.process_files(self.fixtures)
 
         problems = self.problems.all()
-        eq_(1, len(problems))
-        assert_in('Running `checkstyle` failed', problems[0].body)
-        assert_in('config file exists and is valid XML', problems[0].body)
+        self.assertEqual(1, len(problems))
+        self.assertIn('Running `checkstyle` failed', problems[0].body)
+        self.assertIn('config file exists and is valid XML', problems[0].body)
 
     def test_create_command__with_path_based_standard(self):
         config = {
@@ -106,4 +105,4 @@ class TestCheckstyle(TestCase):
             'some/file.js'
         ]
         assert 'checkstyle' in result[0], 'checkstyle is in command name'
-        eq_(result, expected)
+        self.assertEqual(result, expected)

@@ -4,9 +4,8 @@ from unittest import TestCase
 from lintreview.review import Problems, Comment
 from lintreview.tools.ktlint import Ktlint
 from tests import (
-    root_dir, requires_image, read_file, read_and_restore_file
+    root_dir, read_file, read_and_restore_file, requires_image
 )
-from nose.tools import eq_
 
 
 class TestKtlint(TestCase):
@@ -38,19 +37,20 @@ class TestKtlint(TestCase):
     def test_process_files_pass(self):
         file_no_errors = self.fixtures[0]
         self.tool.process_files(file_no_errors)
-        eq_([], self.problems.all(file_no_errors))
+        self.assertEqual([], self.problems.all(file_no_errors))
 
     @requires_image('ktlint')
     def test_process_files_fail(self):
         file_has_errors = self.fixtures[1]
         self.tool.process_files([file_has_errors])
         problems = self.problems.all(file_has_errors)
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
-        expected = Comment(file_has_errors, 1, 1, 'Redundant "toString()" call in string template')
-        eq_(expected, problems[0])
+        expected = Comment(file_has_errors, 1, 1,
+                           'Redundant "toString()" call in string template')
+        self.assertEqual(expected, problems[0])
         expected = Comment(file_has_errors, 2, 2, 'Redundant curly braces')
-        eq_(expected, problems[1])
+        self.assertEqual(expected, problems[1])
 
     @requires_image('ktlint')
     def test_process_files_with_android(self):
@@ -58,48 +58,59 @@ class TestKtlint(TestCase):
         tool = Ktlint(self.problems, {'android': True}, root_dir)
         tool.process_files([file_android_has_errors])
         problems = self.problems.all(file_android_has_errors)
-        eq_(3, len(problems))
+        self.assertEqual(3, len(problems))
 
         expected = Comment(file_android_has_errors, 1, 1,
-                           'class AndroidActivity should be declared in a file named ' +
-                           'AndroidActivity.kt (cannot be auto-corrected)')
-        eq_(expected, problems[0])
+                           ('class AndroidActivity should be declared in a '
+                            'file named AndroidActivity.kt (cannot be '
+                            'auto-corrected)'))
+        self.assertEqual(expected, problems[0])
         expected = Comment(file_android_has_errors, 9, 9,
                            'Wildcard import (cannot be auto-corrected)')
-        eq_(expected, problems[1])
+        self.assertEqual(expected, problems[1])
         # Android options should lint max line length in a file
         expected = Comment(file_android_has_errors, 51, 51,
-                           'Exceeded max line length (100) (cannot be auto-corrected)')
-        eq_(expected, problems[2])
+                           ('Exceeded max line length (100) '
+                            '(cannot be auto-corrected)'))
+        self.assertEqual(expected, problems[2])
 
     @requires_image('ktlint')
     def test_process_files_multiple_files(self):
         self.tool.process_files(self.fixtures)
-        eq_([], self.problems.all(self.fixtures[0]))
-        eq_(2, len(self.problems.all(self.fixtures[1])))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
+        self.assertEqual(2, len(self.problems.all(self.fixtures[1])))
         # Without android options should only display 2 errors
-        eq_(2, len(self.problems.all(self.fixtures[2])))
+        self.assertEqual(2, len(self.problems.all(self.fixtures[2])))
 
     def test_has_fixer__not_enabled(self):
         tool = Ktlint(self.problems, {}, root_dir)
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Ktlint(self.problems, {'fixer': True}, root_dir)
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('ktlint')
     def test_process_files__with_ruleset(self):
-        tool = Ktlint(self.problems, {'ruleset': '/path/to/custom/rulseset.jar'}, root_dir)
-        eq_(['ktlint', '--color', '--reporter=checkstyle', '-R', '/path/to/custom/rulseset.jar'],
-            tool._create_command())
+        tool = Ktlint(self.problems,
+                      {'ruleset': '/path/to/custom/rulseset.jar'}, root_dir)
+        self.assertEqual(['ktlint',
+                          '--color',
+                          '--reporter=checkstyle',
+                          '-R',
+                          '/path/to/custom/rulseset.jar'],
+                         tool._create_command())
 
     @requires_image('ktlint')
     def test_process_files__valid_config(self):
         editor_config = 'tests/fixtures/ktlint/.editorconfig'
         tool = Ktlint(self.problems, {'config': editor_config}, root_dir)
-        eq_(['ktlint', '--color', '--reporter=checkstyle', '--editorconfig=', editor_config],
-            tool._create_command())
+        self.assertEqual(['ktlint',
+                         '--color',
+                          '--reporter=checkstyle',
+                          '--editorconfig=',
+                          editor_config],
+                         tool._create_command())
 
     @requires_image('ktlint')
     def test_execute_fixer(self):
@@ -110,4 +121,5 @@ class TestKtlint(TestCase):
 
         updated = read_and_restore_file(target, original)
         assert original != updated, 'File content should change.'
-        eq_(0, len(self.problems.all()), 'No errors should be recorded')
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')

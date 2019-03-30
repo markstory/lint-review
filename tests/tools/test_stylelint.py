@@ -1,9 +1,9 @@
 from __future__ import absolute_import
+from unittest import TestCase
+
 from lintreview.review import Problems, Comment
 from lintreview.tools.stylelint import Stylelint
-from unittest import TestCase
-from nose.tools import eq_, assert_in
-from tests import root_dir, read_file, read_and_restore_file, requires_image
+from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
 class TestStylelint(TestCase):
@@ -35,30 +35,31 @@ class TestStylelint(TestCase):
     @requires_image('nodejs')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
     @requires_image('nodejs')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
         fname = self.fixtures[1]
-        error = 'Unexpected unknown at-rule "@include" (at-rule-no-unknown) [error]'
+        error = ('Unexpected unknown at-rule "@include" '
+                 '(at-rule-no-unknown) [error]')
         expected = Comment(fname, 2, 2, error)
-        eq_(expected, problems[0])
+        self.assertEqual(expected, problems[0])
 
     @requires_image('nodejs')
     def test_process_files__multiple_files(self):
         self.tool.process_files(self.fixtures)
 
-        eq_([], self.problems.all(self.fixtures[0]))
+        self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
         problems = self.problems.all(self.fixtures[2])
-        eq_(2, len(problems))
+        self.assertEqual(2, len(problems))
 
     @requires_image('nodejs')
     def test_process_files_with_config(self):
@@ -70,7 +71,8 @@ class TestStylelint(TestCase):
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all()
-        eq_(6, len(problems), 'Config file should change error count')
+        self.assertEqual(6, len(problems),
+                         'Config file should change error count')
 
     @requires_image('nodejs')
     def test_process_files_with_invalid_config(self):
@@ -81,18 +83,19 @@ class TestStylelint(TestCase):
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all()
-        eq_(1, len(problems), 'Should capture missing config error')
+        self.assertEqual(1, len(problems),
+                         'Should capture missing config error')
 
-        assert_in('Your configuration file', problems[0].body)
-        assert_in('ENOENT', problems[0].body)
+        self.assertIn('Your configuration file', problems[0].body)
+        self.assertIn('ENOENT', problems[0].body)
 
     def test_has_fixer__not_enabled(self):
         tool = Stylelint(self.problems, {})
-        eq_(False, tool.has_fixer())
+        self.assertEqual(False, tool.has_fixer())
 
     def test_has_fixer__enabled(self):
         tool = Stylelint(self.problems, {'fixer': True}, root_dir)
-        eq_(True, tool.has_fixer())
+        self.assertEqual(True, tool.has_fixer())
 
     @requires_image('nodejs')
     def test_execute_fixer(self):

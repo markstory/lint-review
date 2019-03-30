@@ -20,6 +20,8 @@ env:
 
 before_install:
   - make images
+  - docker pull markstory/swiftlint
+  - docker tag markstory/swiftlint swiftlint
 
 install:
   - pip install -r requirements-dev.txt
@@ -28,7 +30,9 @@ install:
   - cp settings.sample.py settings.py
 
 script:
-  - nosetests --with-coverage --cover-package lintreview
+  - >
+    pytest -p no:cacheprovider \
+      --cov=lintreview
 
 after_success:
   - codecov

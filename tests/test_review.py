@@ -1,16 +1,16 @@
 from __future__ import absolute_import
+import json
+from unittest import TestCase
+from mock import Mock, patch
+
 from . import load_fixture, fixer_ini
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.review import Review, Problems, Comment, IssueComment
 from lintreview.repo import GithubRepository, GithubPullRequest
-from mock import Mock
-from nose.tools import eq_
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
 from github3.session import GitHubSession
-from unittest import TestCase
-import json
 
 config = load_config()
 
@@ -30,42 +30,50 @@ class TestReview(TestCase):
 
         self.session = GitHubSession()
 
+    def test_review_repr(self):
+        comment = Comment('afile.txt', None, 40, "Some witty comment.")
+        self.assertIn('Comment(filename=', str(comment))
+
     def test_load_comments__none_active(self):
         fixture_data = load_fixture('comments_none_current.json')
         self.pr.review_comments.return_value = [
-                GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
+        ]
 
         review = Review(self.repo, self.pr, self.config)
         review.load_comments()
 
-        eq_(0, len(review.comments("View/Helper/AssetCompressHelper.php")))
+        filename = "View/Helper/AssetCompressHelper.php"
+        self.assertEqual(0, len(review.comments(filename)))
 
     def test_load_comments__loads_comments(self):
         fixture_data = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
+        ]
         review = Review(self.repo, self.pr, self.config)
         review.load_comments()
 
         filename = "Routing/Filter/AssetCompressor.php"
         res = review.comments(filename)
-        eq_(1, len(res))
+        self.assertEqual(1, len(res))
         expected = Comment(filename, None, 87, "A pithy remark")
-        eq_(expected, res[0])
+        self.assertEqual(expected, res[0])
 
         filename = "View/Helper/AssetCompressHelper.php"
         res = review.comments(filename)
-        eq_(2, len(res))
+        self.assertEqual(2, len(res))
         expected = Comment(filename, None, 40, "Some witty comment.")
-        eq_(expected, res[0])
+        self.assertEqual(expected, res[0])
 
         expected = Comment(filename, None, 89, "Not such a good comment")
-        eq_(expected, res[1])
+        self.assertEqual(expected, res[1])
 
     def test_filter_existing__removes_duplicates(self):
         fixture_data = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture_data)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
+        ]
         problems = Problems()
         review = Review(self.repo, self.pr, self.config)
         filename_1 = "Routing/Filter/AssetCompressor.php"
@@ -80,17 +88,17 @@ class TestReview(TestCase):
         review.remove_existing(problems)
 
         res = problems.all(filename_1)
-        eq_(1, len(res))
+        self.assertEqual(1, len(res))
         expected = Comment(filename_1,
                            87,
                            87,
                            'A pithy remark\nSomething different')
-        eq_(res[0], expected)
+        self.assertEqual(res[0], expected)
 
         res = problems.all(filename_2)
-        eq_(1, len(res))
+        self.assertEqual(1, len(res))
         expected = Comment(filename_2, 88, 88, 'I <3 it')
-        eq_(res[0], expected)
+        self.assertEqual(res[0], expected)
 
     def test_publish_pull_review(self):
         problems = Problems()
@@ -107,9 +115,10 @@ class TestReview(TestCase):
         review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called
-        eq_(1, self.pr.create_review.call_count)
+        self.assertEqual(1, self.pr.create_review.call_count)
 
         assert_review(
+            self,
             self.pr.create_review.call_args,
             errors,
             sha)
@@ -133,6 +142,7 @@ class TestReview(TestCase):
 
         assert self.pr.create_review.called
         assert_review(
+            self,
             self.pr.create_review.call_args,
             [],
             sha,
@@ -154,9 +164,10 @@ class TestReview(TestCase):
         review.publish_pull_review(problems, sha)
 
         assert self.pr.create_review.called
-        eq_(1, self.pr.create_review.call_count)
+        self.assertEqual(1, self.pr.create_review.call_count)
 
         assert_review(
+            self,
             self.pr.create_review.call_args,
             [errors[1]],
             sha,
@@ -168,8 +179,8 @@ class TestReview(TestCase):
             'OK_LABEL': None,
             'PULLREQUEST_STATUS': False,
         }
-        config = build_review_config(fixer_ini, app_config)
-        review = Review(self.repo, self.pr, config)
+        tst_config = build_review_config(fixer_ini, app_config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_status(False)
 
         assert self.repo.create_status.called, 'Create status called'
@@ -182,9 +193,9 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'PULLREQUEST_STATUS': True,
         }
-        config = build_review_config(fixer_ini, app_config)
-        review = Review(self.repo, self.pr, config)
-        review = Review(self.repo, self.pr, config)
+        tst_config = build_review_config(fixer_ini, app_config)
+        Review(self.repo, self.pr, tst_config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_status(False)
 
         assert self.repo.create_status.called, 'Create status not called'
@@ -205,8 +216,8 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        config = build_review_config(fixer_ini, app_config)
-        review = Review(self.repo, self.pr, config)
+        tst_config = build_review_config(fixer_ini, app_config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_status(True)
 
         assert self.repo.create_status.called, 'Create status not called'
@@ -225,10 +236,11 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        config = build_review_config(fixer_ini, app_config)
-        eq_('success', config.failed_review_status(), 'config object changed')
+        tst_config = build_review_config(fixer_ini, app_config)
+        self.assertEqual('success', tst_config.failed_review_status(),
+                         'config object changed')
 
-        review = Review(self.repo, self.pr, config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_status(True)
 
         assert self.repo.create_status.called, 'Create status not called'
@@ -248,25 +260,25 @@ class TestReview(TestCase):
             Comment(filename_1, 119, 119, 'Something bad'),
         )
         problems.add_many(errors)
-        sha = 'abc123'
-        config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
+        tst_config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
 
-        review = Review(self.repo, self.pr, config)
+        review = Review(self.repo, self.pr, tst_config)
         sha = 'abc123'
         review.publish_pull_review(problems, sha)
 
         assert self.pr.remove_label.called, 'Label should be removed'
         assert self.pr.create_review.called, 'Review should be added'
-        eq_(1, self.pr.create_review.call_count)
+        self.assertEqual(1, self.pr.create_review.call_count)
 
-        self.pr.remove_label.assert_called_with(config['OK_LABEL'])
+        self.pr.remove_label.assert_called_with(tst_config['OK_LABEL'])
         assert_review(
+            self,
             self.pr.create_review.call_args,
             errors,
             sha)
 
     def test_publish_review_empty_comment(self):
-        problems = Problems(changes=[])
+        problems = Problems(changes=DiffCollection([]))
         review = Review(self.repo, self.pr, self.config)
 
         sha = 'abc123'
@@ -279,26 +291,27 @@ class TestReview(TestCase):
         self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_review_empty_comment_add_ok_label(self):
-        problems = Problems(changes=[])
-        config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
-        review = Review(self.repo, self.pr, config)
+        problems = Problems(changes=DiffCollection([]))
+        tst_config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
+        review = Review(self.repo, self.pr, tst_config)
 
         sha = 'abc123'
         review.publish_review(problems, sha)
 
         assert self.pr.create_comment.called, 'ok comment should be added.'
         assert self.pr.remove_label.called, 'label should be removed.'
-        self.pr.remove_label.assert_called_with(config['OK_LABEL'])
+        self.pr.remove_label.assert_called_with(tst_config['OK_LABEL'])
 
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
         self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_review_empty_comment_with_comment_status(self):
-        config = build_review_config(fixer_ini, {'PULLREQUEST_STATUS': True})
+        tst_config = build_review_config(fixer_ini,
+                                         {'PULLREQUEST_STATUS': True})
 
-        problems = Problems(changes=[])
-        review = Review(self.repo, self.pr, config)
+        problems = Problems(changes=DiffCollection([]))
+        review = Review(self.repo, self.pr, tst_config)
 
         sha = 'abc123'
         review.publish_review(problems, sha)
@@ -318,7 +331,8 @@ class TestReview(TestCase):
     def test_publish_review_comment_threshold_checks(self):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture)]
+            GhIssueComment(f, self.session) for f in json.loads(fixture)
+        ]
 
         problems = Problems()
 
@@ -331,14 +345,16 @@ class TestReview(TestCase):
         problems.set_changes([1])
         sha = 'abc123'
 
-        config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
-        review = Review(self.repo, self.pr, config)
-        review.publish_summary = Mock()
-        review.publish_review(problems, sha)
+        tst_config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
+        review = Review(self.repo, self.pr, tst_config)
+        with patch('lintreview.review.Review.publish_summary') as pub_sum_mock:
+            review.publish_review(problems, sha)
 
-        assert review.publish_summary.called, 'Should have been called.'
+            self.assertTrue(pub_sum_mock.called)
 
-    def test_publish_review_no_count_change(self):
+    @patch('lintreview.review.Review.publish_summary')
+    @patch('lintreview.review.Review.publish_status')
+    def test_publish_review_no_count_change(self, pub_status_mock, _):
         fixture = load_fixture('comments_current.json')
         self.pr.review_comments.return_value = [
             GhIssueComment(f, self.session) for f in json.loads(fixture)]
@@ -355,14 +371,12 @@ class TestReview(TestCase):
         problems.set_changes([1])
         sha = 'abc123'
 
-        config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
-        review = Review(self.repo, self.pr, config)
-        review.publish_summary = Mock()
-        review.publish_status = Mock()
+        tst_config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
+        review = Review(self.repo, self.pr, tst_config)
 
         review.publish_review(problems, sha)
         # Ensure publish_status(True) means the status=failed
-        review.publish_status.assert_called_with(True)
+        pub_status_mock.assert_called_with(True)
 
     def test_publish_summary(self):
         problems = Problems()
@@ -380,7 +394,7 @@ class TestReview(TestCase):
         review.publish_summary(problems)
 
         assert self.pr.create_comment.called
-        eq_(1, self.pr.create_comment.call_count)
+        self.assertEqual(1, self.pr.create_comment.call_count)
 
         msg = """There are 3 errors:
 
@@ -392,8 +406,8 @@ class TestReview(TestCase):
 
     def test_publish_checkrun(self):
         self.repo.create_checkrun = Mock()
-        config = build_review_config(fixer_ini,
-                                     {'PULLREQUEST_STATUS': True})
+        tst_config = build_review_config(fixer_ini,
+                                         {'PULLREQUEST_STATUS': True})
         problems = Problems()
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
@@ -403,13 +417,14 @@ class TestReview(TestCase):
         problems.add_many(errors)
         run_id = 42
 
-        review = Review(self.repo, self.pr, config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_checkrun(problems, run_id)
 
         assert self.repo.update_checkrun.called
-        eq_(1, self.repo.update_checkrun.call_count)
+        self.assertEqual(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
+            self,
             self.repo.update_checkrun.call_args,
             errors,
             run_id)
@@ -417,10 +432,12 @@ class TestReview(TestCase):
 
     def test_publish_checkrun__has_errors_force_success_status(self):
         self.repo.create_checkrun = Mock()
-        config = build_review_config(fixer_ini, {'PULLREQUEST_STATUS': False})
-        eq_('success', config.failed_review_status(), 'config object changed')
+        tst_config = build_review_config(fixer_ini,
+                                         {'PULLREQUEST_STATUS': False})
+        self.assertEqual('success', tst_config.failed_review_status(),
+                         'config object changed')
 
-        review = Review(self.repo, self.pr, config)
+        review = Review(self.repo, self.pr, tst_config)
 
         problems = Problems()
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -435,23 +452,24 @@ class TestReview(TestCase):
         assert self.repo.create_status.called is False, 'no status required'
 
         checkrun = self.repo.update_checkrun.call_args[0][1]
-        eq_('success', checkrun['conclusion'])
+        self.assertEqual('success', checkrun['conclusion'])
         assert len(checkrun['output']['annotations']) > 0
 
     def test_publish_checkrun__no_problems(self):
         self.repo.create_checkrun = Mock()
-        config = build_review_config(fixer_ini,
-                                     {'PULLREQUEST_STATUS': True})
+        tst_config = build_review_config(fixer_ini,
+                                         {'PULLREQUEST_STATUS': True})
         problems = Problems()
         run_id = 42
 
-        review = Review(self.repo, self.pr, config)
+        review = Review(self.repo, self.pr, tst_config)
         review.publish_checkrun(problems, run_id)
 
         assert self.repo.update_checkrun.called
-        eq_(1, self.repo.update_checkrun.call_count)
+        self.assertEqual(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
+            self,
             self.repo.update_checkrun.call_args,
             [],
             run_id)
@@ -471,51 +489,58 @@ class TestProblems(TestCase):
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
-        eq_(1, len(self.problems))
+        self.assertEqual(1, len(self.problems))
 
         self.problems.add('file.py', 11, 'Not good')
-        eq_(2, len(self.problems))
-        eq_(2, len(self.problems.all()))
-        eq_(2, len(self.problems.all('file.py')))
-        eq_(0, len(self.problems.all('not there')))
+        self.assertEqual(2, len(self.problems))
+        self.assertEqual(2, len(self.problems.all()))
+        self.assertEqual(2, len(self.problems.all('file.py')))
+        self.assertEqual(0, len(self.problems.all('not there')))
 
     def test_add__duplicate_is_ignored(self):
         self.problems.add('file.py', 10, 'Not good')
-        eq_(1, len(self.problems))
+        self.assertEqual(1, len(self.problems))
 
         self.problems.add('file.py', 10, 'Not good')
-        eq_(1, len(self.problems))
+        self.assertEqual(1, len(self.problems))
 
     def test_add__same_line_combines(self):
         self.problems.add('file.py', 10, 'Tabs bad')
         self.problems.add('file.py', 10, 'Spaces are good')
-        eq_(1, len(self.problems))
+        self.assertEqual(1, len(self.problems))
 
         result = self.problems.all()
         expected = 'Tabs bad\nSpaces are good'
-        eq_(expected, result[0].body)
+        self.assertEqual(expected, result[0].body)
 
     def test_add__same_line_ignores_duplicates(self):
         self.problems.add('file.py', 10, 'Tabs bad')
         self.problems.add('file.py', 10, 'Tabs bad')
-        eq_(1, len(self.problems))
+        self.assertEqual(1, len(self.problems))
 
         result = self.problems.all()
         expected = 'Tabs bad'
-        eq_(expected, result[0].body)
+        self.assertEqual(expected, result[0].body)
 
     def test_add__with_diff_containing_block_offset(self):
-        res = [PullFile(f, self.session) for f in json.loads(self.block_offset)]
+        res = [
+            PullFile(f, self.session) for f in json.loads(self.block_offset)
+        ]
         changes = DiffCollection(res)
 
         problems = Problems(changes=changes)
         line_num = 32
         problems.add('somefile.py', line_num, 'Not good')
-        eq_(1, len(problems))
+        self.assertEqual(1, len(problems))
 
         result = problems.all('somefile.py')
-        eq_(changes.line_position('somefile.py', line_num), result[0].position,
-            'Offset should be transformed to match value in changes')
+        first_result = result[0]
+        self.assertIsInstance(first_result, Comment)
+        self.assertEqual(
+            changes.line_position('somefile.py', line_num),
+            first_result.position,
+            'Offset should be transformed to match value in changes'
+        )
 
     def test_add_many(self):
         errors = [
@@ -524,11 +549,13 @@ class TestProblems(TestCase):
         ]
         self.problems.add_many(errors)
         result = self.problems.all('some/file.py')
-        eq_(2, len(result))
-        eq_(errors, result)
+        self.assertEqual(2, len(result))
+        self.assertEqual(errors, result)
 
     def test_limit_to_changes__remove_problems(self):
-        res = [PullFile(f, self.session) for f in json.loads(self.two_files_json)]
+        res = [
+            PullFile(f, self.session) for f in json.loads(self.two_files_json)
+        ]
         changes = DiffCollection(res)
 
         # Setup some fake problems.
@@ -551,19 +578,19 @@ class TestProblems(TestCase):
         self.problems.limit_to_changes()
 
         result = self.problems.all(filename_1)
-        eq_(2, len(result))
+        self.assertEqual(2, len(result))
         expected = [
             Comment(filename_1, 117, 117, 'Something bad'),
             Comment(filename_1, 119, 119, 'Something else bad')]
-        eq_(len(result), len(expected))
-        eq_(result, expected)
+        self.assertEqual(len(result), len(expected))
+        self.assertEqual(result, expected)
 
         result = self.problems.all(filename_2)
-        eq_(1, len(result))
+        self.assertEqual(1, len(result))
         expected = [
             Comment(filename_2, 3, 3, 'Something bad')
         ]
-        eq_(result, expected)
+        self.assertEqual(result, expected)
 
     def test_has_changes(self):
         problems = Problems(changes=None)
@@ -573,7 +600,7 @@ class TestProblems(TestCase):
         assert problems.has_changes()
 
 
-def assert_review(call_args, errors, sha, body=''):
+def assert_review(test_case, call_args, errors, sha, body=''):
     """
     Check that the review comments match the error list.
     """
@@ -585,17 +612,17 @@ def assert_review(call_args, errors, sha, body=''):
         'body': body,
         'comments': comments
     }
-    eq_(actual.keys(), expected.keys())
-    eq_(len(comments),
-        len(actual['comments']),
-        'Error and comment counts are off.')
+    test_case.assertEqual(actual.keys(), expected.keys())
+    test_case.assertEqual(len(comments),
+                          len(actual['comments']),
+                          'Error and comment counts are off.')
 
 
-def assert_checkrun(call_args, errors, run_id, body=''):
+def assert_checkrun(test_case, call_args, errors, run_id, body=''):
     """
     Check that the review comments match the error list.
     """
-    eq_(run_id, call_args[0][0], 'Runid should match')
+    test_case.assertEqual(run_id, call_args[0][0], 'Runid should match')
 
     actual = call_args[0][1]
     actual_annotations = actual['output']['annotations']
@@ -610,7 +637,7 @@ def assert_checkrun(call_args, errors, run_id, body=''):
         }
         expected.append(value)
 
-    eq_(len(expected), len(actual_annotations))
+    test_case.assertEqual(len(expected), len(actual_annotations))
     for i, item in enumerate(expected):
         assert item == actual_annotations[i]
 

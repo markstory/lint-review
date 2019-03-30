@@ -3,75 +3,7 @@ from . import load_fixture, create_pull_files
 from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
-from nose.tools import eq_, assert_raises, assert_in, assert_not_in
 import re
-
-
-def test_parse_diff__no_input():
-    with assert_raises(ParseError) as ctx:
-        parse_diff('')
-    assert_in('No diff', str(ctx.exception))
-
-
-def test_parse_diff__headers_removed():
-    data = load_fixture('diff/one_file.txt')
-    out = parse_diff(data)
-
-    assert isinstance(out, DiffCollection)
-    eq_(1, len(out))
-    eq_(['tests/test_diff.py'], out.get_files())
-
-    change = out.all_changes('tests/test_diff.py')
-    eq_(1, len(change))
-    eq_('tests/test_diff.py', change[0].filename)
-    eq_(None, change[0].commit, 'No commit as changes are just a diff')
-
-    # Make sure git diff headers are not in patch
-    assert_not_in('git --diff', change[0].patch)
-    assert_not_in('index', change[0].patch)
-    assert_not_in('--- a', change[0].patch)
-    assert_not_in('+++ b', change[0].patch)
-    assert_in('@@', change[0].patch)
-
-
-def test_parse_diff__changed_lines_parsed():
-    data = load_fixture('diff/one_file.txt')
-    out = parse_diff(data)
-
-    assert isinstance(out, DiffCollection)
-    change = out.all_changes('tests/test_diff.py')
-    eq_(1, len(change))
-
-    expected = set([6, 9, 10, 55])
-    eq_(expected, change[0].deleted_lines())
-
-
-def test_parse_diff__multiple_files():
-    data = load_fixture('diff/two_files.txt')
-    out = parse_diff(data)
-    eq_(2, len(out))
-    eq_(['lintreview/git.py', 'tests/test_git.py'], out.get_files())
-
-    for change in out:
-        assert change.filename, 'has a filename'
-        assert change.commit is None, 'No commit'
-        assert_not_in('git --diff', change.patch)
-        assert_not_in('index', change.patch)
-        assert_not_in('--- a', change.patch)
-        assert_not_in('+++ b', change.patch)
-        assert_in('@@', change.patch)
-    change = out.all_changes('tests/test_git.py')[0]
-    eq_(set([205, 206, 207, 208, 209, 210, 211, 212, 213]),
-        change.added_lines())
-
-
-def test_parse_diff__bad_input():
-    data = """
-    some dumb stuff
-    """
-    with assert_raises(ParseError) as ctx:
-        parse_diff(data)
-    assert_in('Could not parse', str(ctx.exception))
 
 
 class TestDiffCollection(TestCase):
@@ -98,12 +30,12 @@ class TestDiffCollection(TestCase):
 
     def test_create_one_element(self):
         changes = DiffCollection(self.one_file)
-        eq_(1, len(changes))
+        self.assertEqual(1, len(changes))
         self.assert_instances(changes, 1, Diff)
 
     def test_create_two_files(self):
         changes = DiffCollection(self.two_files)
-        eq_(2, len(changes))
+        self.assertEqual(2, len(changes))
         self.assert_instances(changes, 2, Diff)
 
     def test_get_files__one_file(self):
@@ -112,7 +44,7 @@ class TestDiffCollection(TestCase):
         expected = [
             "View/Helper/AssetCompressHelper.php"
         ]
-        eq_(expected, result)
+        self.assertEqual(expected, result)
 
     def test_get_files__two_files(self):
         changes = DiffCollection(self.two_files)
@@ -121,7 +53,7 @@ class TestDiffCollection(TestCase):
             "Console/Command/Task/AssetBuildTask.php",
             "Test/test_files/View/Parse/single.ctp",
         ]
-        eq_(expected, result)
+        self.assertEqual(expected, result)
 
     def test_get_files__two_files__ignore_pattern(self):
         changes = DiffCollection(self.two_files)
@@ -130,7 +62,7 @@ class TestDiffCollection(TestCase):
         ]
         ignore = ['Test/**']
         result = changes.get_files(ignore_patterns=ignore)
-        eq_(expected, result)
+        self.assertEqual(expected, result)
 
     def test_get_files__ignore_pattern__multiple_wildcard(self):
         data = load_fixture('multiple_wildcard_pull_request.json')
@@ -140,7 +72,7 @@ class TestDiffCollection(TestCase):
         ]
         ignore = ['buildpacks/*/tests/*/test.sh']
         result = changes.get_files(ignore_patterns=ignore)
-        eq_(expected, result)
+        self.assertEqual(expected, result)
 
     def test_has_line_changed__no_file(self):
         changes = DiffCollection(self.two_files)
@@ -177,20 +109,21 @@ class TestDiffCollection(TestCase):
 
     def test_parsing_diffs_removed__file(self):
         changes = DiffCollection(self.removed_files)
-        eq_(0, len(changes), 'Should be no files as the file was removed')
-        eq_([], changes.get_files())
+        self.assertEqual(0, len(changes),
+                         'Should be no files as the file was removed')
+        self.assertEqual([], changes.get_files())
 
     def test_parsing_diffs__renamed_file_and_blob(self):
         changes = DiffCollection(self.renamed_files)
-        eq_(0, len(changes),
-            'Should be no files as a blob and a rename happened')
-        eq_([], changes.get_files())
+        self.assertEqual(0, len(changes),
+                         'Should be no files as a blob and a rename happened')
+        self.assertEqual([], changes.get_files())
 
     @patch('lintreview.diff.log')
     def test_parsing_diffs__renamed_file_and_blob_no_log(self, log):
         DiffCollection(self.renamed_files)
-        eq_(False, log.warn.called)
-        eq_(False, log.error.called)
+        self.assertEqual(False, log.warn.called)
+        self.assertEqual(False, log.error.called)
 
     def assert_instances(self, collection, count, clazz):
         """
@@ -200,7 +133,7 @@ class TestDiffCollection(TestCase):
         for item in collection:
             num += 1
             assert isinstance(item, clazz)
-        eq_(count, num)
+        self.assertEqual(count, num)
 
 
 class TestDiff(TestCase):
@@ -215,30 +148,95 @@ class TestDiff(TestCase):
         res = create_pull_files(self.fixture_json)
         self.diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
+    def test_parse_diff__no_input(self):
+        with self.assertRaises(ParseError) as ctx:
+            parse_diff('')
+        self.assertIn('No diff', str(ctx.exception))
+
+    def test_parse_diff__headers_removed(self):
+        data = load_fixture('diff/one_file.txt')
+        out = parse_diff(data)
+
+        assert isinstance(out, DiffCollection)
+        self.assertEqual(1, len(out))
+        self.assertEqual(['tests/test_diff.py'], out.get_files())
+
+        change = out.all_changes('tests/test_diff.py')
+        self.assertEqual(1, len(change))
+        self.assertEqual('tests/test_diff.py', change[0].filename)
+        self.assertEqual(None, change[0].commit,
+                         'No commit as changes are just a diff')
+
+        # Make sure git diff headers are not in patch
+        self.assertNotIn('git --diff', change[0].patch)
+        self.assertNotIn('index', change[0].patch)
+        self.assertNotIn('--- a', change[0].patch)
+        self.assertNotIn('+++ b', change[0].patch)
+        self.assertIn('@@', change[0].patch)
+
+    def test_parse_diff__changed_lines_parsed(self):
+        data = load_fixture('diff/one_file.txt')
+        out = parse_diff(data)
+
+        assert isinstance(out, DiffCollection)
+        change = out.all_changes('tests/test_diff.py')
+        self.assertEqual(1, len(change))
+
+        expected = set([6, 9, 10, 55])
+        self.assertEqual(expected, change[0].deleted_lines())
+
+    def test_parse_diff__multiple_files(self):
+        data = load_fixture('diff/two_files.txt')
+        out = parse_diff(data)
+        self.assertEqual(2, len(out))
+        self.assertEqual(['lintreview/git.py', 'tests/test_git.py'],
+                         out.get_files())
+
+        for change in out:
+            assert change.filename, 'has a filename'
+            assert change.commit is None, 'No commit'
+            self.assertNotIn('git --diff', change.patch)
+            self.assertNotIn('index', change.patch)
+            self.assertNotIn('--- a', change.patch)
+            self.assertNotIn('+++ b', change.patch)
+            self.assertIn('@@', change.patch)
+        change = out.all_changes('tests/test_git.py')[0]
+        self.assertEqual({205, 206, 207, 208, 209, 210, 211, 212, 213},
+                         change.added_lines())
+
+    def test_parse_diff__bad_input(self):
+        data = """
+        some dumb stuff
+        """
+        with self.assertRaises(ParseError) as ctx:
+            parse_diff(data)
+        self.assertIn('Could not parse', str(ctx.exception))
+
     def test_properties(self):
-        eq_("View/Helper/AssetCompressHelper.php", self.diff.filename)
+        self.assertEqual("View/Helper/AssetCompressHelper.php",
+                         self.diff.filename)
         expected = '7f73f381ad3284eeb5a23d3a451b5752c957054c'
-        eq_(expected, self.diff.commit)
+        self.assertEqual(expected, self.diff.commit)
 
     def test_patch_property(self):
         res = create_pull_files(self.two_files_json)
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
-        eq_(res[0].patch, diff.patch)
+        self.assertEqual(res[0].patch, diff.patch)
 
     def test_as_diff__one_hunk(self):
         data = load_fixture('diff/no_intersect_updated.txt')
         diff = parse_diff(data)[0]
         # Method results don't include index line.
         data = re.sub(r'^index.*?\n', '', data, 0, re.M)
-        eq_(data, diff.as_diff())
+        self.assertEqual(data, diff.as_diff())
 
     def test_as_diff__multi_hunk(self):
         data = load_fixture('diff/inset_hunks_updated.txt')
         diff = parse_diff(data)[0]
         # Method results don't include index line.
         data = re.sub(r'^index.*?\n', '', data, 0, re.M)
-        eq_(data, diff.as_diff())
+        self.assertEqual(data, diff.as_diff())
 
     def test_has_line_changed__no_line(self):
         self.assertFalse(self.diff.has_line_changed(None))
@@ -265,59 +263,59 @@ class TestDiff(TestCase):
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         self.assertTrue(diff.has_line_changed(32))
-        eq_(26, diff.line_position(23))
-        eq_(40, diff.line_position(32))
+        self.assertEqual(26, diff.line_position(23))
+        self.assertEqual(40, diff.line_position(32))
 
     def test_added_lines(self):
         res = create_pull_files(self.two_files_json)
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         adds = diff.added_lines()
-        eq_(2, len(adds), 'incorrect addition length')
-        eq_(set([117, 119]), adds, 'added line numbers are wrong')
+        self.assertEqual(2, len(adds), 'incorrect addition length')
+        self.assertEqual(set([117, 119]), adds, 'added line numbers are wrong')
 
     def test_deleted_lines(self):
         res = create_pull_files(self.two_files_json)
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         dels = diff.deleted_lines()
-        eq_(3, len(dels), 'incorrect deleted length')
-        eq_(set([117, 119, 148]), dels,
-            'deleted line numbers are wrong')
+        self.assertEqual(3, len(dels), 'incorrect deleted length')
+        self.assertEqual(set([117, 119, 148]), dels,
+                         'deleted line numbers are wrong')
 
         overlap = diff.added_lines().intersection(diff.deleted_lines())
-        eq_(set([117, 119]), overlap)
+        self.assertEqual(set([117, 119]), overlap)
 
     def test_hunk_parsing(self):
         res = create_pull_files(self.two_files_json)
         diff = Diff(res[0].patch, res[0].filename, res[0].sha)
 
         hunks = diff.hunks
-        eq_(2, len(hunks))
+        self.assertEqual(2, len(hunks))
 
         expected = set([117, 119])
-        eq_(expected, hunks[0].added_lines())
-        eq_(expected, hunks[0].deleted_lines())
-        eq_(expected, diff.added_lines())
+        self.assertEqual(expected, hunks[0].added_lines())
+        self.assertEqual(expected, hunks[0].deleted_lines())
+        self.assertEqual(expected, diff.added_lines())
 
-        eq_(set([]), hunks[1].added_lines())
-        eq_(set([148]), hunks[1].deleted_lines())
-        eq_(set([117, 119, 148]), diff.deleted_lines())
+        self.assertEqual(set([]), hunks[1].added_lines())
+        self.assertEqual(set([148]), hunks[1].deleted_lines())
+        self.assertEqual(set([117, 119, 148]), diff.deleted_lines())
 
-        eq_(diff.line_position(117), hunks[0].line_position(117))
-        eq_(diff.line_position(119), hunks[0].line_position(119))
+        self.assertEqual(diff.line_position(117), hunks[0].line_position(117))
+        self.assertEqual(diff.line_position(119), hunks[0].line_position(119))
 
     def test_construct_with_hunks_kwarg(self):
         res = create_pull_files(self.two_files_json)[0]
         proto = Diff(res.patch, res.filename, res.sha)
 
         diff = Diff(None, res.filename, res.sha, hunks=proto.hunks)
-        eq_(len(diff.hunks), len(proto.hunks))
-        eq_(diff.hunks[0].patch, proto.hunks[0].patch)
+        self.assertEqual(len(diff.hunks), len(proto.hunks))
+        self.assertEqual(diff.hunks[0].patch, proto.hunks[0].patch)
 
     def test_construct_with_empty_hunks_kwarg(self):
         diff = Diff(None, 'test.py', 'abc123', hunks=[])
-        eq_(0, len(diff.hunks))
+        self.assertEqual(0, len(diff.hunks))
 
     def test_intersection__simple(self):
         # These two diffs should fully overlap as
@@ -328,8 +326,8 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
-        eq_(4, len(updated.hunks))
-        eq_(4, len(intersecting))
+        self.assertEqual(4, len(updated.hunks))
+        self.assertEqual(4, len(intersecting))
 
     def test_intersection__no_intersect(self):
         # Diffs have no overlap as updated appends lines.
@@ -339,8 +337,8 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
-        eq_(1, len(updated.hunks))
-        eq_(0, len(intersecting))
+        self.assertEqual(1, len(updated.hunks))
+        self.assertEqual(0, len(intersecting))
 
     def test_intersection__inset_hunks(self):
         # Updated contains two hunks inside original's changes
@@ -350,8 +348,8 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
-        eq_(2, len(updated.hunks))
-        eq_(2, len(intersecting))
+        self.assertEqual(2, len(updated.hunks))
+        self.assertEqual(2, len(intersecting))
 
     def test_intersection__staggered_hunks(self):
         # Updated contains a big hunk in the middle that pushes
@@ -363,8 +361,8 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
-        eq_(2, len(updated.hunks))
-        eq_(2, len(intersecting))
+        self.assertEqual(2, len(updated.hunks))
+        self.assertEqual(2, len(intersecting))
 
     def test_intersection__adjacent(self):
         # Updated contains a two hunks that partially overlap
@@ -375,4 +373,4 @@ class TestDiff(TestCase):
         original = parse_diff(original)[0]
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
-        eq_(2, len(intersecting))
+        self.assertEqual(2, len(intersecting))
