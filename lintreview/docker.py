@@ -1,13 +1,27 @@
 from __future__ import absolute_import
-import logging
-import subprocess
-import six
 import os
+import logging
+from typing import Dict, List, Optional  # noqa: F401
+
+import six
+import docker
+from docker.errors import (
+    ImageNotFound,
+    APIError,
+    NotFound
+)
+from requests.exceptions import ReadTimeout, ConnectionError
 
 log = logging.getLogger(__name__)
 
 # The base path for all docker operations
 DOCKER_BASE = '/src'
+
+
+def _get_client():
+    # type: () -> docker.DockerClient
+    """Get a docker client."""
+    return docker.from_env()
 
 
 def replace_basedir(base, files):
@@ -44,45 +58,50 @@ def apply_base(value):
 
 
 def image_exists(name):
-    """Check if a docker image exists"""
-    process = subprocess.Popen(
-        ['docker', 'images', '-q', name],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    output, error = process.communicate()
-    return len(output) > 0
+    # type: (str) -> bool
+    """Check if a docker image exists."""
+    client = _get_client()
+    try:
+        client.images.get(name)
+    except ImageNotFound:
+        return False
+    return True
 
 
 def images():
-    """Get the docker image list"""
-    process = subprocess.Popen(
-        ['docker', 'images'],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    output, error = process.communicate()
-    return output.decode('utf8')
+    # type: () -> List[str]
+    """Get the docker image list."""
+    client = _get_client()
+    d_images = client.images.list()
+    results = []
+    for image in d_images:
+        results += image.tags
+    return results
 
 
 def containers(include_stopped=False):
+    # type: (bool) -> List[str]
     """Get the container list"""
-    cmd = ['docker', 'ps', '--format', '{{.Names}}']
-    if include_stopped:
-        cmd += ['-a']
-    process = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=False)
-    output, error = process.communicate()
-    return output.decode('utf8')
+    client = _get_client()
+    results = []
+    d_containers = client.containers.list(all=include_stopped)
+    for container in d_containers:
+        results.append(container.name)
+
+    return results
 
 
-def run(image, command, source_dir, env=None, timeout=None, name=None):
+def run(image,              # type: str
+        command,            # type: List[str]
+        source_dir,         # type: str
+        env=None,           # type: Dict[str, str]
+        timeout=300,        # type: Optional[int]
+        name=None,          # type: Optional[str]
+        docker_base=None,   # type: Optional[str]
+        workdir=None,       # type: Optional[str]
+        include_error=True  # type: bool
+        ):
+    # type: (...) -> str
     """Execute tool commands in docker containers.
 
     All output from the container will be treated as tool output
@@ -92,44 +111,49 @@ def run(image, command, source_dir, env=None, timeout=None, name=None):
     for tool execution.
     """
     log.info('Running %s container', image)
+    if not docker_base:
+        docker_base = DOCKER_BASE
 
-    env_args = []
-    if isinstance(env, dict):
-        for key, val in env.items():
-            env_args.extend(['-e', u'{key}={val}'.format(key=key, val=val)])
-    elif env:
-        raise ValueError('env argument should be a dict')
-
-    cmd = ['docker', 'run']
+    run_args = {
+        'image': image,
+        'command': [str(c) for c in command],
+        'environment': env,
+        'volumes': {source_dir: {'bind': docker_base, 'mode': 'rw'}},
+        'stdout': True,
+        'stderr': include_error,
+        'detach': True,
+    }
 
     if name is not None:
-        cmd += ['--name', name]
-    else:
-        cmd.append('--rm')
+        run_args['name'] = name
 
-    cmd += [
-        '-v',
-        u'{}:{}'.format(source_dir, DOCKER_BASE)
-    ]
-    cmd += env_args
-    cmd.append(image)
+    if workdir:
+        run_args['working_dir'] = workdir
 
-    # Make all the arguments into bytestr strings.
-    # to get around encoding issues.
-    cmd += [six.text_type(arg).encode('utf8') for arg in command]
+    log.debug('Running %s', run_args)
+    client = _get_client()
+    try:
+        container = client.containers.run(**run_args)
+    except ImageNotFound:
+        err_txt = "Image not found."
+        log.exception(err_txt)
+        return err_txt
+    except APIError:
+        log.exception("API Error running container.")
+        return "API Error Running Container."
 
-    log.debug('Running %s', cmd)
-    process = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True)
-
-    # Get output bytes/string
-    output, error = process.communicate()
-    output = error + output
-    log.debug('Container output was: %s', output)
+    try:
+        container.wait(timeout=timeout)
+        output = b''
+        if include_error:
+            output += container.logs(stdout=False, stderr=True)
+        output += container.logs(stdout=True, stderr=False)
+    except (APIError, ReadTimeout, ConnectionError):
+        log.exception("Container.wait exception.")
+        return "Exception waiting for container to finish."
+    finally:
+        if name is None:
+            container.remove(v=True, force=True)
 
     # Workaround for bytestr in py2 and str in py3
     if isinstance(output, six.binary_type):
@@ -138,61 +162,36 @@ def run(image, command, source_dir, env=None, timeout=None, name=None):
 
 
 def rm_container(name):
-    """
-    Remove a container with the provided name
-    """
-    cmd = ['docker', 'rm', name]
-
-    log.debug('Running %s', cmd)
-    process = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True)
-
-    # Get output bytes/string
-    output, error = process.communicate()
-    output = error + output
-    if process.returncode != 0:
-        raise ValueError(output)
+    # type: (str) -> None
+    """Remove a container with the provided name."""
+    client = _get_client()
+    try:
+        container = client.containers.get(name)
+        container.remove(v=True, force=True)
+    except (NotFound, APIError):
+        log.exception("Error removing container.")
+        raise ValueError("Unable to remove container.")
 
 
 def rm_image(name):
-    """
-    Remove the named image with the provided name
-    """
-    cmd = ['docker', 'rmi', name]
-    log.debug('Running %s', cmd)
-    process = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True)
-
-    # Get output bytes/string
-    output, error = process.communicate()
-    output = error + output
-    if process.returncode != 0:
-        raise ValueError(output)
+    # type: (str) -> None
+    """Remove the named image with the provided name."""
+    client = _get_client()
+    try:
+        client.images.remove(image=name, force=True)
+    except ImageNotFound:
+        log.exception("Image: %s wasn't found, but we tried to remove it.",
+                      name)
+        raise ValueError("Could not remove: {0}".format(name))
 
 
 def commit(name):
-    """Commit a container state into a new image
-    """
-    cmd = ['docker', 'commit', name, name]
-    log.debug('Running %s', cmd)
-
-    process = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True)
-
-    # Get output bytes/string
-    output, error = process.communicate()
-    output = error + output
-    if process.returncode != 0:
-        raise ValueError(output)
+    # type: (str) -> None
+    """Commit a container state into a new images."""
+    client = _get_client()
+    try:
+        container = client.containers.get(name)
+        container.commit(repository=name)
+    except (NotFound, APIError):
+        log.exception("Exception committing container.")
+        raise ValueError("Could not commit container: {0}".format(name))

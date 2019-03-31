@@ -49,4 +49,34 @@ class TestDocker(TestCase):
     @requires_image('python2')
     def test_images(self):
         result = docker.images()
-        self.assertIn('python2', result)
+        self.assertIn('python2:latest', result)
+
+    def test_image_exists__no_exist(self):
+        self.assertFalse(docker.image_exists('nevergonnaexist:tacos'))
+
+    def test_rm_container__no_exist(self):
+        self.assertRaises(ValueError,
+                          docker.rm_container,
+                          'anamethatdoesnotexist')
+
+    def test_rm_image__no_exist(self):
+        self.assertRaises(ValueError,
+                          docker.rm_image,
+                          'anamethatdoesnotexist')
+
+    def test_commit__no_exist(self):
+        self.assertRaises(ValueError,
+                          docker.commit,
+                          'anamethatdoesnotexist')
+
+    def test_run__no_exist(self):
+        expected = 'Image not found.'
+        actual = docker.run('anamethatdoesnotexist', [], test_dir)
+        self.assertEqual(expected, actual)
+
+    @requires_image('python2')
+    def test_run__timeout(self):
+        expected = 'Exception waiting for container to finish.'
+        cmd = ['python', '-c', 'import time; time.sleep(10)']
+        actual = docker.run('python2', cmd, test_dir, timeout=5)
+        self.assertEqual(expected, actual)
