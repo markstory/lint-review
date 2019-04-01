@@ -72,9 +72,8 @@ def images():
     # type: () -> List[str]
     """Get the docker image list."""
     client = _get_client()
-    d_images = client.images.list()
     results = []
-    for image in d_images:
+    for image in client.images.list():
         results += image.tags
     return results
 
