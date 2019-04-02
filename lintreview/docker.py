@@ -18,6 +18,10 @@ log = logging.getLogger(__name__)
 DOCKER_BASE = '/src'
 
 
+class TimeoutError(Exception):
+    """Exception for when we timeout waiting for docker."""
+
+
 def _get_client():
     # type: () -> docker.DockerClient
     """Get a docker client."""
@@ -149,7 +153,7 @@ def run(image,              # type: str
         output += container.logs(stdout=True, stderr=False)
     except (APIError, ReadTimeout, ConnectionError):
         log.exception("Container.wait exception.")
-        return "Exception waiting for container to finish."
+        raise TimeoutError()
     finally:
         if name is None:
             container.remove(v=True, force=True)

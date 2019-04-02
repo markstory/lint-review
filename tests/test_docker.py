@@ -76,7 +76,9 @@ class TestDocker(TestCase):
 
     @requires_image('python2')
     def test_run__timeout(self):
-        expected = 'Exception waiting for container to finish.'
         cmd = ['python', '-c', 'import time; time.sleep(10)']
-        actual = docker.run('python2', cmd, test_dir, timeout=5)
-        self.assertEqual(expected, actual)
+        self.assertRaises(
+            docker.TimeoutError,
+            docker.run,
+            'python2', cmd, test_dir, timeout=5
+        )
