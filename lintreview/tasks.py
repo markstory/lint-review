@@ -7,6 +7,7 @@ from copy import deepcopy
 from lintreview.config import load_config, build_review_config
 from lintreview.repo import GithubRepository
 from lintreview.processor import Processor
+from lintreview.docker import TimeoutError
 
 config = load_config()
 celery = Celery('lintreview.tasks')
@@ -15,8 +16,8 @@ celery.config_from_object(config)
 log = logging.getLogger(__name__)
 
 
-@celery.task(ignore_result=True)
-def process_pull_request(user, repo_name, number, lintrc):
+@celery.task(bind=True, ignore_result=True)
+def process_pull_request(self, user, repo_name, number, lintrc):
     """
     Starts processing a pull request and running the various
     lint tools against it.
@@ -59,14 +60,20 @@ def process_pull_request(user, repo_name, number, lintrc):
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo_name, number))
 
-    except BaseException as e:
+    except Exception as e:
         log.exception(e)
+    except TimeoutError as e:
+        log.exception(e)
+        raise self.retry(
+            countdown=5,  # Pause for 5 seconds to clear things out
+            max_retries=2,  # only give it one more shot
+        )
     finally:
         try:
             git.destroy(target_path)
             log.info('Cleaned up pull request %s/%s/%s',
                      user, repo_name, number)
-        except BaseException as e:
+        except Exception as e:
             log.exception(e)
 
 

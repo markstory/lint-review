@@ -213,7 +213,9 @@ class TestEslint(TestCase):
 
         self.assertTrue(docker.image_exists('nodejs'),
                         'original image is present')
-        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
+
+        for image in docker.images():
+            self.assertNotIn('eslint-', image, 'no eslint image remains')
 
     @requires_image('eslint')
     def test_execute_fixer__install_plugins(self):
@@ -234,7 +236,8 @@ class TestEslint(TestCase):
         read_and_restore_file(target, original)
         self.assertEqual(0, len(self.problems.all()),
                          'All errors should be autofixed')
-        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
+        for image in docker.images():
+            self.assertNotIn('eslint-', image, 'no eslint image remains')
 
     @requires_image('eslint')
     def test_execute__install_plugins_cleanup_image_on_failure(self):
@@ -253,4 +256,5 @@ class TestEslint(TestCase):
 
         self.assertTrue(docker.image_exists('eslint'),
                         'original image is present')
-        self.assertNotIn('eslint-', docker.images(), 'no eslint image remains')
+        for image in docker.images():
+            self.assertNotIn('eslint-', image, 'no eslint image remains')

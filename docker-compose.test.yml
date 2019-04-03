@@ -2,3 +2,5 @@
 sut:
   build: .
   command: /code/docker_tests.sh
+  volumes:
+    - '/var/run/docker.sock:/var/run/docker.sock'
