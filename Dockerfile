@@ -3,7 +3,7 @@ ENV REFRESHED_AT 2019-03-31
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git curl
 
 WORKDIR /code
 # This allows us to cache the pip install stage
