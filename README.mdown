@@ -459,6 +459,7 @@ Uses [ktlint](https://github.com/shyiko/ktlint) to lint kotlin code.
 
 * `android` Set to `true` to pass rule set in error messages.
 * `config` Provide a path to the [.editorconfig](http://editorconfig.org/) file for ktlint.
+* `experimental` Set to `true` to add `experimental/indent` rule ([#338](https://github.com/shyiko/ktlint/issues/338)).
 * `ruleset` Provide a path to the JAR containing one or more [Rule](https://github.com/shyiko/ktlint/blob/master/ktlint-core/src/main/kotlin/com/github/shyiko/ktlint/core/Rule.kt)s gathered together in a [RuleSet](https://github.com/shyiko/ktlint/blob/master/ktlint-core/src/main/kotlin/com/github/shyiko/ktlint/core/RuleSet.kt). [Ruleset Template](https://github.com/shyiko/ktlint/blob/master/ktlint-ruleset-template)
 
 
