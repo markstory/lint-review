@@ -87,7 +87,7 @@ class TestKtlint(TestCase):
         self.assertEqual(True, tool.has_fixer())
 
     @requires_image('ktlint')
-    def test_process_files__with_ruleset(self):
+    def test_process_files__with_experimental(self):
         tool = Ktlint(self.problems, {'experimental': True}, root_dir)
         self.assertEqual(['ktlint',
                           '--color',
@@ -96,7 +96,7 @@ class TestKtlint(TestCase):
                          tool._create_command())
 
     @requires_image('ktlint')
-    def test_process_files__with_experimental(self):
+    def test_process_files__with_ruleset(self):
         tool = Ktlint(self.problems,
                       {'ruleset': '/path/to/custom/rulseset.jar'}, root_dir)
         self.assertEqual(['ktlint',
