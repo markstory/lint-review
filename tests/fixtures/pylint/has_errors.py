@@ -12,3 +12,5 @@ def thing_two(arg1, arg2, arg3):
     result=arg1*arg2
     if result == arg1:
         pass
+    elif result == '':
+        pass

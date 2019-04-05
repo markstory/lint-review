@@ -123,6 +123,7 @@ class TestPylint(TestCase):
         problems = self.problems.all(self.fixtures[1])
         eq_([
             Comment(filename, 10, 10, "C0301 Line too long (51/50)"),
-            Comment(filename, 1, 1, "C0302 Too many lines in module (14/3)"),
+            Comment(filename, 1, 1, "C0302 Too many lines in module (16/3)"),
             Comment(filename, 9, 9, "R0913 Too many arguments (3/1)"),
+            Comment(filename, 15, 15, "C1901 Avoid comparisons to empty string"),
         ], problems)

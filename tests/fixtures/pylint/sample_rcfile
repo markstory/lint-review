@@ -1,3 +1,6 @@
+[MASTER]
+load-plugins=pylint.extensions.emptystring
+
 [MESSAGES CONTROL]
 
 disable=W0611,
