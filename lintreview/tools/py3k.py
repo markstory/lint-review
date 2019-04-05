@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import logging
 
-import lintreview.docker as docker
 from lintreview.tools import stringify
 from lintreview.tools.pylint import Pylint
 
@@ -18,12 +17,7 @@ class Py3k(Pylint):
 
     name = 'py3k'
     accepted_options = ('ignore', )
-
-    def check_dependencies(self):
-        """
-        See if python image is available
-        """
-        return docker.image_exists('python2')
+    python_version = 'python2'
 
     def make_command(self, files):
         self.check_options()

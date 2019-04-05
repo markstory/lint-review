@@ -13,7 +13,7 @@ class Pylint(Tool):
 
     name = 'pylint'
 
-    accepted_options = ('disable', 'enable', 'config')
+    accepted_options = ('python', 'disable', 'enable', 'config')
 
     @property
     def _base_command(self):
@@ -26,6 +26,16 @@ class Pylint(Tool):
             '{path}:{line}:{column}:{msg_id} {msg}'
         ]
 
+    @property
+    def python_version(self):
+        return python_image(self.options)
+
+    def check_dependencies(self):
+        """
+        See if python image is available
+        """
+        return docker.image_exists(self.python_version)
+
     def match_file(self, filename):
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
@@ -34,8 +44,7 @@ class Pylint(Tool):
     def process_files(self, files):
         log.debug('Processing %s files with %s', files, self.name)
         command = self.make_command(files)
-        image = python_image(self.options)
-        output = docker.run(image, command, source_dir=self.base_path)
+        output = docker.run(self.python_version, command, source_dir=self.base_path)
         if not output:
             log.debug('No %s errors found.', self.name)
             return False
@@ -63,5 +72,5 @@ class Pylint(Tool):
         return command
 
     def check_options(self):
-        for unaccepted_option in set(self.accepted_options) - set(self.options.keys()):
+        for unaccepted_option in set(self.options.keys()) - set(self.accepted_options):
             log.warning('Set non-existent %s option: %s', self.name, unaccepted_option)
