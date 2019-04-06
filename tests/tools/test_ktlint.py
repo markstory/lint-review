@@ -58,7 +58,7 @@ class TestKtlint(TestCase):
         tool = Ktlint(self.problems, {'android': True}, root_dir)
         tool.process_files([file_android_has_errors])
         problems = self.problems.all(file_android_has_errors)
-        self.assertEqual(3, len(problems))
+        self.assertEqual(2, len(problems))
 
         expected = Comment(file_android_has_errors, 1, 1,
                            ('class AndroidActivity should be declared in a '
@@ -68,11 +68,7 @@ class TestKtlint(TestCase):
         expected = Comment(file_android_has_errors, 9, 9,
                            'Wildcard import (cannot be auto-corrected)')
         self.assertEqual(expected, problems[1])
-        # Android options should lint max line length in a file
-        expected = Comment(file_android_has_errors, 51, 51,
-                           ('Exceeded max line length (100) '
-                            '(cannot be auto-corrected)'))
-        self.assertEqual(expected, problems[2])
+        # Android options no longer has lint max line length 100 in ktlint 0.31
 
     @requires_image('ktlint')
     def test_process_files_multiple_files(self):
@@ -89,6 +85,15 @@ class TestKtlint(TestCase):
     def test_has_fixer__enabled(self):
         tool = Ktlint(self.problems, {'fixer': True}, root_dir)
         self.assertEqual(True, tool.has_fixer())
+
+    @requires_image('ktlint')
+    def test_process_files__with_experimental(self):
+        tool = Ktlint(self.problems, {'experimental': True}, root_dir)
+        self.assertEqual(['ktlint',
+                          '--color',
+                          '--reporter=checkstyle',
+                          '--experimental'],
+                         tool._create_command())
 
     @requires_image('ktlint')
     def test_process_files__with_ruleset(self):

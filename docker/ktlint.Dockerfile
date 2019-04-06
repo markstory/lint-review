@@ -1,7 +1,7 @@
 FROM openjdk:8-alpine
 
 # Install ktlint
-ARG ktlint_version=0.30.0
+ARG ktlint_version=0.31.0
 RUN apk add --no-cache curl gnupg
 RUN curl -sSLO https://github.com/shyiko/ktlint/releases/download/${ktlint_version}/ktlint && \
     curl -sSLO https://github.com/shyiko/ktlint/releases/download/${ktlint_version}/ktlint.asc && \

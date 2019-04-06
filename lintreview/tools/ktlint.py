@@ -40,6 +40,8 @@ class Ktlint(Tool):
         command = ['ktlint', '--color', '--reporter=checkstyle']
         if self.options.get('android', False):
             command.append('--android')
+        if self.options.get('experimental', False):
+            command.append('--experimental')
         if self.options.get('ruleset'):
             command += ['-R', self.options.get('ruleset')]
         if self.options.get('config'):
