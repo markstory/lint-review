@@ -90,6 +90,27 @@ class TestTslint(TestCase):
         self.assertEqual(expected, problems[1])
 
     @requires_image('nodejs')
+    def test_process_files_with_project(self):
+        options = {
+            'project': 'tests/fixtures/tslint/tsconfig.json',
+            'config': 'tests/fixtures/tslint/tslint_good.json'
+        }
+        tool = Tslint(self.problems, options, root_dir)
+        tool.process_files([FILE_WITH_ERRORS])
+
+        problems = self.problems.all(FILE_WITH_ERRORS)
+        print problems
+
+        msg = ("Shadowed name: 'range'\n"
+               'Spaces before function parens are disallowed')
+        expected = Comment(FILE_WITH_ERRORS, 1, 1, msg)
+        self.assertEqual(expected, problems[0])
+
+        msg = "The key 'middle' is not sorted alphabetically"
+        expected = Comment(FILE_WITH_ERRORS, 11, 11, msg)
+        self.assertEqual(expected, problems[1])
+
+    @requires_image('nodejs')
     def test_process_files__invalid_rule(self):
         options = {
             'config': 'tests/fixtures/tslint/tslint_invalid_rule.json'

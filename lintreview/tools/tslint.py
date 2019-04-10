@@ -38,6 +38,9 @@ class Tslint(Tool):
         if self.options.get('config'):
             command += ['-c',
                         docker.apply_base(self.options['config'])]
+        if self.options.get('project'):
+            command += ['--project',
+                        docker.apply_base(self.options['project'])]
 
         command += files
         output = docker.run(
