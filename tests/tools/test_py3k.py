@@ -73,3 +73,7 @@ class TestPy3k(TestCase):
             Comment(fname, 11, 11,
                     'W1638 range built-in referenced when not iterating')
         ], problems)
+
+    def test_py3k_ignore_py3(self):
+        self.tool = Py3k(self.problems, {'python': 3})
+        eq_('python2', self.tool.python_version)

@@ -1,0 +1,30 @@
+[MASTER]
+load-plugins=pylint.extensions.emptystring
+
+[MESSAGES CONTROL]
+
+disable=W0611,
+        E1120,
+        W0613,
+        C0111,
+        C0330,
+        C0326,
+        C0410
+
+[REPORTS]
+# test that msg_template is not overwritten by the rcfile, otherwise
+# lint-review won't know what to do with the messages
+msg-template="{path}:{line}:{column}:{msg_id} foo"
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+max-line-length=50
+
+# Maximum number of lines in a module
+max-module-lines=3
+
+[DESIGN]
+
+# Maximum number of arguments for function / method
+max-args=1
