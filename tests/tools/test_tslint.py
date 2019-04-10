@@ -99,7 +99,6 @@ class TestTslint(TestCase):
         tool.process_files([FILE_WITH_ERRORS])
 
         problems = self.problems.all(FILE_WITH_ERRORS)
-        print problems
 
         msg = ("Shadowed name: 'range'\n"
                'Spaces before function parens are disallowed')
