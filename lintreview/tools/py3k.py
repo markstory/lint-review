@@ -57,6 +57,11 @@ class Py3k(Tool):
         accepted_options = ('ignore')
         if 'ignore' in self.options:
             command.extend(['-d', stringify(self.options['ignore'])])
+        if 'ignore-patterns' in self.options:
+            command.extend([
+                '--ignore-patterns',
+                stringify(self.options['ignore-patterns'])
+            ])
 
         for option in self.options:
             if option in accepted_options:
