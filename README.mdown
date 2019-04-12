@@ -239,6 +239,8 @@ issues.
 *Options*
 
 * `ignore` A comma separated list of error codes you wish to ignore.
+* `ignore-patterns` A comma separated list of regular expressions that match
+  files you want to ignore.
 
 ### PHP
 
@@ -314,6 +316,7 @@ a path to a config file.
 *Options*
 
 * `config` The config file you want `tslint` to use.
+* `project` The tsc config file you want `tslint` to use.
 
 ### CSS:
 
