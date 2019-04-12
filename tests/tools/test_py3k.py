@@ -73,3 +73,12 @@ class TestPy3k(TestCase):
             Comment(fname, 11, 11,
                     'W1638 range built-in referenced when not iterating')
         ], problems)
+
+    @requires_image('python2')
+    def test_process_files__ignore_patterns(self):
+        tool = Py3k(self.problems,
+                    {'ignore-patterns': ['has_err*']},
+                    root_dir)
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        self.assertEqual(0, len(problems))
