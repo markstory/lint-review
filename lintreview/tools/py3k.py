@@ -82,11 +82,12 @@ class Py3k(Tool):
             else:
                 matchers.append(matcher)
 
-        has_match = lambda name: any([
-            True
-            for matcher in matchers
-            if matcher.search(name)
-        ])
+        def has_match(name):
+            return any([
+                True
+                for matcher in matchers
+                if matcher.search(name)
+            ])
 
         keepers = []
         for name in files:
