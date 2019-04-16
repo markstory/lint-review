@@ -63,7 +63,6 @@ class Py3k(Tool):
         # paths, so we have to do that ourselves.
         if 'ignore-patterns' in self.options:
             files = self.apply_ignores(self.options['ignore-patterns'], files)
-            print files
 
         for option in self.options:
             if option in accepted_options:
