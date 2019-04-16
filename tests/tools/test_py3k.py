@@ -100,3 +100,21 @@ class TestPy3k(TestCase):
         tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
         self.assertEqual(0, len(problems))
+
+    @requires_image('python2')
+    def test_process_files__ignore_pattern_miss(self):
+        tool = Py3k(self.problems,
+                    {'ignore-patterns': 'foo.*'},
+                    root_dir)
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        self.assertEqual(2, len(problems))
+
+    @requires_image('python2')
+    def test_process_files__ignore_pattern_corrupt(self):
+        tool = Py3k(self.problems,
+                    {'ignore-patterns': '(foo'},
+                    root_dir)
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        self.assertEqual(2, len(problems))
