@@ -77,7 +77,25 @@ class TestPy3k(TestCase):
     @requires_image('python2')
     def test_process_files__ignore_patterns(self):
         tool = Py3k(self.problems,
-                    {'ignore-patterns': ['has_err*']},
+                    {'ignore-patterns': ['has_err.*', 'no.*']},
+                    root_dir)
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        self.assertEqual(0, len(problems))
+
+    @requires_image('python2')
+    def test_process_files__ignore_pattern_string(self):
+        tool = Py3k(self.problems,
+                    {'ignore-patterns': 'has.*,no_.*'},
+                    root_dir)
+        tool.process_files([self.fixtures.has_errors])
+        problems = self.problems.all(self.fixtures.has_errors)
+        self.assertEqual(0, len(problems))
+
+    @requires_image('python2')
+    def test_process_files__ignore_pattern_path(self):
+        tool = Py3k(self.problems,
+                    {'ignore-patterns': 'fixtures/py3k/.*'},
                     root_dir)
         tool.process_files([self.fixtures.has_errors])
         problems = self.problems.all(self.fixtures.has_errors)
