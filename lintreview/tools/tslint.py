@@ -25,7 +25,7 @@ class Tslint(Tool):
         """
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.ts'
+        return ext in ('.ts', '.tsx')
 
     def process_files(self, files):
         """
@@ -53,9 +53,9 @@ class Tslint(Tool):
         missing_ruleset = 'Could not find implementations'
         if missing_ruleset in output:
             msg = u'Your tslint configuration output the following error:\n' \
-                   '```\n' \
-                   '{}\n' \
-                   '```'
+                '```\n' \
+                '{}\n' \
+                '```'
             # When tslint fails the error message is trailed by
             # multiple newlines with some bonus space. Use that to segment
             # out the error
@@ -92,7 +92,7 @@ class Tslint(Tool):
         if (output.startswith('No valid rules') or
                 not output.startswith('<?xml')):
             msg = u'Your tslint configuration file is missing or invalid. ' \
-                   u'Please ensure that `{}` exists and is valid JSON.'
+                u'Please ensure that `{}` exists and is valid JSON.'
             config = self.options.get('config', 'tslint.json')
             msg = msg.format(config)
             return self.problems.add(IssueComment(msg))
