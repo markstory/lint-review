@@ -24,6 +24,7 @@ class TestTslint(TestCase):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
         self.assertTrue(self.tool.match_file('test.ts'))
+        self.assertTrue(self.tool.match_file('test.tsx'))
         self.assertTrue(self.tool.match_file('dir/name/test.ts'))
 
     @requires_image('nodejs')
