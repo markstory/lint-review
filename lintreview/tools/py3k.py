@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import os
 import logging
 import lintreview.docker as docker
+import re
 from lintreview.tools import Tool, process_quickfix, stringify
 
 log = logging.getLogger(__name__)
@@ -57,11 +58,11 @@ class Py3k(Tool):
         accepted_options = ('ignore')
         if 'ignore' in self.options:
             command.extend(['-d', stringify(self.options['ignore'])])
+
+        # Pylint's ignore-patterns option is unable to ignore
+        # paths, so we have to do that ourselves.
         if 'ignore-patterns' in self.options:
-            command.extend([
-                '--ignore-patterns',
-                stringify(self.options['ignore-patterns'])
-            ])
+            files = self.apply_ignores(self.options['ignore-patterns'], files)
 
         for option in self.options:
             if option in accepted_options:
@@ -69,3 +70,26 @@ class Py3k(Tool):
             log.warning('Set non-existent py3k option: %s', option)
         command.extend(files)
         return command
+
+    def apply_ignores(self, patterns, files):
+        matchers = []
+        for pattern in stringify(patterns).split(','):
+            try:
+                matcher = re.compile(pattern)
+            except Exception:
+                continue
+            else:
+                matchers.append(matcher)
+
+        def has_match(name):
+            return any([
+                True
+                for matcher in matchers
+                if matcher.search(name)
+            ])
+
+        keepers = []
+        for name in files:
+            if not has_match(name):
+                keepers.append(name)
+        return keepers
