@@ -36,12 +36,13 @@ class TestPytype(TestCase):
 
         fname = self.fixtures[1]
         expected = Comment(
-            fname, 5, 5,
+            fname, 6, 6,
             "No attribute 'group' on None [attribute-error]"
             " In Optional[Match[str]]")
         self.assertEqual(expected, problems[0])
 
-        expected = Comment(fname, 8, 8, "Invalid __slot__ entry: '1' [bad-slots]")
+        expected = Comment(
+            fname, 10, 10, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
     @requires_image('python3')
@@ -55,12 +56,13 @@ class TestPytype(TestCase):
 
         fname = self.fixtures[1]
         expected = Comment(
-            fname, 5, 5,
+            fname, 6, 6,
             "No attribute 'group' on None [attribute-error]"
             " In Optional[Match[str]]")
         self.assertEqual(expected, problems[0])
 
-        expected = Comment(fname, 8, 8, "Invalid __slot__ entry: '1' [bad-slots]")
+        expected = Comment(
+            fname, 10, 10, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
     @requires_image('python3')
