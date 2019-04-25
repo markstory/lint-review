@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.pytype import Pytype
 from unittest import TestCase
-from tests import root_dir, read_file, read_and_restore_file, requires_image
+from tests import root_dir, requires_image
 
 
 class TestPytype(TestCase):

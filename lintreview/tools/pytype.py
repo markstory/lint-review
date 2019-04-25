@@ -3,7 +3,7 @@ import os
 import re
 import logging
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_quickfix
+from lintreview.tools import Tool
 from lintreview.review import IssueComment
 
 log = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class Pytype(Tool):
 
     def parse_output(self, output):
         """
-        Pytype has is own output format that is not machine readable, so we use 
+        Pytype has is own output format that is not machine readable, so we use
         regex and string contains to munge it into something usable. The output looks like
 
         ```
@@ -53,10 +53,9 @@ class Pytype(Tool):
         [1/1] check has_errors
         FAILED: /src/.pytype/pyi/has_errors.pyi
         pytype-single --imports_info /src/.pytype/imports/has_errors.imports ...
-        File "/src/tests/fixtures/pytype/has_errors.py", line 5, in get_username: No attribute 'group' on None [attribute-error]
+        File "../pytype/has_errors.py", line 5, in get_username: message text [attribute-error]
           In Optional[Match[str]]
-        File "/src/tests/fixtures/pytype/has_errors.py", line 8, in <module>: Invalid __slot__ entry: '1' [bad-slots]
-        File "/src/tests/fixtures/pytype/has_errors.py", line 13, in error: Key 'y' possibly not in dictionary (yet) [key-error]
+        File "../pytype/has_errors.py", line 8, in <module>: message text: '1' [bad-slots]
         ```
 
         We use regex to slice out the file, line and message information.

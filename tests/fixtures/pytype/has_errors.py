@@ -6,9 +6,9 @@ def get_username(email_address):
 
 
 class Foo(object):
-  __slots__ = (1, 2, 3)
+    __slots__ = (1, 2, 3)
 
-  def error(self):
-    x = {}
-    y = x["y"]
-    return y
+    def error(self):
+        x = {}
+        y = x["y"]
+        return y
