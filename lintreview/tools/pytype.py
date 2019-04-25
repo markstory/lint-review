@@ -64,7 +64,9 @@ class Pytype(Tool):
         lineno = 0
         filename = ''
 
-        message_pattern = re.compile(r'File "(?P<file>[^"]+)",\s+line\s+(?P<line>\d+),[^:]+\:\s+(?P<message>.*)')
+        message_pattern = re.compile(
+            r'File "(?P<file>[^"]+)",\s+line\s+(?P<line>\d+),[^:]+\:\s+(?P<message>.*)'
+        )
         lines = output.split('\n')
         if len(lines) and lines[0].startswith('CRITICAL'):
             message = (
