@@ -78,7 +78,6 @@ class Pytype(Tool):
             self.problems.add(IssueComment(message.format("\n".join(lines))))
 
         for line in output.split("\n"):
-            print line
             # Some errors have continuations on subsequent lines
             if len(message) and not line.startswith('File'):
                 message = message + ' ' + line.strip()

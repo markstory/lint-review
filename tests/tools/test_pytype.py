@@ -42,7 +42,7 @@ class TestPytype(TestCase):
         self.assertEqual(expected, problems[0])
 
         expected = Comment(
-            fname, 10, 10, "Invalid __slot__ entry: '1' [bad-slots]")
+            fname, 9, 9, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
     @requires_image('python3')
@@ -62,7 +62,7 @@ class TestPytype(TestCase):
         self.assertEqual(expected, problems[0])
 
         expected = Comment(
-            fname, 10, 10, "Invalid __slot__ entry: '1' [bad-slots]")
+            fname, 9, 9, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
     @requires_image('python3')
