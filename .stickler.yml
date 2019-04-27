@@ -9,3 +9,4 @@ ignore:
     - 'tests/fixtures/black/*'
     - 'tests/fixtures/pep8/*'
     - 'tests/fixtures/py3k/*'
+    - 'tests/fixtures/pytype/*'

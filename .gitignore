@@ -2,6 +2,9 @@
 build/
 dist/
 *.egg-info
+.pytype
+.pytest_cache
+.DS_Store
 tags
 /env
 /settings.py
