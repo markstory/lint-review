@@ -94,15 +94,16 @@ def containers(include_stopped=False):
     return results
 
 
-def run(image,              # type: str
-        command,            # type: List[str]
-        source_dir,         # type: str
-        env=None,           # type: Dict[str, str]
-        timeout=300,        # type: Optional[int]
-        name=None,          # type: Optional[str]
-        docker_base=None,   # type: Optional[str]
-        workdir=None,       # type: Optional[str]
-        include_error=True  # type: bool
+def run(image,                   # type: str
+        command,                 # type: List[str]
+        source_dir,              # type: str
+        env=None,                # type: Dict[str, str]
+        timeout=300,             # type: Optional[int]
+        name=None,               # type: Optional[str]
+        docker_base=None,        # type: Optional[str]
+        workdir=None,            # type: Optional[str]
+        include_error=True,      # type: bool
+        run_as_current_user=True # type: bool
         ):
     # type: (...) -> str
     """Execute tool commands in docker containers.
@@ -132,6 +133,9 @@ def run(image,              # type: str
 
     if workdir:
         run_args['working_dir'] = workdir
+
+    if run_as_current_user:
+        run_args['user'] = os.getuid()
 
     log.debug('Running %s', run_args)
     client = _get_client()

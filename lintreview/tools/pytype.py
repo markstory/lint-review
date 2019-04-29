@@ -35,7 +35,11 @@ class Pytype(Tool):
             command.extend(['--config', docker.apply_base(self.options['config'])])
         command += files
 
-        output = docker.run('python3', command, source_dir=self.base_path)
+        output = docker.run(
+            'python3',
+            command,
+            source_dir=self.base_path,
+            run_as_current_user=True)
         if not output:
             return
 
