@@ -23,6 +23,11 @@ class Pytype(Tool):
         name, ext = os.path.splitext(base)
         return ext in ('.py', '.pyi')
 
+    def has_fixer(self):
+        """pytype has a fixer that can be enabled through configuration.
+        """
+        return bool(self.options.get('fixer', False))
+
     def process_files(self, files):
         """
         Run code checks with pytype.
@@ -30,9 +35,7 @@ class Pytype(Tool):
         to save resources.
         """
         log.debug('Processing %s files with %s', files, self.name)
-        command = ['pytype']
-        if 'config' in self.options:
-            command.extend(['--config', docker.apply_base(self.options['config'])])
+        command = self._apply_options(['pytype'])
         command += files
 
         output = docker.run(
@@ -44,6 +47,11 @@ class Pytype(Tool):
             return
 
         self.parse_output(output)
+
+    def _apply_options(self, command):
+        if 'config' in self.options:
+            command.extend(['--config', docker.apply_base(self.options['config'])])
+        return command
 
     def parse_output(self, output):
         """
@@ -101,3 +109,25 @@ class Pytype(Tool):
                 message = matches.group('message')
         if filename and message:
             self.problems.add(filename, lineno, message)
+
+    def process_fixer(self, files):
+        """
+        Autofixing typing errors requires generating type
+        stubs and then applying them individually.
+        """
+        command = self._apply_options(['pytype'])
+        command += files
+        out = docker.run(
+            'python3',
+            command,
+            source_dir=self.base_path,
+            run_as_current_user=True)
+
+        for f in files:
+            basename = os.path.basename(f)
+            type_file = os.path.join(
+                '.pytype',
+                'pyi',
+                basename[:-3] + '.pyi')
+            command = ['merge-pyi', '-i', f, docker.apply_base(type_file)]
+            out = docker.run('python3', command, source_dir=self.base_path)

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.pytype import Pytype
 from unittest import TestCase
-from tests import root_dir, requires_image
+from tests import root_dir, requires_image, read_file, read_and_restore_file
 
 
 class TestPytype(TestCase):
@@ -90,5 +90,20 @@ class TestPytype(TestCase):
             self.assertNotIn('attribute-error', p.body)
 
     def test_has_fixer(self):
-        tool = Pytype(self.problems, {})
+        tool = Pytype(self.problems, {}, root_dir)
         self.assertEqual(False, tool.has_fixer())
+
+    def test_has_fixer__enabled(self):
+        tool = Pytype(self.problems, {'fixer': True}, root_dir)
+        self.assertEqual(True, tool.has_fixer())
+
+    def test_run_fixer(self):
+        tool = Pytype(self.problems, {'fixer': True}, root_dir)
+
+        original = read_file(self.fixtures[1])
+        tool.execute_fixer(self.fixtures)
+
+        updated = read_and_restore_file(self.fixtures[1], original)
+        assert original != updated, 'File content should change.'
+        self.assertEqual(0, len(self.problems.all()),
+                         'No errors should be recorded')
