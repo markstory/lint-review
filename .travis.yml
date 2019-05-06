@@ -19,7 +19,7 @@ env:
   - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
 
 before_install:
-  - make images
+  - travis_wait make images
   - docker pull markstory/swiftlint
   - docker tag markstory/swiftlint swiftlint
 
