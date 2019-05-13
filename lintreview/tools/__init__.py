@@ -48,7 +48,7 @@ class Tool(object):
         log.info('Running %s on %d files', self.name, num_files)
         try:
             self.process_files(matching_files)
-        except docker.TimeoutError as e:
+        except docker.TimeoutError:
             msg = 'Failed to run %s linter. It timed out during execution.'
             self.problems.add(IssueComment(msg % (self.name)))
 
