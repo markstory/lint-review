@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 from unittest import TestCase
-from mock import Mock
+from mock import Mock, patch
 
 import lintreview.tools as tools
 from lintreview.config import ReviewConfig, build_review_config
+from lintreview.docker import TimeoutError
 from lintreview.review import Review, Problems
 from lintreview.tools import pep8, jshint
 from tests import root_dir, fixtures_path, requires_image
@@ -124,6 +125,20 @@ class TestTools(TestCase):
         tool_list = tools.factory(config, problems, root_dir)
         tools.run(tool_list, files, [])
         self.assertEqual(7, len(problems))
+
+    @patch('lintreview.docker.run')
+    def test_run_timeout_error(self, mock_docker):
+        mock_docker.side_effect = TimeoutError("Read timed out. (read timeout=300)")
+        config = build_review_config(simple_ini)
+        problems = Problems()
+        files = ['./tests/fixtures/pep8/has_errors.py']
+        tool_list = tools.factory(config, problems, root_dir)
+        tools.run(tool_list, files, [])
+
+        errors = problems.all()
+        assert 1 == len(errors)
+        assert 'timed out during' in errors[0].body
+        assert 'run pep8 linter' in errors[0].body
 
     def test_python_image(self):
         self.assertEqual('python2', tools.python_image(False))

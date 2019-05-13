@@ -155,9 +155,9 @@ def run(image,                    # type: str
         if include_error:
             output += container.logs(stdout=False, stderr=True)
         output += container.logs(stdout=True, stderr=False)
-    except (APIError, ReadTimeout, ConnectionError):
-        log.exception("Container.wait exception.")
-        raise TimeoutError()
+    except (APIError, ReadTimeout, ConnectionError) as e:
+        log.error("%s container timed out error=%s.", image, e)
+        raise TimeoutError(six.text_type(e))
     finally:
         if name is None:
             container.remove(v=True, force=True)

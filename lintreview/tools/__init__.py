@@ -1,10 +1,13 @@
 from __future__ import absolute_import
-import lintreview.docker as docker
 import logging
 import os
 import collections
-from xml.etree import ElementTree
 import six
+
+import lintreview.docker as docker
+
+from lintreview.review import IssueComment
+from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +46,11 @@ class Tool(object):
             return
 
         log.info('Running %s on %d files', self.name, num_files)
-        self.process_files(matching_files)
+        try:
+            self.process_files(matching_files)
+        except docker.TimeoutError:
+            msg = 'Failed to run %s linter. It timed out during execution.'
+            self.problems.add(IssueComment(msg % (self.name)))
 
     def execute_commits(self, commits):
         """
