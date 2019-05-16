@@ -148,7 +148,8 @@ class Pytype(Tool):
                 update_command,
                 source_dir=self.base_path
             )
-            print out
-        except Exception:
+        except Exception as e:
+            log.warning('Pytype merging failed. error=%s output=%s', e, out)
+        finally:
             log.info('Removing temporary image for %s', container_name)
             docker.rm_image(container_name)
