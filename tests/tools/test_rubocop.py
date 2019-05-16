@@ -35,19 +35,18 @@ class TestRubocop(TestCase):
         self.tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
-        expected = Comment(
-            self.fixtures[1],
-            4,
-            4,
-            'C: Trailing whitespace detected.')
-        self.assertEqual(expected, problems[1])
+        long_line = problems[1]
+        assert long_line.filename == self.fixtures[1]
+        assert long_line.line == 3
+        assert long_line.position == 3
+        assert 'C: Line is too long. [82/80]' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
         linty_filename = self.fixtures[1]
-        self.assertEqual(2, len(self.problems.all(linty_filename)))
+        self.assertEqual(3, len(self.problems.all(linty_filename)))
 
         freshly_laundered_filename = self.fixtures[0]
         self.assertEqual([], self.problems.all(freshly_laundered_filename))
@@ -62,12 +61,11 @@ class TestRubocop(TestCase):
         self.tool.process_files([linty_filename])
 
         problems = self.problems.all(linty_filename)
-        expected = Comment(
-            linty_filename,
-            4,
-            4,
-            'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
-        self.assertEqual(expected, problems[1])
+        long_line = problems[1]
+        assert long_line.filename == linty_filename
+        assert long_line.line == 3
+        assert long_line.position == 3
+        assert 'C: Metrics/LineLength: Line is too long. [82/80]' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_one_file_fail_display_cop_names__bool(self):
@@ -79,12 +77,11 @@ class TestRubocop(TestCase):
         self.tool.process_files([linty_filename])
 
         problems = self.problems.all(linty_filename)
-        expected = Comment(
-            linty_filename,
-            4,
-            4,
-            'C: Layout/TrailingWhitespace: Trailing whitespace detected.')
-        self.assertEqual(expected, problems[1])
+        long_line = problems[1]
+        assert long_line.filename == linty_filename
+        assert long_line.line == 3
+        assert long_line.position == 3
+        assert 'C: Metrics/LineLength: Line is too long. [82/80]' in long_line.body
 
     def test_has_fixer__not_enabled(self):
         tool = Rubocop(self.problems, {}, root_dir)
