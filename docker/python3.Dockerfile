@@ -12,9 +12,11 @@ RUN mkdir /src \
   && mkdir /tool
 
 COPY requirements-py3.txt /tool
+COPY merge-pyi-wrapper.sh /usr/bin/merge-pyi-wrapper
 
-# Install linters
+# Install linters & wrapper script
 RUN cd /tool \
-  && pip install -r requirements-py3.txt
+  && pip install -r requirements-py3.txt \
+  && chmod +x /usr/bin/merge-pyi-wrapper
 
 WORKDIR /src
