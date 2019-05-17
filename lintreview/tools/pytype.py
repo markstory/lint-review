@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import hashlib
 import os
 import re
 import logging
@@ -41,8 +42,7 @@ class Pytype(Tool):
         output = docker.run(
             'python3',
             command,
-            source_dir=self.base_path,
-            run_as_current_user=True)
+            source_dir=self.base_path)
         if not output:
             return
 
@@ -51,6 +51,7 @@ class Pytype(Tool):
     def _apply_options(self, command):
         if 'config' in self.options:
             command.extend(['--config', docker.apply_base(self.options['config'])])
+        command.extend(['-o', '/tmp/pytype'])
         return command
 
     def parse_output(self, output):
@@ -110,6 +111,11 @@ class Pytype(Tool):
         if filename and message:
             self.problems.add(filename, lineno, message)
 
+    def _container_name(self, files):
+        m = hashlib.md5()
+        m.update('-'.join(files).encode('utf8'))
+        return 'pytype-' + m.hexdigest()
+
     def process_fixer(self, files):
         """
         Autofixing typing errors requires generating type
@@ -117,17 +123,33 @@ class Pytype(Tool):
         """
         command = self._apply_options(['pytype'])
         command += files
-        out = docker.run(
+
+        container_name = self._container_name(files)
+
+        # run in a container that sticks around so we can
+        # run merge-pyi on the output files.
+        docker.run(
             'python3',
             command,
             source_dir=self.base_path,
-            run_as_current_user=True)
+            name=container_name)
 
-        for f in files:
-            basename = os.path.basename(f)
-            type_file = os.path.join(
-                '.pytype',
-                'pyi',
-                basename[:-3] + '.pyi')
-            command = ['merge-pyi', '-i', f, docker.apply_base(type_file)]
-            out = docker.run('python3', command, source_dir=self.base_path)
+        log.info('Creating temporary image for %s', container_name)
+        docker.commit(container_name)
+        docker.rm_container(container_name)
+
+        update_command = ['merge-pyi-wrapper']
+        update_command += files
+
+        # Apply merge-pyi
+        try:
+            out = docker.run(
+                container_name,
+                update_command,
+                source_dir=self.base_path
+            )
+        except Exception as e:
+            log.warning('Pytype merging failed. error=%s output=%s', e, out)
+        finally:
+            log.info('Removing temporary image for %s', container_name)
+            docker.rm_image(container_name)
