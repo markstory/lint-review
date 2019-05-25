@@ -6,7 +6,7 @@ from mock import Mock, patch
 from . import load_fixture, fixer_ini
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection
-from lintreview.review import Review, Problems, Comment, IssueComment
+from lintreview.review import Review, Problems, Comment, IssueComment, InfoComment
 from lintreview.repo import GithubRepository, GithubPullRequest
 from github3.issues.comment import IssueComment as GhIssueComment
 from github3.pulls import PullFile
@@ -551,6 +551,24 @@ class TestProblems(TestCase):
         result = self.problems.all('some/file.py')
         self.assertEqual(2, len(result))
         self.assertEqual(errors, result)
+
+    def test_error_count(self):
+        errors = [
+            Comment('some/file.py', 10, 10, 'Thing is wrong'),
+            Comment('some/file.py', 12, 12, 'Not good'),
+        ]
+        self.problems.add_many(errors)
+        assert 2 == len(self.problems)
+        assert 2 == self.problems.error_count()
+
+    def test_error_count_exclude_info(self):
+        errors = [
+            Comment('some/file.py', 10, 10, 'Thing is wrong'),
+            InfoComment('some content'),
+        ]
+        self.problems.add_many(errors)
+        assert 1 == self.problems.error_count()
+        assert 2 == len(self.problems)
 
     def test_limit_to_changes__remove_problems(self):
         res = [
