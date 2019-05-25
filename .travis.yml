@@ -11,7 +11,7 @@ addons:
 
 python:
   - "2.7"
-  - "3.7"
+  - "3.6"
 
 env:
   - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
