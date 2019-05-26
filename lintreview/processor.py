@@ -4,7 +4,7 @@ import lintreview.tools as tools
 import lintreview.fixers as fixers
 from lintreview.diff import DiffCollection
 from lintreview.fixers.error import ConfigurationError, WorkflowError
-from lintreview.review import Problems, Review, IssueComment, InfoComment
+from lintreview.review import Problems, Review, InfoComment
 
 log = logging.getLogger(__name__)
 
