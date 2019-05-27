@@ -159,10 +159,10 @@ class TestProcessor(TestCase):
         self.fixer_stub.run_fixers.assert_called()
         self.tool_stub.run.assert_called()
         self.fixer_stub.rollback_changes.assert_not_called()
-        self.assertEqual(1, len(subject.problems),
-                         'strategy error adds pull comment')
-        self.assertEqual('Unable to apply fixers. ' + str(error),
-                         subject.problems.all()[0].body)
+        assert 1 == len(subject.problems), 'strategy error adds pull comment'
+        assert 0 == subject.problems.error_count(), 'fixer failure should be info level'
+        assert 'Unable to apply fixers. ' + str(error) == subject.problems.all()[0].body
+        assert 1 == len(subject.problems), 'strategy error adds pull comment'
 
     def test_publish(self):
         pull = self.get_pull_request()

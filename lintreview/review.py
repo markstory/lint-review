@@ -3,6 +3,9 @@ from collections import OrderedDict
 from datetime import datetime
 import logging
 
+LEVEL_INFO = 'info'
+LEVEL_ERROR = 'error'
+
 log = logging.getLogger(__name__)
 
 
@@ -30,6 +33,7 @@ class IssueLabel(object):
 class BaseComment(object):
     """Shared behavior across comment types
     """
+    level = LEVEL_ERROR
     body = ''
 
     def key(self):
@@ -67,6 +71,10 @@ class IssueComment(BaseComment):
     def __repr__(self):
         return u"{}(body={}".format(self.__class__.__name__,
                                     self.body)
+
+
+class InfoComment(IssueComment):
+    level = LEVEL_INFO
 
 
 class Comment(BaseComment):
@@ -156,7 +164,7 @@ class Review(object):
                  len(problems),
                  self._pr.display_name)
 
-        has_problems = len(problems) > 0
+        has_problems = problems.error_count() > 0
         self.remove_ok_label()
         review = self._build_checkrun(problems, has_problems)
         if len(review['output']):
@@ -208,7 +216,7 @@ class Review(object):
         if not problems.has_changes():
             return self.publish_empty_comment()
 
-        has_problems = len(problems) > 0
+        has_problems = problems.error_count() > 0
 
         # If we are submitting a comment review
         # we drop comments that have already been posted.
@@ -457,8 +465,11 @@ class Problems(object):
         if found is not False:
             del self._items[found]
 
+    def error_count(self):
+        return len([e for e in self._items.values() if e.level == LEVEL_ERROR])
+
     def __len__(self):
-        return len(self._items)
+        return len(self._items.values())
 
     def __iter__(self):
         for item in self._items.values():
