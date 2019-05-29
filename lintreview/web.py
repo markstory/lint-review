@@ -27,8 +27,9 @@ def start_review():
         return Response(status=200)
 
     try:
-        action = request.json["action"]
-        pull_request = request.json["pull_request"]
+        payload = request.get_json()
+        action = payload["action"]
+        pull_request = payload["pull_request"]
         number = pull_request["number"]
         base_repo_url = pull_request["base"]["repo"]["git_url"]
         head_repo_url = pull_request["head"]["repo"]["git_url"]
