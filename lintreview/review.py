@@ -226,6 +226,8 @@ class Review(object):
         # Update the checkrun with additional annotations.
         return {
             'output': {
+                'title': title,
+                'summary': "\n".join(summary),
                 'annotations': comments
             }
         }

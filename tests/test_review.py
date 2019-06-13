@@ -469,9 +469,10 @@ class TestReview(TestCase):
         # The second payload should only contain additional annotations.
         second_payload = second_call[0][1]
         assert 'completed_at' not in second_payload
-        assert 'title' not in second_payload['output']
-        assert 'summary' not in second_payload['output']
+        assert 'title' in second_payload['output']
+        assert 'summary' in second_payload['output']
         assert 'annotations' in second_payload['output']
+        assert 'In the body' == second_payload['output']['summary']
 
         assert 20 == len(second_payload['output']['annotations'])
 
