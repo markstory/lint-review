@@ -424,11 +424,56 @@ class TestReview(TestCase):
         self.assertEqual(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
-            self,
             self.repo.update_checkrun.call_args,
             errors,
             run_id)
         assert self.repo.create_status.called is False, 'no status required'
+
+    def test_publish_checkrun__multiple_chunks(self):
+        self.repo.create_checkrun = Mock()
+        tst_config = build_review_config(fixer_ini,
+                                         {'PULLREQUEST_STATUS': True})
+        problems = Problems()
+        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        errors = [
+            Comment(filename_1, i, i, 'Something worse')
+            for i in range(0, 70)
+        ]
+        problems.add_many(errors)
+        problems.add(IssueComment('In the body'))
+        run_id = 42
+
+        review = Review(self.repo, self.pr, tst_config)
+        review.publish_checkrun(problems, run_id)
+
+        assert self.repo.update_checkrun.call_count == 2
+        assert self.repo.create_status.called is False, 'no status required'
+
+        first_call = self.repo.update_checkrun.call_args_list[0]
+        assert run_id == first_call[0][0]
+
+        first_payload = first_call[0][1]
+        assert 'failure' == first_payload['conclusion']
+
+        assert 'completed_at' in first_payload
+        assert 'title' in first_payload['output']
+        assert 'summary' in first_payload['output']
+        assert 'annotations' in first_payload['output']
+
+        assert 'In the body' == first_payload['output']['summary']
+        assert 50 == len(first_payload['output']['annotations'])
+
+        second_call = self.repo.update_checkrun.call_args_list[1]
+        assert run_id == second_call[0][0]
+
+        # The second payload should only contain additional annotations.
+        second_payload = second_call[0][1]
+        assert 'completed_at' not in second_payload
+        assert 'title' not in second_payload['output']
+        assert 'summary' not in second_payload['output']
+        assert 'annotations' in second_payload['output']
+
+        assert 20 == len(second_payload['output']['annotations'])
 
     def test_publish_checkrun__has_errors_force_success_status(self):
         self.repo.create_checkrun = Mock()
@@ -469,7 +514,6 @@ class TestReview(TestCase):
         self.assertEqual(1, self.repo.update_checkrun.call_count)
 
         assert_checkrun(
-            self,
             self.repo.update_checkrun.call_args,
             [],
             run_id)
@@ -636,11 +680,11 @@ def assert_review(test_case, call_args, errors, sha, body=''):
                           'Error and comment counts are off.')
 
 
-def assert_checkrun(test_case, call_args, errors, run_id, body=''):
+def assert_checkrun(call_args, errors, run_id, body=''):
     """
     Check that the review comments match the error list.
     """
-    test_case.assertEqual(run_id, call_args[0][0], 'Runid should match')
+    assert run_id == call_args[0][0], 'Runid should match'
 
     actual = call_args[0][1]
     actual_annotations = actual['output']['annotations']
@@ -655,7 +699,7 @@ def assert_checkrun(test_case, call_args, errors, run_id, body=''):
         }
         expected.append(value)
 
-    test_case.assertEqual(len(expected), len(actual_annotations))
+    assert len(expected) == len(actual_annotations)
     for i, item in enumerate(expected):
         assert item == actual_annotations[i]
 

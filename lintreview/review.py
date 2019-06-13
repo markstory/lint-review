@@ -166,41 +166,69 @@ class Review(object):
 
         has_problems = problems.error_count() > 0
         self.remove_ok_label()
-        review = self._build_checkrun(problems, has_problems)
-        if len(review['output']):
-            self._repo.update_checkrun(check_run_id, review)
 
-    def _build_checkrun(self, problems, has_problems):
-        """Because github3.py doesn't support creating checkruns
-        we use some workarounds.
-        """
-        body = [
+        def build_annotations(chunk):
+            # Convert line comments into the format
+            # GitHub checkrun annotations need.
+            return [
+                comment.checkrun_payload()
+                for comment in chunk
+                if isinstance(comment, Comment)
+            ]
+
+        # GitHub only accepts 50 annotations per request so we
+        # need to chunk it up.
+        annotation_payloads = [
+            build_annotations(chunk)
+            for chunk in problems.iter_chunks(50)
+        ]
+        summary = [
             comment.body
             for comment in problems
             if isinstance(comment, IssueComment)
         ]
-        comments = [
-            comment.checkrun_payload()
-            for comment in problems
-            if isinstance(comment, Comment)
-        ]
+
+        # Some reviews have no comments and get marked as success.
+        if not (summary or annotation_payloads):
+            review = self._build_checkrun(
+                0,
+                annotation_payloads,
+                summary,
+                has_problems)
+            self._repo.update_checkrun(check_run_id, review)
+
+        for i, chunk in enumerate(annotation_payloads):
+            review = self._build_checkrun(i, chunk, summary, has_problems)
+            self._repo.update_checkrun(check_run_id, review)
+
+    def _build_checkrun(self, index, comments, summary, has_problems):
+        """Because github3.py doesn't support creating checkruns
+        we use some workarounds.
+        """
         conclusion = self.config.failed_review_status()
         title = 'Lint errors found'
         if not has_problems:
             conclusion = 'success'
             title = 'No lint errors found'
-        output = {
-            'title': title,
-            'summary': "\n".join(body),
-            'annotations': comments
-        }
 
-        run = {
-            'conclusion': conclusion,
-            'completed_at': datetime.utcnow().isoformat() + 'Z',
-            'output': output,
+        # Publish metadata on the first chunk. Subsequent
+        # chunks only append annotations.
+        if index == 0:
+            return {
+                'conclusion': conclusion,
+                'completed_at': datetime.utcnow().isoformat() + 'Z',
+                'output': {
+                    'title': title,
+                    'summary': "\n".join(summary),
+                    'annotations': comments
+                },
+            }
+        # Update the checkrun with additional annotations.
+        return {
+            'output': {
+                'annotations': comments
+            }
         }
-        return run
 
     def publish_review(self, problems, head_sha):
         """Publish the review as a pull request review.
@@ -467,6 +495,14 @@ class Problems(object):
 
     def error_count(self):
         return len([e for e in self._items.values() if e.level == LEVEL_ERROR])
+
+    def iter_chunks(self, size=50):
+        """Split the problems into chunks
+        Useful when publishing as a checkrun result.
+        """
+        values = self._items.values()
+        for i in range(0, len(values), size):
+            yield values[i:i+size]
 
     def __len__(self):
         return len(self._items.values())
