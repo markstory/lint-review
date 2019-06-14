@@ -57,6 +57,7 @@ class IssueComment(BaseComment):
     """A simple comment that will be published as a
     pull request/issue comment.
     """
+
     def __init__(self, body=''):
         self.body = body
 
@@ -404,6 +405,7 @@ class Problems(object):
     Used by tool objects to collect problems, and by
     the Review objects to publish results.
     """
+
     def __init__(self, changes=None):
         self._items = OrderedDict()
         self._changes = changes
@@ -502,7 +504,7 @@ class Problems(object):
         """Split the problems into chunks
         Useful when publishing as a checkrun result.
         """
-        values = self._items.values()
+        values = list(self._items.values())
         for i in range(0, len(values), size):
             yield values[i:i+size]
 
