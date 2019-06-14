@@ -47,6 +47,6 @@ class TestCredo(TestCase):
         problems = self.problems.all(self.fixtures[1])
         self.assertEqual(1, len(problems))
         fname = self.fixtures[1]
-        expected = Comment(fname, 3, 3,
-                           'Pipe chain should start with a raw value.')
+        expected = Comment(fname, 1, 1,
+                           'Modules should have a @moduledoc tag.')
         self.assertEqual(expected, problems[0])
