@@ -45,11 +45,8 @@ class TestCredo(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        self.assertEqual(2, len(problems))
+        self.assertEqual(1, len(problems))
         fname = self.fixtures[1]
-        expected = Comment(fname, 3, 3,
-                           'Pipe chain should start with a raw value.')
-        self.assertEqual(expected, problems[0])
         expected = Comment(fname, 1, 1,
                            'Modules should have a @moduledoc tag.')
-        self.assertEqual(expected, problems[1])
+        self.assertEqual(expected, problems[0])
