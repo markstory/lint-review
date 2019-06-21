@@ -5,7 +5,7 @@
   "dependencies": {
     "babel-eslint": "^9.0.0",
     "eslint": "5.x",
-    "eslint-plugin-ember": "^5.2",
+    "eslint-plugin-ember": "^6.6",
     "eslint-plugin-ember-best-practices": "^1.1",
     "eslint-plugin-html": "4.x",
     "install-peerdeps": "1.x"
