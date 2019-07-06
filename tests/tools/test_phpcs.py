@@ -5,7 +5,7 @@ from unittest import TestCase
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
 
-class Testphpcs(TestCase):
+class TestPhpcs(TestCase):
 
     fixtures = [
         'tests/fixtures/phpcs/no_errors.php',
