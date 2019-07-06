@@ -242,7 +242,7 @@ def process_checkstyle(problems, xml, filename_converter):
     If the output is not XML or is malformed XML an error will be raised.
     """
     tree = _parse_xml(xml)
-    if len(tree) == 0:
+    if tree is None or len(tree) == 0:
         return
     for f in tree.findall('file'):
         filename = f.get('name')
