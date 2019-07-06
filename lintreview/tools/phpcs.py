@@ -18,9 +18,9 @@ class Phpcs(Tool):
 
     def check_dependencies(self):
         """
-        See if PHPCS is on the system path.
+        See if the php container exists
         """
-        return docker.image_exists('phpcs')
+        return docker.image_exists('php')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -36,7 +36,7 @@ class Phpcs(Tool):
         log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
         output = docker.run(
-            'phpcs',
+            'php',
             command,
             source_dir=self.base_path)
 
@@ -96,7 +96,7 @@ class Phpcs(Tool):
         """
         command = self.create_fixer_command(files)
         docker.run(
-            'phpcs',
+            'php',
             command,
             source_dir=self.base_path)
 

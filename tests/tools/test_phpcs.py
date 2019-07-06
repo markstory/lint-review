@@ -23,16 +23,16 @@ class Testphpcs(TestCase):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('test.js'))
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_check_dependencies(self):
         self.assertTrue(self.tool.check_dependencies())
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -53,7 +53,7 @@ class Testphpcs(TestCase):
             "Spaces must be used to indent lines; tabs are not allowed")
         self.assertEqual(expected, problems[2])
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -62,7 +62,7 @@ class Testphpcs(TestCase):
         problems = self.problems.all(self.fixtures[1])
         self.assertEqual(3, len(problems))
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__with_config(self):
         config = {
             'standard': 'Zend'
@@ -75,7 +75,7 @@ class Testphpcs(TestCase):
         self.assertEqual(3, len(problems),
                          'Changing standards changes error counts')
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__with_ignore(self):
         config = {
             'standard': 'PSR2',
@@ -89,7 +89,7 @@ class Testphpcs(TestCase):
         self.assertEqual(0, len(problems),
                          'ignore option should exclude files')
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__with_exclude(self):
         config = {
             'standard': 'PSR2',
@@ -103,7 +103,7 @@ class Testphpcs(TestCase):
         self.assertEqual(1, len(problems),
                          'exclude option should reduce errors.')
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_process_files__with_invalid_exclude(self):
         config = {
             'standard': 'PSR2',
@@ -183,7 +183,7 @@ class Testphpcs(TestCase):
         tool = Phpcs(self.problems, {'fixer': True})
         self.assertEqual(True, tool.has_fixer())
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_execute_fixer(self):
         tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 
@@ -195,7 +195,7 @@ class Testphpcs(TestCase):
         self.assertEqual(0, len(self.problems.all()),
                          'No errors should be recorded')
 
-    @requires_image('phpcs')
+    @requires_image('php')
     def test_execute_fixer__no_problems_remain(self):
         tool = Phpcs(self.problems, {'fixer': True}, root_dir)
 
