@@ -216,6 +216,7 @@ def process_quickfix(problems, output, filename_converter, columns=3):
         filename = filename_converter(parts[0].strip())
         problems.add(filename, int(parts[1]), message)
 
+
 def _parse_xml(xml):
     if not xml:
         # Some tools return "" if no errors are found
@@ -286,7 +287,7 @@ def process_pmd(problems, xml, filename_converter):
                 ]
                 message = ' '.join(filter(None, message_parts))
                 problems.add(filename, line, message)
-            except Exception as e:
+            except Exception:
                 log.info(
                     'Could not parse pmd output. '
                     'Dropping violation=%s',

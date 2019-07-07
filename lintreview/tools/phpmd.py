@@ -4,8 +4,7 @@ import os
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
-    process_pmd,
-    stringify
+    process_pmd
 )
 import lintreview.docker as docker
 
@@ -47,7 +46,6 @@ class Phpmd(Tool):
                    '```')
             error = '\n'.join(output.split('\n')[0:1])
             return self.problems.add(IssueComment(msg.format(error)))
-
 
         process_pmd(self.problems, output, docker.strip_base)
 
