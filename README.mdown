@@ -242,6 +242,16 @@ issues.
 * `ignore-patterns` A comma separated list of regular expressions that match
   files you want to ignore.
 
+#### pytype
+
+Uses [pytype](https://opensource.google.com/projects/pytype) to check python
+code using type annotations.
+
+*Options*
+
+* `config` Path to a config file for pytype.
+* `fixer` Enable automatic merging of inferred pyi files.
+
 ### PHP
 
 #### PHPCS
