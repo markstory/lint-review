@@ -120,7 +120,7 @@ def run(image,                    # type: str
 
     run_args = {
         'image': image,
-        'command': [str(c) for c in command],
+        'command': [six.text_type(c) for c in command],
         'environment': env,
         'volumes': {source_dir: {'bind': docker_base, 'mode': 'rw'}},
         'stdout': True,
