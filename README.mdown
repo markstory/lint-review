@@ -261,6 +261,15 @@ to do style checks on PHP, Javascript and or CSS files.
 * `tab_width` The number of spaces to convert tabs into, this is useful for
   projects using tabs for indentation.
 
+#### PHPMD
+
+Uses the [phpmd](http://phpmd.org) tool to check code for messy or hard to
+maintain code.
+
+*Options*
+
+* `ruleset` The ruleset names or file to use for phpmd. Defaults to `cleancode,codesize,unusedcode`
+
 ### Javascript:
 
 #### JSHint
