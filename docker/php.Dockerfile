@@ -18,6 +18,7 @@ RUN cd /tool \
   # make phpcs quack like a system binary
   && ln -s /tool/vendor/bin/phpcs /usr/bin/phpcs \
   && ln -s /tool/vendor/bin/phpcbf /usr/bin/phpcbf \
+  && ln -s /tool/vendor/bin/phpmd /usr/bin/phpmd \
   # Add coding standards to phpcs
   && vendor/bin/phpcs --config-set installed_paths /tool/vendor/cakephp/cakephp-codesniffer \
   # cleanup

@@ -217,12 +217,7 @@ def process_quickfix(problems, output, filename_converter, columns=3):
         problems.add(filename, int(parts[1]), message)
 
 
-def process_checkstyle(problems, xml, filename_converter):
-    """
-    Process a checkstyle XML file.
-
-    If the output is not XML or is malformed XML an error will be raised.
-    """
+def _parse_xml(xml):
     if not xml:
         # Some tools return "" if no errors are found
         return
@@ -230,7 +225,7 @@ def process_checkstyle(problems, xml, filename_converter):
         # Needed for Python 2.7; http://bugs.python.org/issue11033
         if isinstance(xml, six.text_type):
             xml = xml.encode('utf-8')
-        tree = ElementTree.fromstring(xml)
+        return ElementTree.fromstring(xml)
     except Exception as e:
         if len(xml) > 8192:
             head = xml[0:250]
@@ -240,6 +235,16 @@ def process_checkstyle(problems, xml, filename_converter):
             log.error('Unable to parse XML %s', xml)
         raise
 
+
+def process_checkstyle(problems, xml, filename_converter):
+    """
+    Process a checkstyle XML file.
+
+    If the output is not XML or is malformed XML an error will be raised.
+    """
+    tree = _parse_xml(xml)
+    if tree is None or len(tree) == 0:
+        return
     for f in tree.findall('file'):
         filename = f.get('name')
         if filename_converter:
@@ -260,6 +265,33 @@ def process_checkstyle(problems, xml, filename_converter):
                     "Error was %s", message, line, e)
             for line in lines:
                 problems.add(filename, line, message)
+
+
+def process_pmd(problems, xml, filename_converter):
+    """Process a PMD XML file.
+    """
+    tree = _parse_xml(xml)
+    if len(tree) == 0:
+        return
+    for f in tree.findall('file'):
+        filename = f.get('name')
+        if filename_converter:
+            filename = filename_converter(filename)
+        for err in f.findall('violation'):
+            try:
+                line = int(err.get('beginline') or err.get('endline'))
+                message_parts = [
+                    '%s:' % err.get('rule') if err.get('rule') else None,
+                    err.text.strip(),
+                    'See: %s' % err.get('externalInfoUrl') if err.get('externalInfoUrl') else None,
+                ]
+                message = ' '.join(filter(None, message_parts))
+                problems.add(filename, line, message)
+            except Exception:
+                log.info(
+                    'Could not parse pmd output. '
+                    'Dropping violation=%s',
+                    ElementTree.tostring(err))
 
 
 def stringify(value):
