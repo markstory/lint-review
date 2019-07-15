@@ -1,12 +1,15 @@
 from __future__ import absolute_import
 import logging
 import github3
+import github3.checks
 import requests
 from requests.packages.urllib3.util.retry import Retry
 
 log = logging.getLogger(__name__)
 
 GITHUB_BASE_URL = 'https://api.github.com/'
+
+CHECKSUITE_HEADER = github3.checks.CheckSuite.CUSTOM_HEADERS
 
 
 def get_client(config):

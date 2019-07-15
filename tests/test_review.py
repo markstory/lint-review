@@ -405,7 +405,6 @@ class TestReview(TestCase):
         self.pr.create_comment.assert_called_with(msg)
 
     def test_publish_checkrun(self):
-        self.repo.create_checkrun = Mock()
         tst_config = build_review_config(fixer_ini,
                                          {'PULLREQUEST_STATUS': True})
         problems = Problems()
@@ -430,7 +429,6 @@ class TestReview(TestCase):
         assert self.repo.create_status.called is False, 'no status required'
 
     def test_publish_checkrun__multiple_chunks(self):
-        self.repo.create_checkrun = Mock()
         tst_config = build_review_config(fixer_ini,
                                          {'PULLREQUEST_STATUS': True})
         problems = Problems()
@@ -477,7 +475,6 @@ class TestReview(TestCase):
         assert 20 == len(second_payload['output']['annotations'])
 
     def test_publish_checkrun__has_errors_force_success_status(self):
-        self.repo.create_checkrun = Mock()
         tst_config = build_review_config(fixer_ini,
                                          {'PULLREQUEST_STATUS': False})
         self.assertEqual('success', tst_config.failed_review_status(),
@@ -502,7 +499,6 @@ class TestReview(TestCase):
         assert len(checkrun['output']['annotations']) > 0
 
     def test_publish_checkrun__no_problems(self):
-        self.repo.create_checkrun = Mock()
         tst_config = build_review_config(fixer_ini,
                                          {'PULLREQUEST_STATUS': True})
         problems = Problems()
