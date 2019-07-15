@@ -58,23 +58,14 @@ class GithubRepository(object):
             description,
             context)
 
-    def create_checkrun(self, checkrun):
-        repo = self.repository()
-        url = repo._build_url('check-runs', base_url=repo._api)
-        headers = {
-            'Accept': 'application/vnd.github.antiope-preview+json'
-        }
-        res = repo._post(url, data=checkrun, headers=headers)
-        return repo._json(res, 201)
-
     def update_checkrun(self, run_id, checkrun):
         repo = self.repository()
         url = repo._build_url('check-runs', run_id, base_url=repo._api)
-        headers = {
-            'Accept': 'application/vnd.github.antiope-preview+json'
-        }
         data = json.dumps(checkrun)
-        res = repo._patch(url, data=data, headers=headers)
+        res = repo._patch(
+            url,
+            data=data,
+            headers=github.CHECKSUITE_HEADER)
         return repo._json(res, 200)
 
 
@@ -185,7 +176,7 @@ class GithubPullRequest(object):
 
     def create_review(self, review):
         url = self.pull._build_url('reviews', base_url=self.pull._api)
-        self.pull._json(self.pull._post(url, data=review), 201)
+        self.pull._json(self.pull._post(url, data=review), 200)
 
     def create_review_comment(self, body, commit_id, path, position):
         self.pull.create_review_comment(body, commit_id, path, position)

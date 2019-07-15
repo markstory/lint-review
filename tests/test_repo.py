@@ -77,31 +77,6 @@ class TestGithubRepository(TestCase):
             'all good',
             'lintreview')
 
-    def test_create_checkrun(self):
-        model = self.repo_model
-        post_mock = Mock()
-        json_mock = Mock()
-        model._post = post_mock
-        model._json = json_mock
-
-        repo = GithubRepository(config, 'markstory', 'lint-test')
-        repo.repository = lambda: model
-        review = {
-            'commit_sha': 'abc123',
-            'conclusion': 'success',
-            'output': {
-                'title': 'No lint errors',
-                'summary': '',
-                'annotations': [],
-            }
-        }
-        repo.create_checkrun(review)
-        post_mock.assert_called_with(
-            'https://api.github.com/repos/markstory/lint-test/check-runs',
-            data=review,
-            headers={'Accept': 'application/vnd.github.antiope-preview+json'})
-        json_mock.assert_called()
-
     def test_update_checkrun(self):
         model = self.repo_model
         model._patch = Mock()
