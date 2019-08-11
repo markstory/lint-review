@@ -43,7 +43,7 @@ class TestPhpmd(TestCase):
         assert 7 == error.line
         assert 'CyclomaticComplexity:' in error.body
         assert 'The method tooComplex()' in error.body
-        assert 'See: http://phpmd.org/' in error.body
+        assert 'See: https://phpmd.org/' in error.body
 
     @requires_image('php')
     def test_process_files__two_files(self):

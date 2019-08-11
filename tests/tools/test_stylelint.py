@@ -89,6 +89,21 @@ class TestStylelint(TestCase):
         self.assertIn('Your configuration file', problems[0].body)
         self.assertIn('ENOENT', problems[0].body)
 
+    @requires_image('nodejs')
+    def test_process_files_with_bad_json(self):
+        config = {
+            'config': 'tests/fixtures/stylelint/invalid.json'
+        }
+        tool = Stylelint(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all()
+        self.assertEqual(1, len(problems),
+                         'Should capture missing config error')
+
+        self.assertIn('Your configuration file', problems[0].body)
+        self.assertIn('JSONError', problems[0].body)
+
     def test_has_fixer__not_enabled(self):
         tool = Stylelint(self.problems, {})
         self.assertEqual(False, tool.has_fixer())

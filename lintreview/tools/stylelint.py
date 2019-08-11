@@ -42,7 +42,9 @@ class Stylelint(Tool):
             'nodejs',
             command,
             source_dir=self.base_path)
-        if 'SyntaxError' in output or 'ENOENT' in output:
+        if ('SyntaxError' in output or
+                'ENOENT' in output or
+                'JSONError' in output):
             msg = (
                 u"Your configuration file resulted in the following error:\n"
                 "```\n"
