@@ -71,6 +71,19 @@ class TestCsslint(TestCase):
                          'Config file should lower error count.')
 
     @requires_image('nodejs')
+    def test_process_files_with_ignore_list(self):
+        config = {
+            'ignore': ['box-model', 'id']
+        }
+        tool = Csslint(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+
+        self.assertEqual(1, len(problems),
+                         'Config file should lower error count.')
+
+    @requires_image('nodejs')
     def test_process_files_with_config_with_shell_injection(self):
         config = {
             'ignore': '`cat /etc/passwd`'

@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import lintreview.docker as docker
-from lintreview.tools import Tool
+from lintreview.tools import Tool, stringify
 
 
 log = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class Csslint(Tool):
         command = [cmd, '--format=compact']
 
         if self.options.get('ignore'):
-            command += ['--ignore=' + self.options.get('ignore')]
+            command += ['--ignore=' + stringify(self.options.get('ignore'))]
         command += files
 
         output = docker.run(
