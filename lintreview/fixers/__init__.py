@@ -100,5 +100,6 @@ def add_strategy(name, implementation):
     workflow_strategies[name] = implementation
 
 
-def rollback_changes(path):
+def rollback_changes(path, old_head):
     git.reset_hard(path)
+    git.checkout(path, old_head)

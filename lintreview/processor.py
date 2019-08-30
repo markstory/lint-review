@@ -74,10 +74,11 @@ class Processor(object):
             log.info('Fixer application failed. Got %s', e)
             message = u'Unable to apply fixers. {}'.format(e)
             self.problems.add(InfoComment(message))
+            fixers.rollback_changes(self._target_path, self._pull_request.head)
         except Exception as e:
             log.info('Fixer application failed, '
                      'rolling back working tree. Got %s', e)
-            fixers.rollback_changes(self._target_path)
+            fixers.rollback_changes(self._target_path, self._pull_request.head)
 
     def publish(self, check_run_id=None):
         self.problems.limit_to_changes()
