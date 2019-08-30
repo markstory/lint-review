@@ -172,7 +172,7 @@ class Eslint(Tool):
             error = missing_ruleset.group(0)
             return self.problems.add(IssueComment(msg.format(error)))
 
-        missing_plugin = re.search(r'ESLint couldn\'t find the plugin.*',
+        missing_plugin = re.search(r'ESLint couldn\'t find the (?:plugin|config).*',
                                    output)
         if missing_plugin:
             line = missing_plugin.group(0)
@@ -181,5 +181,5 @@ class Eslint(Tool):
                   '```\n' \
                   '{}\n' \
                   '```\n' \
-                  'The above plugin is not installed.'
+                  'The above plugin or config preset is not installed.'
             return self.problems.add(IssueComment(msg.format(line)))
