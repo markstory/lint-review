@@ -14,9 +14,7 @@ do
 	package_name=$(echo "$package" | sed -e 's/,//' | sed -e 's/"//g' | sed -e 's/://' | awk '{print $1}')
 
 	# Install required plugins into /tool/node_modules
-	# Try to install with peerdeps first, falling back to standard yarn add
-	if ! install-peerdeps --yarn "$package_name"
-	then
-		yarn add "$package_name"
-	fi
+	# Don't install all peerDeps as that can swap
+	# eslint to a higher version that isn't tested.
+	yarn add "$package_name"
 done <  <(grep -i -E 'eslint-[plugin|config]-*' /src/package.json)
