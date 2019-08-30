@@ -82,7 +82,7 @@ class Eslint(Tool):
 
         if self.installed_plugins is False:
             log.info('Installing eslint plugins into %s', container_name)
-            docker.run(
+            output = docker.run(
                 'eslint',
                 ['eslint-install'],
                 source_dir=self.base_path,
@@ -91,6 +91,12 @@ class Eslint(Tool):
             docker.commit(container_name)
             docker.rm_container(container_name)
             self.installed_plugins = True
+            installed = [
+                line.strip('add:')
+                for line in output.splitlines()
+                if line.startswith('add:')
+            ]
+            log.info('Installed eslint plugins %s', installed)
 
     def _create_command(self):
         command = ['eslint', '--format', 'checkstyle']
