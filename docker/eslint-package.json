@@ -7,8 +7,8 @@
     "eslint": "5.x",
     "eslint-plugin-ember": "^6.6",
     "eslint-plugin-ember-best-practices": "^1.1",
-    "eslint-plugin-html": "4.x",
-    "install-peerdeps": "1.x"
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-html": "4.x"
   },
   "eslintConfig": {
     "extends": "eslint:recommended"

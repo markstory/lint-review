@@ -82,7 +82,7 @@ class Eslint(Tool):
 
         if self.installed_plugins is False:
             log.info('Installing eslint plugins into %s', container_name)
-            docker.run(
+            output = docker.run(
                 'eslint',
                 ['eslint-install'],
                 source_dir=self.base_path,
@@ -91,6 +91,12 @@ class Eslint(Tool):
             docker.commit(container_name)
             docker.rm_container(container_name)
             self.installed_plugins = True
+            installed = [
+                line.strip('add:')
+                for line in output.splitlines()
+                if line.startswith('add:')
+            ]
+            log.info('Installed eslint plugins %s', installed)
 
     def _create_command(self):
         command = ['eslint', '--format', 'checkstyle']
@@ -172,7 +178,7 @@ class Eslint(Tool):
             error = missing_ruleset.group(0)
             return self.problems.add(IssueComment(msg.format(error)))
 
-        missing_plugin = re.search(r'ESLint couldn\'t find the plugin.*',
+        missing_plugin = re.search(r'ESLint couldn\'t find the (?:plugin|config).*',
                                    output)
         if missing_plugin:
             line = missing_plugin.group(0)
@@ -181,5 +187,5 @@ class Eslint(Tool):
                   '```\n' \
                   '{}\n' \
                   '```\n' \
-                  'The above plugin is not installed.'
+                  'The above plugin or config preset is not installed.'
             return self.problems.add(IssueComment(msg.format(line)))

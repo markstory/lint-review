@@ -44,7 +44,10 @@ class CommitStrategy(object):
             message = six.text_type(err)
             log.debug(message)
             if '(permission denied)' in message:
-                raise WorkflowError('Could not push fix commit because permission was denied')
+                raise WorkflowError(
+                    'Could not push fix commit because permission was denied. '
+                    'This can happen when pull requests are submitted from forks.'
+                )
             if '[remote rejected]' in message:
-                raise WorkflowError('Could not push fix commit because it was not a fast-forward')
+                raise WorkflowError('Could not push fix commit because it was not a fast-forward.')
             raise err
