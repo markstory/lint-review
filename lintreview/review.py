@@ -220,7 +220,7 @@ class Review(object):
                 'completed_at': datetime.utcnow().isoformat() + 'Z',
                 'output': {
                     'title': title,
-                    'summary': "\n".join(summary),
+                    'summary': "\n\n".join(summary).strip(),
                     'annotations': comments
                 },
             }
