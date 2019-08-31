@@ -253,7 +253,7 @@ class TestEslint(TestCase):
         problems = self.problems.all()
         self.assertEqual(1, len(problems))
         self.assertIn('invalid-rules', problems[0].body)
-        self.assertIn('not installed', problems[0].body)
+        self.assertIn('Cannot find module', problems[0].body)
 
         self.assertTrue(docker.image_exists('eslint'),
                         'original image is present')
