@@ -83,6 +83,15 @@ class TestRubocop(TestCase):
         assert long_line.position == 3
         assert 'C: Metrics/LineLength: Line is too long. [82/80]' in long_line.body
 
+    @requires_image('ruby2')
+    def test_process_files__invalid_rubocop_yml(self):
+        self.tool.process_files(['tests/fixtures/rubocop/badconfig/has_errors.rb'])
+
+        problems = self.problems.all()
+        assert 1 == len(problems)
+        assert 'Your rubocop configuration' in problems[0].body
+        assert 'expected key while parsing' in problems[0].body
+
     def test_has_fixer__not_enabled(self):
         tool = Rubocop(self.problems, {}, root_dir)
         self.assertEqual(False, tool.has_fixer())

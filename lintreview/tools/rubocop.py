@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import os
 import logging
 import lintreview.docker as docker
+from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix
 
 log = logging.getLogger(__name__)
@@ -30,12 +31,17 @@ class Rubocop(Tool):
         command = self._create_command()
         command += files
         output = docker.run('ruby2', command, self.base_path)
-
         if not output:
             log.debug('No rubocop errors found.')
-            return False
-
+            return
         output = output.split("\n")
+        if '.rubocop.yml' in output[0]:
+            msg = u'Your rubocop configuration output the following error:\n' \
+                   '```\n' \
+                   '{}\n' \
+                   '```'
+            return self.problems.add(IssueComment(msg.format(output[0])))
+
         process_quickfix(self.problems, output, docker.strip_base)
 
     def _create_command(self):
