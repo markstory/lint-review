@@ -171,6 +171,15 @@ class DiffCollection(object):
             return changes[0].line_position(line)
         return None
 
+    def first_changed_line(self, filename):
+        """Get the first changed line in a file diff.
+        """
+        changes = self.all_changes(filename)
+        if len(changes):
+            return changes[0].first_changed_line()
+        return None
+
+
 
 class Diff(object):
     """Contains the changes for a single file.
@@ -269,6 +278,16 @@ class Diff(object):
         for hunk in self._hunks:
             dels = dels.union(hunk.deleted_lines())
         return dels
+
+    def first_changed_line(self):
+        """Get the first changed line in a file diff.
+
+        Useful for repositioning file level errors to the
+        first modified line.
+        """
+        hunk = self._hunks[0]
+        for line in sorted(hunk.added_lines()):
+            return line
 
     def line_position(self, lineno):
         """
