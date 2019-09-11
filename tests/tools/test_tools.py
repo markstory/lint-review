@@ -5,7 +5,7 @@ from mock import Mock, patch
 import lintreview.tools as tools
 from lintreview.config import ReviewConfig, build_review_config
 from lintreview.docker import TimeoutError
-from lintreview.review import Review, Problems
+from lintreview.review import Review, Problems, Comment
 from lintreview.tools import pep8, jshint
 from tests import root_dir, fixtures_path, requires_image
 
@@ -128,7 +128,8 @@ class TestTools(TestCase):
 
     @patch('lintreview.docker.run')
     def test_run_timeout_error(self, mock_docker):
-        mock_docker.side_effect = TimeoutError("Read timed out. (read timeout=300)")
+        mock_docker.side_effect = TimeoutError(
+            "Read timed out. (read timeout=300)")
         config = build_review_config(simple_ini)
         problems = Problems()
         files = ['./tests/fixtures/pep8/has_errors.py']
@@ -195,7 +196,7 @@ class TestTools(TestCase):
         self.assertEqual(5, things[2].line)
         self.assertEqual('Not good', things[2].body)
 
-    def test_process_checkstyle__non_int(self):
+    def test_process_checkstyle__undefined(self):
         problems = Problems()
         xml = """
     <checkstyle>
@@ -205,4 +206,8 @@ class TestTools(TestCase):
     </checkstyle>
     """
         tools.process_checkstyle(problems, xml, lambda x: x)
-        self.assertEqual(0, len(problems))
+        self.assertEqual(1, len(problems))
+        errors = problems.all('other_things.py')
+        assert len(errors) == 1, errors
+        assert errors[0].line == Comment.FIRST_LINE_IN_DIFF
+        assert errors[0].body == 'Not good'

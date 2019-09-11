@@ -6,7 +6,7 @@ import six
 
 import lintreview.docker as docker
 
-from lintreview.review import IssueComment
+from lintreview.review import IssueComment, Comment
 from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
@@ -254,6 +254,8 @@ def process_checkstyle(problems, xml, filename_converter):
             message = err.get('message')
             try:
                 lines = []
+                if line in ('undefined', 'null'):
+                    lines = [Comment.FIRST_LINE_IN_DIFF]
                 if ',' in line:
                     lines = [int(x) for x in line.split(',')]
                 else:

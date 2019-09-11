@@ -125,6 +125,16 @@ class TestDiffCollection(TestCase):
         self.assertEqual(False, log.warn.called)
         self.assertEqual(False, log.error.called)
 
+    def test_first_changed_line(self):
+        changes = DiffCollection(self.two_files)
+        filename = 'Console/Command/Task/AssetBuildTask.php'
+
+        assert changes.first_changed_line('not there') is None
+        assert changes.first_changed_line(filename) == 117
+
+        filename = "Test/test_files/View/Parse/single.ctp"
+        assert changes.first_changed_line(filename) == 3
+
     def assert_instances(self, collection, count, clazz):
         """
         Helper for checking a collection.
@@ -374,3 +384,12 @@ class TestDiff(TestCase):
         updated = parse_diff(updated)[0]
         intersecting = updated.intersection(original)
         self.assertEqual(2, len(intersecting))
+
+    def test_first_changed_line(self):
+        assert self.diff.first_changed_line() == 454
+
+        data = load_fixture('diff/one_file.txt')
+        out = parse_diff(data)
+
+        change = out.all_changes('tests/test_diff.py')
+        assert change[0].first_changed_line() == 6

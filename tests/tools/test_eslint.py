@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from unittest import TestCase
+import os.path
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
@@ -157,6 +158,23 @@ class TestEslint(TestCase):
                "Missing semicolon. (semi)")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
         self.assertEqual(expected, problems)
+
+    @requires_image('eslint')
+    def test_process_files_with_ignore_file_config(self):
+        eslint_dir = os.path.join(root_dir, 'tests', 'fixtures', 'eslint')
+        options = {
+            'config': './config.json'
+        }
+        ignore_file = 'ignore.js'
+        tool = Eslint(self.problems, options, eslint_dir)
+        tool.process_files([ignore_file])
+        errors = self.problems.all(ignore_file)
+        assert len(errors) == 1, errors
+
+        error = errors[0]
+        assert 'File ignored' in error.body, error
+        assert error.line == Comment.FIRST_LINE_IN_DIFF
+        assert error.position == Comment.FIRST_LINE_IN_DIFF
 
     def test_has_fixer__not_enabled(self):
         tool = Eslint(self.problems, {})

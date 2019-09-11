@@ -651,6 +651,31 @@ class TestProblems(TestCase):
         ]
         self.assertEqual(result, expected)
 
+    def test_limit_to_changes__first_line_in_diff(self):
+        res = [
+            PullFile(f, self.session) for f in json.loads(self.two_files_json)
+        ]
+        changes = DiffCollection(res)
+
+        # Add problems
+        filename = 'Test/test_files/View/Parse/single.ctp'
+        errors = (
+            Comment(filename, 5, 5, 'Something bad'),
+            Comment(filename, Comment.FIRST_LINE_IN_DIFF, 0, 'First line!'),
+            Comment(filename, 7, 7, 'Filtered out'),
+        )
+        self.problems.add_many(errors)
+        self.problems.set_changes(changes)
+        self.problems.limit_to_changes()
+
+        result = self.problems.all(filename)
+        self.assertEqual(2, len(result))
+        expected = [
+            Comment(filename, 5, 5, 'Something bad'),
+            Comment(filename, 3, 3, 'First line!'),
+        ]
+        self.assertEqual(result, expected)
+
     def test_has_changes(self):
         problems = Problems(changes=None)
         self.assertFalse(problems.has_changes())

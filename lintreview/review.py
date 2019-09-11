@@ -92,6 +92,12 @@ class Comment(BaseComment):
     body = ''
     filename = ''
 
+    # Sigil value for pushing a comment to the first
+    # line in file's diff. This is used by linters
+    # that need to output warnings for a file not a
+    # specific line.
+    FIRST_LINE_IN_DIFF = -2
+
     def __init__(self, filename='', line=0, position=0, body=''):
         self.body = body
         self.line = line
@@ -419,7 +425,7 @@ class Problems(object):
     def line_to_position(self, filename, line):
         """Convert the line number in the final file to a diff offset
 
-        Saving comments in github requires line offsets no line numbers.
+        Saving comments in github requires line offsets not line numbers.
         Mapping line numbers makes saving possible.
         """
         if not self._changes:
@@ -475,6 +481,10 @@ class Problems(object):
         def sieve(err):
             if not hasattr(err, 'filename'):
                 return True
+            if err.line == Comment.FIRST_LINE_IN_DIFF:
+                lineno = changes.first_changed_line(err.filename)
+                err.line = lineno
+                err.position = changes.line_position(err.filename, lineno)
             if changes.has_line_changed(err.filename, err.line):
                 return True
             return False
