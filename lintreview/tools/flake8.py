@@ -74,6 +74,8 @@ class Flake8(Tool):
             command.extend(['--format', 'default'])
         else:
             command.append('--isolated')
+        if not self.options.get('isort', False):
+            command.append('--no-isort-config')
         command += files
         return command
 
