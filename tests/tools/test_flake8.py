@@ -66,6 +66,12 @@ class TestFlake8(TestCase):
         self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
+    def test_process_files__with_isort(self):
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.problems.all(self.fixtures[1])
+        self.assertIn('isort', problems[0].body)
+
+    @requires_image('python2')
     def test_execute_config_with_format(self):
         tool = Flake8(
             self.problems,
@@ -119,6 +125,7 @@ class TestFlake8(TestCase):
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--isolated',
+            '--no-isort-config',
             self.fixtures[1]
         ]
         self.assertEqual(set(expected), set(out))
@@ -129,6 +136,28 @@ class TestFlake8(TestCase):
             'max-line-length': 120,
             'max-complexity': 10,
             'config': '.flake8'
+        }
+        tool = Flake8(self.problems, options, root_dir)
+        out = tool.make_command([self.fixtures[1]])
+        expected = [
+            'flake8',
+            '--ignore', 'F4,W603',
+            '--max-complexity', 10,
+            '--max-line-length', 120,
+            '--config', '/src/.flake8',
+            '--format', 'default',
+            '--no-isort-config',
+            self.fixtures[1]
+        ]
+        self.assertEqual(set(expected), set(out))
+
+    def test_make_command__isort(self):
+        options = {
+            'ignore': 'F4,W603',
+            'max-line-length': 120,
+            'max-complexity': 10,
+            'config': '.flake8',
+            'isort': True
         }
         tool = Flake8(self.problems, options, root_dir)
         out = tool.make_command([self.fixtures[1]])
@@ -178,7 +207,7 @@ class TestFlake8(TestCase):
         text = [c.body for c in self.problems.all()]
         self.assertIn("'<>' is deprecated", ' '.join(text))
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_execute_fixer__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Flake8(self.problems, options, root_dir)
@@ -191,7 +220,7 @@ class TestFlake8(TestCase):
         self.assertEqual(0, len(self.problems.all()),
                          'No errors should be recorded')
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_execute_fixer__fewer_problems_remain__python3(self):
         options = {'fixer': True, 'python': 3}
         tool = Flake8(self.problems, options, root_dir)

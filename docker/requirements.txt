@@ -1,6 +1,7 @@
 jinja2>=2.10.1
 pep8>=1.7.0,<2.0.0
 flake8>=3.3.0,<3.4.0
+flake8-isort>=2.7.0,<3.0
 yamllint>=1.6.1,<1.7.0
 demjson>=2.2.3,<2.3.0
 ansible-lint>=3.4.11,<3.5.0
