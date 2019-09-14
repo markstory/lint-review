@@ -74,7 +74,7 @@ class Flake8(Tool):
                 not ISORT_IGNORE.search(ignore)):
             # If isort is not enabled and not already ignored
             # add it to the ignore list
-            ignore = filter(lambda x: len(x), ignore.split(','))
+            ignore = list(filter(lambda x: len(x), ignore.split(',')))
             ignore.append('I')
             ignore = ",".join(ignore)
         if ignore:
