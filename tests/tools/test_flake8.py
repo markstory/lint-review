@@ -66,7 +66,8 @@ class TestFlake8(TestCase):
         self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
-    def test_process_files__with_isort(self):
+    def test_process_files_with_isort(self):
+        self.tool.options['isort'] = True
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         self.assertIn('isort', problems[0].body)
@@ -121,11 +122,10 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--ignore', 'F4,W603',
+            '--ignore', 'F4,W603,I',
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--isolated',
-            '--no-isort-config',
             self.fixtures[1]
         ]
         self.assertEqual(set(expected), set(out))
@@ -141,12 +141,11 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--ignore', 'F4,W603',
+            '--ignore', 'F4,W603,I',
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
             '--format', 'default',
-            '--no-isort-config',
             self.fixtures[1]
         ]
         self.assertEqual(set(expected), set(out))
@@ -164,6 +163,45 @@ class TestFlake8(TestCase):
         expected = [
             'flake8',
             '--ignore', 'F4,W603',
+            '--max-complexity', 10,
+            '--max-line-length', 120,
+            '--config', '/src/.flake8',
+            '--format', 'default',
+            self.fixtures[1]
+        ]
+        self.assertEqual(set(expected), set(out))
+
+    def test_make_command__isort_partially_disabled(self):
+        options = {
+            'ignore': 'I002,F4,W603',
+            'max-line-length': 120,
+            'max-complexity': 10,
+            'config': '.flake8',
+        }
+        tool = Flake8(self.problems, options, root_dir)
+        out = tool.make_command([self.fixtures[1]])
+        expected = [
+            'flake8',
+            '--ignore', 'I002,F4,W603',
+            '--max-complexity', 10,
+            '--max-line-length', 120,
+            '--config', '/src/.flake8',
+            '--format', 'default',
+            self.fixtures[1]
+        ]
+        self.assertEqual(set(expected), set(out))
+
+    def test_make_command__isort_added_to_no_ignore(self):
+        options = {
+            'max-line-length': 120,
+            'max-complexity': 10,
+            'config': '.flake8',
+        }
+        tool = Flake8(self.problems, options, root_dir)
+        out = tool.make_command([self.fixtures[1]])
+        expected = [
+            'flake8',
+            '--ignore', 'I',
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
