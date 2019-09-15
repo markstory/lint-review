@@ -1,23 +1,27 @@
 from __future__ import absolute_import
-import os
+
 import logging
+import os
+import re
+
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_quickfix, python_image
+from lintreview.tools import Tool, process_quickfix, python_image, stringify
 
 log = logging.getLogger(__name__)
 
+ISORT_IGNORE = re.compile(r'I\d*,')
 
 class Flake8(Tool):
 
     name = 'flake8'
 
     # see: http://flake8.readthedocs.org/en/latest/config.html
+    # ignore is handle specifically because of flake8_isort
     PYFLAKE_OPTIONS = [
         'config',
         'exclude',
         'filename',
         'format',
-        'ignore',
         'max-complexity',
         'max-line-length',
         'select',
@@ -62,7 +66,19 @@ class Flake8(Tool):
     def make_command(self, files):
         command = ['flake8']
         if 'config' in self.options:
-            self.options['config'] = docker.apply_base(self.options['config'])
+            self.options['config'] = docker.apply_base(
+                self.options['config'])
+
+        ignore = stringify(self.options.get('ignore', ''))
+        if (not self.options.get('isort', False) and
+                not ISORT_IGNORE.search(ignore)):
+            # If isort is not enabled and not already ignored
+            # add it to the ignore list
+            ignore = list(filter(lambda x: len(x), ignore.split(',')))
+            ignore.append('I')
+            ignore = ",".join(ignore)
+        if ignore:
+            command.extend(['--ignore', ignore])
 
         for option in self.options:
             if option in self.PYFLAKE_OPTIONS:
@@ -74,8 +90,6 @@ class Flake8(Tool):
             command.extend(['--format', 'default'])
         else:
             command.append('--isolated')
-        if not self.options.get('isort', False):
-            command.append('--no-isort-config')
         command += files
         return command
 
