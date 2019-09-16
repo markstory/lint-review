@@ -450,6 +450,8 @@ class Problems(object):
             self._items[filename.key()] = filename
             return
 
+        if line == 0:
+            line = Comment.FIRST_LINE_IN_DIFF
         if not position:
             position = self.line_to_position(filename, line)
 

@@ -583,6 +583,12 @@ class TestProblems(TestCase):
             'Offset should be transformed to match value in changes'
         )
 
+    def test_add_zero(self):
+        self.problems.add('file.py', 0, 'Not good')
+        result = self.problems.all('file.py')
+        assert len(result) == 1, problems
+        assert result[0].line == Comment.FIRST_LINE_IN_DIFF
+
     def test_add_many(self):
         errors = [
             Comment('some/file.py', 10, 10, 'Thing is wrong'),

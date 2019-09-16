@@ -255,7 +255,7 @@ def process_checkstyle(problems, xml, filename_converter):
             try:
                 lines = []
                 if line in ('undefined', 'null'):
-                    lines = [Comment.FIRST_LINE_IN_DIFF]
+                    lines = [0]
                 if ',' in line:
                     lines = [int(x) for x in line.split(',')]
                 else:
