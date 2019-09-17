@@ -122,9 +122,10 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--ignore', 'F4,W603,I',
+            '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,
+            '--isort-disable',
             '--isolated',
             self.fixtures[1]
         ]
@@ -141,10 +142,11 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--ignore', 'F4,W603,I',
+            '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
+            '--isort-disable',
             '--format', 'default',
             self.fixtures[1]
         ]
@@ -186,6 +188,7 @@ class TestFlake8(TestCase):
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
+            '--isort-disable',
             '--format', 'default',
             self.fixtures[1]
         ]
@@ -201,10 +204,10 @@ class TestFlake8(TestCase):
         out = tool.make_command([self.fixtures[1]])
         expected = [
             'flake8',
-            '--ignore', 'I',
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
+            '--isort-disable',
             '--format', 'default',
             self.fixtures[1]
         ]

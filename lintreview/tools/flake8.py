@@ -9,16 +9,14 @@ from lintreview.tools import Tool, process_quickfix, python_image, stringify
 
 log = logging.getLogger(__name__)
 
-ISORT_IGNORE = re.compile(r'I\d*,')
-
 class Flake8(Tool):
 
     name = 'flake8'
 
     # see: http://flake8.readthedocs.org/en/latest/config.html
-    # ignore is handle specifically because of flake8_isort
     PYFLAKE_OPTIONS = [
         'config',
+        'ignore',
         'exclude',
         'filename',
         'format',
@@ -70,15 +68,8 @@ class Flake8(Tool):
                 self.options['config'])
 
         ignore = stringify(self.options.get('ignore', ''))
-        if (not self.options.get('isort', False) and
-                not ISORT_IGNORE.search(ignore)):
-            # If isort is not enabled and not already ignored
-            # add it to the ignore list
-            ignore = list(filter(lambda x: len(x), ignore.split(',')))
-            ignore.append('I')
-            ignore = ",".join(ignore)
-        if ignore:
-            command.extend(['--ignore', ignore])
+        if not self.options.get('isort', False):
+            command.append('--isort-disable')
 
         for option in self.options:
             if option in self.PYFLAKE_OPTIONS:

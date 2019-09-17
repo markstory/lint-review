@@ -1,7 +1,7 @@
 jinja2>=2.10.1
 pep8>=1.7.0,<2.0.0
 flake8>=3.3.0,<3.4.0
-flake8-isort>=2.7.0,<3.0
+https://github.com/markstory/flake8-isort/archive/7a38cc0d0637bba0d9a57325fdc54462056f636f.tar.gz
 yamllint>=1.6.1,<1.7.0
 demjson>=2.2.3,<2.3.0
 ansible-lint>=3.4.11,<3.5.0
