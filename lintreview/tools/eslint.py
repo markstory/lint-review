@@ -3,9 +3,8 @@ import hashlib
 import logging
 import os
 import re
-from lintreview.config import comma_value
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_checkstyle
+from lintreview.tools import Tool, process_checkstyle, commalist
 import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ class Eslint(Tool):
         """
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        extensions = comma_value(self.options.get('extensions', '.js,.jsx'))
+        extensions = commalist(self.options.get('extensions', '.js,.jsx'))
         return ext in extensions
 
     def has_fixer(self):

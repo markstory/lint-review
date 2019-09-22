@@ -308,6 +308,17 @@ def stringify(value):
         return ','.join(value)
     return str(value)
 
+def commalist(value):
+    """
+    Convert a comma separated string into a list
+    If ``value`` is already a list or tuple it will
+    be returned.
+    """
+    if isinstance(value, six.string_types):
+        return [v.strip() for v in value.split(',')]
+    if isinstance(value, (set, list)):
+        return value
+
 
 def python_image(config):
     supported = {

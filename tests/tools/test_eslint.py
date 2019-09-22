@@ -30,9 +30,19 @@ class TestEslint(TestCase):
         self.assertTrue(self.tool.match_file('test.jsx'))
         self.assertTrue(self.tool.match_file('dir/name/test.js'))
 
-    def test_match_file__extensions(self):
+    def test_match_file_with_extensions(self):
         options = {
             'extensions': '.js,.jsm'
+        }
+        tool = Eslint(self.problems, options)
+        self.assertFalse(tool.match_file('test.php'))
+        self.assertFalse(tool.match_file('test.jsx'))
+        self.assertTrue(tool.match_file('test.js'))
+        self.assertTrue(tool.match_file('test.jsm'))
+
+    def test_match_file_with_extensions_list(self):
+        options = {
+            'extensions': ['.js', '.jsm']
         }
         tool = Eslint(self.problems, options)
         self.assertFalse(tool.match_file('test.php'))
@@ -271,7 +281,9 @@ class TestEslint(TestCase):
         problems = self.problems.all()
         self.assertEqual(1, len(problems))
         self.assertIn('invalid-rules', problems[0].body)
-        self.assertIn('Cannot find module', problems[0].body)
+        self.assertIn(
+            'output the following error',
+            problems[0].body)
 
         self.assertTrue(docker.image_exists('eslint'),
                         'original image is present')
