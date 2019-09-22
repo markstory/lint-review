@@ -308,6 +308,7 @@ def stringify(value):
         return ','.join(value)
     return str(value)
 
+
 def commalist(value):
     """
     Convert a comma separated string into a list
