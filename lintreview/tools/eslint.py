@@ -19,7 +19,7 @@ class Eslint(Tool):
     def check_dependencies(self):
         """See if the nodejs image exists
         """
-        return docker.image_exists('nodejs')
+        return docker.image_exists('eslint')
 
     def match_file(self, filename):
         """Check if a file should be linted using ESLint.
