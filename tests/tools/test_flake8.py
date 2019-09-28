@@ -1,7 +1,10 @@
 from __future__ import absolute_import
+
+from unittest import TestCase
+
 from lintreview.review import Problems
 from lintreview.tools.flake8 import Flake8
-from unittest import TestCase
+import lintreview.docker as docker
 from tests import requires_image, root_dir, read_file, read_and_restore_file
 
 
@@ -32,7 +35,7 @@ class TestFlake8(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        assert len(problems) >= 6
+        assert len(problems) >= 5
 
         self.assertEqual(7, problems[0].line)
         self.assertEqual(7, problems[0].position)
@@ -45,7 +48,7 @@ class TestFlake8(TestCase):
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        assert len(problems) >= 6
+        assert len(problems) >= 5
 
         self.assertEqual(7, problems[0].line)
         self.assertEqual(7, problems[0].position)
@@ -59,18 +62,46 @@ class TestFlake8(TestCase):
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        assert len(problems) >= 6
+        assert len(problems) >= 5
 
         self.assertEqual(7, problems[0].line)
         self.assertEqual(7, problems[0].position)
         self.assertIn('multiple imports on one line', problems[0].body)
 
     @requires_image('python2')
-    def test_process_files_with_isort(self):
+    def test_process_files_with_isort_option(self):
         self.tool.options['isort'] = True
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
         self.assertIn('isort', problems[0].body)
+
+    @requires_image('python2')
+    def test_process_files_with_plugin_list(self):
+        self.tool.options['plugins'] = [
+            'flake8-django',
+            'flake8-isort'
+        ]
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.problems.all(self.fixtures[1])
+        self.assertIn('isort', problems[0].body)
+        for image in docker.images():
+            self.assertNotIn('flake8-', image, 'no flake8 image remains')
+
+    @requires_image('python2')
+    def test_process_files_with_plugin_invalid_type(self):
+        self.tool.options['plugins'] = 'flake8-isort',
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.problems.all()
+        assert '`flake8.plugins` option must be a list' in problems[0].body
+
+    @requires_image('python2')
+    def test_process_files_with_plugin_invalid_value(self):
+        self.tool.options['plugins'] = [
+            'flake8-nope',
+        ]
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.problems.all()
+        assert 'unsupported plugins' in problems[0].body
 
     @requires_image('python2')
     def test_execute_config_with_format(self):
@@ -85,7 +116,7 @@ class TestFlake8(TestCase):
         for issue in problems:
             assert 'W302' not in issue.body
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_process_files_two_files__python3(self):
         self.tool.options['python'] = 3
         self.tool.process_files(self.fixtures)
@@ -93,11 +124,23 @@ class TestFlake8(TestCase):
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        assert len(problems) >= 6
+        assert len(problems) >= 5
 
         self.assertEqual(7, problems[0].line)
         self.assertEqual(7, problems[0].position)
         self.assertIn('multiple imports on one line', problems[0].body)
+
+    @requires_image('python3')
+    def test_process_files_py3_with_plugin_list(self):
+        self.tool.options['python'] = 3
+        self.tool.options['plugins'] = [
+            'flake8-bugbear',
+        ]
+        self.tool.process_files([self.fixtures[1]])
+        problems = self.problems.all(self.fixtures[1])
+        assert 'B004' in problems[-1].body
+        for image in docker.images():
+            self.assertNotIn('flake8-', image, 'no flake8 image remains')
 
     @requires_image('python2')
     def test_config_options_and_process_file(self):
@@ -125,7 +168,6 @@ class TestFlake8(TestCase):
             '--ignore', 'F4,W603',
             '--max-complexity', 10,
             '--max-line-length', 120,
-            '--isort-disable',
             '--isolated',
             self.fixtures[1]
         ]
@@ -146,68 +188,6 @@ class TestFlake8(TestCase):
             '--max-complexity', 10,
             '--max-line-length', 120,
             '--config', '/src/.flake8',
-            '--isort-disable',
-            '--format', 'default',
-            self.fixtures[1]
-        ]
-        self.assertEqual(set(expected), set(out))
-
-    def test_make_command__isort(self):
-        options = {
-            'ignore': 'F4,W603',
-            'max-line-length': 120,
-            'max-complexity': 10,
-            'config': '.flake8',
-            'isort': True
-        }
-        tool = Flake8(self.problems, options, root_dir)
-        out = tool.make_command([self.fixtures[1]])
-        expected = [
-            'flake8',
-            '--ignore', 'F4,W603',
-            '--max-complexity', 10,
-            '--max-line-length', 120,
-            '--config', '/src/.flake8',
-            '--format', 'default',
-            self.fixtures[1]
-        ]
-        self.assertEqual(set(expected), set(out))
-
-    def test_make_command__isort_partially_disabled(self):
-        options = {
-            'ignore': 'I002,F4,W603',
-            'max-line-length': 120,
-            'max-complexity': 10,
-            'config': '.flake8',
-        }
-        tool = Flake8(self.problems, options, root_dir)
-        out = tool.make_command([self.fixtures[1]])
-        expected = [
-            'flake8',
-            '--ignore', 'I002,F4,W603',
-            '--max-complexity', 10,
-            '--max-line-length', 120,
-            '--config', '/src/.flake8',
-            '--isort-disable',
-            '--format', 'default',
-            self.fixtures[1]
-        ]
-        self.assertEqual(set(expected), set(out))
-
-    def test_make_command__isort_added_to_no_ignore(self):
-        options = {
-            'max-line-length': 120,
-            'max-complexity': 10,
-            'config': '.flake8',
-        }
-        tool = Flake8(self.problems, options, root_dir)
-        out = tool.make_command([self.fixtures[1]])
-        expected = [
-            'flake8',
-            '--max-complexity', 10,
-            '--max-line-length', 120,
-            '--config', '/src/.flake8',
-            '--isort-disable',
             '--format', 'default',
             self.fixtures[1]
         ]
@@ -246,7 +226,7 @@ class TestFlake8(TestCase):
         assert 1 < len(self.problems.all()), 'Most errors should be fixed'
 
         text = [c.body for c in self.problems.all()]
-        self.assertIn("'<>' is deprecated", ' '.join(text))
+        self.assertIn("imported but unused", ' '.join(text))
 
     @requires_image('python3')
     def test_execute_fixer__python3(self):
@@ -276,4 +256,4 @@ class TestFlake8(TestCase):
                                 'Most errors should be fixed')
 
         text = [c.body for c in self.problems.all()]
-        self.assertIn("'<>' is deprecated", ' '.join(text))
+        self.assertIn("imported but unused", ' '.join(text))

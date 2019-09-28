@@ -15,5 +15,7 @@ def thing(self):
 def thing_two(arg1, arg2):
     """Do a second thing that also has errors."""
     result=arg1*arg2
-    if result <> arg1:
+    x = None
+    hasattr(x, '__call__')
+    if result != arg1:
         print('derp')

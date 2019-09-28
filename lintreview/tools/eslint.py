@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import hashlib
+
 import logging
 import os
 import re
@@ -41,8 +41,8 @@ class Eslint(Tool):
         log.debug('Processing %s files with %s', files, self.name)
         command = self._create_command()
         command += files
-        container_name = self._container_name(files)
 
+        container_name = self._container_name(files)
         self.install_plugins(container_name)
         image_name = container_name or 'eslint'
 
@@ -107,16 +107,14 @@ class Eslint(Tool):
         return command
 
     def _container_name(self, files):
-        """Get the persistent container name
+        """Get the persistent container name for custom plugins.
+
         This is only used when we have to install custom plugins
         as that requires creating new temporary images.
         """
         if not self.options.get('install_plugins', False):
             return None
-
-        m = hashlib.md5()
-        m.update('-'.join(files).encode('utf8'))
-        return 'eslint-' + m.hexdigest()
+        return docker.generate_container_name('eslint', files)
 
     def _cleanup(self, container_name):
         """Remove the named container and temporary image

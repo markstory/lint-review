@@ -7,9 +7,11 @@ RUN mkdir /src \
   && rm -rf /var/cache/apk/*
 
 COPY requirements.txt /tool
+COPY flake8-install.sh /usr/bin/flake8-install
 
 # Install linters
 RUN cd /tool \
-  && pip install -r requirements.txt
+  && pip install -r requirements.txt \
+  && chmod +x /usr/bin/flake8-install
 
 WORKDIR /src
