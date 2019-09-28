@@ -13,10 +13,12 @@ RUN mkdir /src \
 
 COPY requirements-py3.txt /tool
 COPY merge-pyi-wrapper.sh /usr/bin/merge-pyi-wrapper
+COPY flake8-install.sh /usr/bin/flake8-install
 
 # Install linters & wrapper script
 RUN cd /tool \
   && pip install -r requirements-py3.txt \
-  && chmod +x /usr/bin/merge-pyi-wrapper
+  && chmod +x /usr/bin/merge-pyi-wrapper \
+  && chmod +x /usr/bin/flake8-install
 
 WORKDIR /src

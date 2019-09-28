@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import os
 import logging
+import hashlib
 from typing import Dict, List, Optional  # noqa: F401
 
 import six
@@ -202,3 +203,9 @@ def commit(name):
     except (NotFound, APIError):
         log.exception("Exception committing container.")
         raise ValueError("Could not commit container: {0}".format(name))
+
+
+def generate_container_name(prefix, files):
+    m = hashlib.md5()
+    m.update('-'.join(files).encode('utf8'))
+    return prefix + m.hexdigest()
