@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import logging
 import os
 import re
-import six
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -138,7 +137,11 @@ class Flake8(Tool):
             return image
         if not isinstance(plugins, list):
             plugin_type = plugins.__class__.__name__
-            error = IssueComment(u'The `flake8.plugins` option must be a list got `{}` instead.'.format(plugin_type))
+            error = IssueComment(
+                u'The `flake8.plugins` option must be a list got `{}` instead.'.format(
+                    plugin_type
+                )
+            )
             self.problems.add(error)
             return image
 
@@ -158,7 +161,7 @@ class Flake8(Tool):
         if self.custom_image is None:
             log.info('Installing flake8 plugins into %s', container_name)
 
-            output = docker.run(
+            docker.run(
                 image,
                 ['flake8-install', u','.join(plugins)],
                 source_dir=self.base_path,

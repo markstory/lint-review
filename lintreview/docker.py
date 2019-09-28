@@ -204,6 +204,7 @@ def commit(name):
         log.exception("Exception committing container.")
         raise ValueError("Could not commit container: {0}".format(name))
 
+
 def generate_container_name(prefix, files):
     m = hashlib.md5()
     m.update('-'.join(files).encode('utf8'))
