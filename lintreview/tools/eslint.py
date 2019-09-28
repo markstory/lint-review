@@ -13,8 +13,7 @@ log = logging.getLogger(__name__)
 class Eslint(Tool):
 
     name = 'eslint'
-
-    installed_plugins = False
+    custom_image = None
 
     def check_dependencies(self):
         """See if the nodejs image exists
@@ -42,25 +41,20 @@ class Eslint(Tool):
         command = self._create_command()
         command += files
 
-        container_name = self._container_name(files)
-        self.install_plugins(container_name)
-        image_name = container_name or 'eslint'
+        image_name = self.get_image_name(files)
 
         output = docker.run(
             image_name,
             command,
             source_dir=self.base_path)
-        self._cleanup(container_name)
+        self._cleanup()
         self._process_output(output, files)
 
     def process_fixer(self, files):
         """Run Eslint in the fixer mode.
         """
         command = self.create_fixer_command(files)
-        container_name = self._container_name(files)
-
-        self.install_plugins(container_name)
-        image_name = container_name or 'eslint'
+        image_name = self.get_image_name(files)
 
         docker.run(
             image_name,
@@ -73,13 +67,14 @@ class Eslint(Tool):
         command += files
         return command
 
-    def install_plugins(self, container_name):
+    def get_image_name(self, files):
         """Run container command to install eslint plugins
         """
         if not self.options.get('install_plugins', False):
-            return
+            return 'eslint'
 
-        if self.installed_plugins is False:
+        container_name = docker.generate_container_name('eslint', files)
+        if self.custom_image is None:
             log.info('Installing eslint plugins into %s', container_name)
             output = docker.run(
                 'eslint',
@@ -89,13 +84,15 @@ class Eslint(Tool):
 
             docker.commit(container_name)
             docker.rm_container(container_name)
-            self.installed_plugins = True
+            self.custom_image = container_name
+
             installed = [
                 line.strip('add:')
                 for line in output.splitlines()
                 if line.startswith('add:')
             ]
             log.info('Installed eslint plugins %s', installed)
+        return container_name
 
     def _create_command(self):
         command = ['eslint', '--format', 'checkstyle']
@@ -116,14 +113,14 @@ class Eslint(Tool):
             return None
         return docker.generate_container_name('eslint', files)
 
-    def _cleanup(self, container_name):
+    def _cleanup(self):
         """Remove the named container and temporary image
         """
-        self.installed_plugins = False
-        if container_name is None:
+        if self.custom_image is None:
             return
-        log.info('Removing temporary image %s', container_name)
-        docker.rm_image(container_name)
+        log.info('Removing temporary image %s', self.custom_image)
+        docker.rm_image(self.custom_image)
+        self.custom_image = None
 
     def _process_output(self, output, files):
         # Strip deprecations off as they break XML parsing

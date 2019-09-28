@@ -239,7 +239,7 @@ class TestEslint(TestCase):
         self.assertEqual(2, len(problems), 'Should find errors')
         self.assertIn('Unexpected var', problems[0].body)
 
-        self.assertTrue(docker.image_exists('nodejs'),
+        self.assertTrue(docker.image_exists('eslint'),
                         'original image is present')
 
         for image in docker.images():

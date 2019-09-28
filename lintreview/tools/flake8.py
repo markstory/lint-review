@@ -6,7 +6,12 @@ import re
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_quickfix, python_image, stringify
+from lintreview.tools import (
+    Tool,
+    process_quickfix,
+    python_image,
+    stringify
+)
 
 log = logging.getLogger(__name__)
 
