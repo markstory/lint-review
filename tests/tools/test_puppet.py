@@ -34,7 +34,6 @@ class TestPuppet(TestCase):
         self.tool.process_files([filename])
         expected_problems = [
             Comment(filename, 2, 2, 'ERROR:foo not in autoload module layout'),
-            Comment(filename, 3, 3, 'ERROR:trailing whitespace found'),
             Comment(filename, 4, 4, 'WARNING:quoted boolean value found')
         ]
 
@@ -46,7 +45,7 @@ class TestPuppet(TestCase):
         self.tool.process_files(self.fixtures)
 
         linty_filename = self.fixtures[1]
-        self.assertEqual(3, len(self.problems.all(linty_filename)))
+        self.assertEqual(2, len(self.problems.all(linty_filename)))
 
         freshly_laundered_filename = self.fixtures[0]
         self.assertEqual([], self.problems.all(freshly_laundered_filename))
