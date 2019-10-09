@@ -79,7 +79,6 @@ class Eslint(Tool):
             output = docker.run(
                 'eslint',
                 ['eslint-install'],
-                run_as_current_user=True,
                 source_dir=self.base_path,
                 name=container_name)
 
