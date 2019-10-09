@@ -34,9 +34,8 @@ class TestPuppet(TestCase):
         self.tool.process_files([filename])
         expected_problems = [
             Comment(filename, 2, 2, 'ERROR:foo not in autoload module layout'),
-            Comment(filename, 4, 4, 'WARNING:quoted boolean value found')
+            Comment(filename, 3, 3, 'ERROR:trailing whitespace found'),
         ]
-
         problems = sorted(self.problems.all(filename), key=attrgetter('line'))
         self.assertEqual(expected_problems, problems)
 
@@ -108,10 +107,9 @@ class TestPuppet(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        self.assertEqual(2, len(self.problems.all()),
+        self.assertEqual(1, len(self.problems.all()),
                          'Most errors should be fixed')
 
         problems = sorted(self.problems.all(), key=attrgetter('line'))
         self.assertIn('ERROR:foo not in autoload module layout',
                       problems[0].body)
-        self.assertIn('WARNING:quoted boolean value', problems[1].body)
