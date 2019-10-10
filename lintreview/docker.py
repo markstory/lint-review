@@ -95,16 +95,16 @@ def containers(include_stopped=False):
     return results
 
 
-def run(image,                    # type: str
-        command,                  # type: List[str]
-        source_dir,               # type: str
-        env=None,                 # type: Dict[str, str]
-        timeout=300,              # type: Optional[int]
-        name=None,                # type: Optional[str]
-        docker_base=None,         # type: Optional[str]
-        workdir=None,             # type: Optional[str]
-        include_error=True,       # type: bool
-        run_as_current_user=False # type: bool
+def run(image,                     # type: str
+        command,                   # type: List[str]
+        source_dir,                # type: str
+        env=None,                  # type: Dict[str, str]
+        timeout=300,               # type: Optional[int]
+        name=None,                 # type: Optional[str]
+        docker_base=None,          # type: Optional[str]
+        workdir=None,              # type: Optional[str]
+        include_error=True,        # type: bool
+        run_as_current_user=False  # type: bool
         ):
     # type: (...) -> str
     """Execute tool commands in docker containers.
@@ -115,7 +115,6 @@ def run(image,                    # type: str
     The source_dir will be mounted at `/src` in the container
     for tool execution.
     """
-    log.info('Running %s container', image)
     if not docker_base:
         docker_base = DOCKER_BASE
 
@@ -138,7 +137,8 @@ def run(image,                    # type: str
     if run_as_current_user:
         run_args['user'] = os.getuid()
 
-    log.debug('Running %s', run_args)
+    # Only log the first 15 parameters.
+    log.info('Running container: %s', u' '.join(run_args['command'][0:15]))
     client = _get_client()
     try:
         container = client.containers.run(**run_args)

@@ -28,7 +28,7 @@ class Processor(object):
         self._review = Review(repository, pull_request, config)
 
     def load_changes(self):
-        log.info('Loading pull request patches from github.')
+        log.debug('Loading pull request patches from github.')
         files = self._pull_request.files()
         self._changes = DiffCollection(files)
         self.problems.set_changes(self._changes)
