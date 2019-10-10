@@ -185,11 +185,13 @@ def run(lint_tools, files, commits):
     """
     files = [docker.apply_base(f) for f in files]
 
-    log.info('Running lint tools on %d files', len(files))
+    log.info('Running for %d files', len(files))
     for tool in lint_tools:
-        log.debug('Runnning %s', tool)
+        log.debug('Running %s tool', tool)
+        previous_total = len(tool.problems)
         tool.execute(files)
         tool.execute_commits(commits)
+        log.info('Added %s review notes', len(tool.problems) - previous_total)
 
 
 def process_quickfix(problems, output, filename_converter, columns=3):
