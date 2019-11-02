@@ -34,7 +34,7 @@ class Ktlint(Tool):
         command += files
 
         output = docker.run('ktlint', command, self.base_path)
-        process_checkstyle(self.problems, output, docker.strip_base)
+        process_checkstyle(self.problems, output.splitlines(), docker.strip_base)
 
     def _create_command(self):
         command = ['ktlint', '--color', '--reporter=checkstyle']
