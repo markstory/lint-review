@@ -6,7 +6,7 @@ import lintreview.tools as tools
 from lintreview.config import ReviewConfig, build_review_config
 from lintreview.docker import TimeoutError
 from lintreview.review import Review, Problems, Comment
-from lintreview.tools import pep8, jshint, process_quickfix
+from lintreview.tools import pep8, jshint
 from tests import root_dir, fixtures_path, requires_image
 
 import github3
@@ -155,6 +155,7 @@ class TestPythonImage(TestCase):
         self.assertEqual('python2', tools.python_image({'python': '2'}))
         self.assertEqual('python3', tools.python_image({'python': '3'}))
         self.assertEqual('python3', tools.python_image({'python': 3}))
+
 
 class TestProcessCheckstyle(TestCase):
     def test_process(self):
