@@ -6,7 +6,7 @@ import six
 
 import lintreview.docker as docker
 
-from lintreview.review import IssueComment, Comment
+from lintreview.review import IssueComment
 from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
@@ -215,8 +215,13 @@ def process_quickfix(problems, output, filename_converter, columns=3):
         if len(parts) < columns:
             continue
         message = parts[-1].strip()
+        try:
+            lineno = int(parts[1])
+        except ValueError:
+            log.info("Error parsing quickfix output. Dropping message=%s", line)
+            continue
         filename = filename_converter(parts[0].strip())
-        problems.add(filename, int(parts[1]), message)
+        problems.add(filename, lineno, message)
 
 
 def _parse_xml(xml):
@@ -228,7 +233,7 @@ def _parse_xml(xml):
         if isinstance(xml, six.text_type):
             xml = xml.encode('utf-8')
         return ElementTree.fromstring(xml)
-    except Exception as e:
+    except Exception:
         if len(xml) > 8192:
             head = xml[0:250]
             tail = xml[-250:]
@@ -264,7 +269,7 @@ def process_checkstyle(problems, xml, filename_converter):
                     lines = [int(line)]
             except Exception as e:
                 log.info(
-                    "Could not parse checkstyle output. "
+                    "Error parsing checkstyle output. "
                     "Dropping message=%s line=%s"
                     "Error was %s", message, line, e)
             for line in lines:

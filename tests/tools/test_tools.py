@@ -33,8 +33,7 @@ linters = not there, bogus
 """
 
 
-class TestTools(TestCase):
-    """Test the tools."""
+class TestFactory(TestCase):
 
     def test_factory_raises_error_on_bad_linter(self):
         gh = Mock(spec=github3.GitHub)
@@ -56,6 +55,9 @@ class TestTools(TestCase):
         self.assertEqual(2, len(linters))
         self.assertIsInstance(linters[0], pep8.Pep8)
         self.assertIsInstance(linters[1], jshint.Jshint)
+
+
+class TestToolBase(TestCase):
 
     def test_tool_constructor__config(self):
         problems = Problems()
@@ -141,7 +143,9 @@ class TestTools(TestCase):
         assert 'timed out during' in errors[0].body
         assert 'run pep8 linter' in errors[0].body
 
-    def test_python_image(self):
+
+class TestPythonImage(TestCase):
+    def test(self):
         self.assertEqual('python2', tools.python_image(False))
         self.assertEqual('python2', tools.python_image(''))
         self.assertEqual('python2', tools.python_image('derp'))
@@ -152,7 +156,9 @@ class TestTools(TestCase):
         self.assertEqual('python3', tools.python_image({'python': '3'}))
         self.assertEqual('python3', tools.python_image({'python': 3}))
 
-    def test_process_checkstyle(self):
+
+class TestProcessCheckstyle(TestCase):
+    def test_process(self):
         problems = Problems()
         xml = """
     <checkstyle>
@@ -173,7 +179,7 @@ class TestTools(TestCase):
         self.assertEqual(1, things[0].line)
         self.assertEqual('Not good', things[0].body)
 
-    def test_process_checkstyle__comma_lines(self):
+    def test_comma_lines(self):
         problems = Problems()
         xml = """
     <checkstyle>
@@ -196,7 +202,7 @@ class TestTools(TestCase):
         self.assertEqual(5, things[2].line)
         self.assertEqual('Not good', things[2].body)
 
-    def test_process_checkstyle__undefined(self):
+    def test_process_undefined(self):
         problems = Problems()
         xml = """
     <checkstyle>
@@ -211,3 +217,44 @@ class TestTools(TestCase):
         assert len(errors) == 1, errors
         assert errors[0].line == Comment.FIRST_LINE_IN_DIFF
         assert errors[0].body == 'Not good'
+
+
+class ProcessQuickfix(TestCase):
+    def test(self):
+        problems = Problems()
+        text = """
+/src/file.py:1:1: A message.
+/src/dir/file.text:10:1: Another message
+"""
+        tools.process_quickfix(problems, text.splitlines(), lambda x: x)
+        assert len(problems) == 2
+        filepy = problems.all('/src/file.py')[0]
+        assert 1 == filepy.position
+        assert 1 == filepy.line
+        assert 'A message.' == filepy.body
+
+        filetext = problems.all('/src/dir/file.text')[0]
+        assert 10 == filetext.position
+        assert 10 == filetext.line
+        assert 'Another message' == filetext.body
+
+    def test_invalid_content(self):
+        problems = Problems()
+        text = """
+Error: No such file or directory: /src/main.rb
+/src/readme.txt:8:1: Bad words.
+"""
+        tools.process_quickfix(problems, text.splitlines(), lambda x: x)
+        assert len(problems) == 1
+        assert 8 == problems.all('/src/readme.txt')[0].line
+
+    def test_extra_colons(self):
+        problems = Problems()
+        text = """
+/src/styles.css:8:1: invalid selector .thing::before
+"""
+        tools.process_quickfix(problems, text.splitlines(), lambda x: x)
+        assert len(problems) == 1
+        error = problems.all('/src/styles.css')[0]
+        assert 8 == error.line
+        assert 'invalid selector .thing::before' == error.body
