@@ -5,13 +5,14 @@ import os
 import six
 
 from collections import namedtuple
+
+from lintreview import docker
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
     process_checkstyle,
     stringify
 )
-import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ Package = namedtuple('Package', ['package', 'name'])
 OPTIONAL_PACKAGES = {
     'CakePHP4': Package('cakephp/cakephp-codesniffer:dev-next', 'CakePHP')
 }
+
 
 class Phpcs(Tool):
 
@@ -46,6 +48,7 @@ class Phpcs(Tool):
         image = self.get_image_name(files)
         command = self.create_command(files)
         output = docker.run(image, command, source_dir=self.base_path)
+        self._cleanup()
 
         # Check for errors from PHPCS
         if output.startswith('ERROR'):
