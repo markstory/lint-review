@@ -123,7 +123,8 @@ class Phpcs(Tool):
         If the `standard` option that is an optional package
         the a custom image will be created.
         """
-        image = 'phpcs'
+        image = 'php'
+
         standard = self.options.get('standard', None)
         if not standard or standard not in OPTIONAL_PACKAGES:
             return image
