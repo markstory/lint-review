@@ -76,6 +76,19 @@ class TestPhpcs(TestCase):
                          'Changing standards changes error counts')
 
     @requires_image('php')
+    def test_process_files__with_optional_package(self):
+        config = {
+            'standard': 'CakePHP4'
+        }
+        tool = Phpcs(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+
+        self.assertEqual(3, len(problems),
+                         'Changing standards changes error counts')
+
+    @requires_image('php')
     def test_process_files__with_ignore(self):
         config = {
             'standard': 'PSR2',

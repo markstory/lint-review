@@ -9,6 +9,7 @@ RUN apk update \
   && rm -rf /var/cache/apk/*
 
 COPY composer.json /tool
+COPY phpcs-install.sh /usr/bin/phpcs-install
 
 # Get composer, install PHP tools and remove composer.
 RUN cd /tool \
@@ -19,9 +20,9 @@ RUN cd /tool \
   && ln -s /tool/vendor/bin/phpcs /usr/bin/phpcs \
   && ln -s /tool/vendor/bin/phpcbf /usr/bin/phpcbf \
   && ln -s /tool/vendor/bin/phpmd /usr/bin/phpmd \
+  # executable installer script
+  && chmod +x /usr/bin/phpcs-install \
   # Add coding standards to phpcs
-  && vendor/bin/phpcs --config-set installed_paths /tool/vendor/cakephp/cakephp-codesniffer \
-  # cleanup
-  && rm /tool/composer.phar /tool/composer-setup.php /tool/composer.json /tool/composer.lock
+  && vendor/bin/phpcs --config-set installed_paths /tool/vendor/cakephp/cakephp-codesniffer
 
 WORKDIR /src

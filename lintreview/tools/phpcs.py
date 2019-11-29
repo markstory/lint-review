@@ -1,6 +1,10 @@
 from __future__ import absolute_import
+
 import logging
 import os
+import six
+
+from collections import namedtuple
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
@@ -11,10 +15,16 @@ import lintreview.docker as docker
 
 log = logging.getLogger(__name__)
 
+Package = namedtuple('Package', ['package', 'name'])
+
+OPTIONAL_PACKAGES = {
+    'CakePHP4': Package('cakephp/cakephp-codesniffer:dev-next', 'CakePHP')
+}
 
 class Phpcs(Tool):
 
     name = 'phpcs'
+    custom_image = None
 
     def check_dependencies(self):
         """
@@ -33,7 +43,7 @@ class Phpcs(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
+        image = self.get_image_name(files)
         command = self.create_command(files)
         output = docker.run(
             'php',
@@ -69,7 +79,10 @@ class Phpcs(Tool):
     def _apply_options(self, command):
         standard = 'PSR2'
         if self.options.get('standard'):
-            standard = self.apply_base(self.options['standard'])
+            standard = self.options['standard']
+            if standard in OPTIONAL_PACKAGES:
+                standard = OPTIONAL_PACKAGES[standard].name
+            standard = self.apply_base(standard)
         command.append('--standard=' + stringify(standard))
 
         if self.options.get('ignore'):
@@ -94,9 +107,10 @@ class Phpcs(Tool):
     def process_fixer(self, files):
         """Run PHPCS in the fixer mode.
         """
+        image = self.get_image_name(files)
         command = self.create_fixer_command(files)
         docker.run(
-            'php',
+            image,
             command,
             source_dir=self.base_path)
 
@@ -105,3 +119,50 @@ class Phpcs(Tool):
         command = self._apply_options(command)
         command += docker.replace_basedir(self.base_path, files)
         return command
+
+    def get_image_name(self, files):
+        """Get the image name based on options
+
+        If the `standard` option that is an optional package
+        the a custom image will be created.
+        """
+        image = 'phpcs'
+        standard = self.options.get('standard', None)
+        if not standard or standard not in OPTIONAL_PACKAGES:
+            return image
+
+        if not isinstance(standard, six.string_types):
+            error = IssueComment(
+                u'The `phpcs.standard` option must be a string got `{}` instead.'.format(
+                    standard.__class__.__name__
+                )
+            )
+            self.problems.add(error)
+            return image
+
+        container_name = docker.generate_container_name('phpcs-', files)
+        if self.custom_image is None:
+            log.info('Installing phpcs package into %s', container_name)
+
+            docker.run(
+                image,
+                ['phpcs-install', OPTIONAL_PACKAGES[standard].package],
+                source_dir=self.base_path,
+                name=container_name
+            )
+            docker.commit(container_name)
+            docker.rm_container(container_name)
+            self.custom_image = container_name
+            log.info('Installed phpcs package %s', standard)
+
+        print('container ', container_name)
+        return container_name
+
+    def _cleanup(self):
+        """Remove the custom image
+        """
+        if self.custom_image is None:
+            return
+        log.info('Removing temporary image %s', self.custom_image)
+        docker.rm_image(self.custom_image)
+        self.custom_image = None
