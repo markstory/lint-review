@@ -45,10 +45,7 @@ class Phpcs(Tool):
         """
         image = self.get_image_name(files)
         command = self.create_command(files)
-        output = docker.run(
-            'php',
-            command,
-            source_dir=self.base_path)
+        output = docker.run(image, command, source_dir=self.base_path)
 
         # Check for errors from PHPCS
         if output.startswith('ERROR'):

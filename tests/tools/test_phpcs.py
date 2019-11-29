@@ -85,8 +85,7 @@ class TestPhpcs(TestCase):
 
         problems = self.problems.all(self.fixtures[1])
 
-        self.assertEqual(3, len(problems),
-                         'Changing standards changes error counts')
+        assert 'strict_types' in problems[0].body, 'Should use custom rules'
 
     @requires_image('php')
     def test_process_files__with_ignore(self):
