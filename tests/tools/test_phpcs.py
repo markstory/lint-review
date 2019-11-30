@@ -1,6 +1,9 @@
 from __future__ import absolute_import
+
+from lintreview import docker
 from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs
+
 from unittest import TestCase
 from tests import root_dir, read_file, read_and_restore_file, requires_image
 
@@ -74,6 +77,20 @@ class TestPhpcs(TestCase):
 
         self.assertEqual(3, len(problems),
                          'Changing standards changes error counts')
+
+    @requires_image('php')
+    def test_process_files__with_optional_package(self):
+        config = {
+            'standard': 'CakePHP4'
+        }
+        tool = Phpcs(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+        assert 'strict_types' in problems[0].body, 'Should use custom rules'
+
+        for image in docker.images():
+            self.assertNotIn('phpcs-', image, 'no phpcs image remains')
 
     @requires_image('php')
     def test_process_files__with_ignore(self):
