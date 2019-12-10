@@ -156,7 +156,6 @@ class Phpcs(Tool):
             self.custom_image = container_name
             log.info('Installed phpcs package %s', standard)
 
-        print('container ', container_name)
         return container_name
 
     def _cleanup(self):
