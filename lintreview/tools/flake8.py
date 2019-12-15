@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import logging
 import os
-import re
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -14,6 +13,7 @@ from lintreview.tools import (
 )
 
 log = logging.getLogger(__name__)
+
 
 class Flake8(Tool):
 
@@ -45,6 +45,8 @@ class Flake8(Tool):
         'flake8-django',
         'flake8-pytest',
         'flake8-bugbear',
+        'flake8-tidy-import',
+        'flake8-docstrings',
     )
 
     def check_dependencies(self):
@@ -78,7 +80,6 @@ class Flake8(Tool):
             self.options['config'] = docker.apply_base(
                 self.options['config'])
 
-        ignore = stringify(self.options.get('ignore', ''))
         if self.options.get('isort', None):
             plugins = self.options.get('plugins', [])
             if isinstance(plugins, list):
