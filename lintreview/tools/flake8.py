@@ -45,7 +45,7 @@ class Flake8(Tool):
         'flake8-django',
         'flake8-pytest',
         'flake8-bugbear',
-        'flake8-tidy-import',
+        'flake8-tidy-imports',
         'flake8-docstrings',
     )
 
