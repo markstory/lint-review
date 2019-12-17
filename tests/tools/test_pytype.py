@@ -97,6 +97,7 @@ class TestPytype(TestCase):
         tool = Pytype(self.problems, {'fixer': True}, root_dir)
         self.assertEqual(True, tool.has_fixer())
 
+    @requires_image('python3')
     def test_run_fixer(self):
         tool = Pytype(self.problems, {'fixer': True}, root_dir)
 
