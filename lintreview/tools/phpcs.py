@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 Package = namedtuple('Package', ['package', 'name'])
 
 OPTIONAL_PACKAGES = {
-    'CakePHP4': Package('cakephp/cakephp-codesniffer:dev-next', 'CakePHP')
+    'CakePHP4': Package('cakephp/cakephp-codesniffer:^4.0', 'CakePHP')
 }
 
 
