@@ -43,13 +43,13 @@ version="${tag_name//[^0-9.]/}"
 download_url=`clean_up "$(cat response_${tool})" "browser_download_url"`
 filename="${download_url##*/}"
 ext="${download_url##*.}"
-rm -rf response_${tool}
+rm -rf "response_${tool}"
 
 # Download latest release, and delete the old one for checkstyle
 if [[ ${type} =~ "download" ]]; then
   old_file=`find docker -name "${tool}*.jar"`
   old_file="$(basename $old_file)"
-  rm docker/#{old_file}
+  rm "docker/${old_file}"
   curl -s -o docker/${filename} -L ${download_url}
 fi
 
