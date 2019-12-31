@@ -3,30 +3,35 @@
 tool=$1
 # switch case tools
 case $tool in
-    checkstyle*)
-        repo="checkstyle/checkstyle"
-        type="docker download"
-    ;;
-    foodcritic)
-        repo="Foodcritic/foodcritic"
-        type="gemfile"
-    ;;
-    goodcheck)
-        repo="sider/goodcheck"
-        type="gemfile"
-    ;;
-    puppet-lint)
-        repo="rodjek/puppet-lint"
-        type="gemfile"
-    ;;
-    rubocop*)
-        repo="rubocop-hq/rubocop"
-        type="gemfile"
-    ;;
-    *)
-        echo "Tool $tool: not found"
-        exit 1
-    ;;
+  checkstyle)
+    repo="checkstyle/checkstyle"
+    type="docker download"
+  ;;
+  foodcritic)
+    repo="Foodcritic/foodcritic"
+    type="gemfile"
+  ;;
+  goodcheck)
+    repo="sider/goodcheck"
+    type="gemfile"
+  ;;
+  puppet-lint)
+    repo="rodjek/puppet-lint"
+    type="gemfile"
+  ;;
+  rubocop)
+    repo="rubocop-hq/rubocop"
+    type="gemfile"
+  ;;
+  ktlint)
+    repo="pinterest/ktlint"
+    type="docker"
+    find_string="ARG ktlint_version="
+  ;;
+  *)
+    echo "Tool $tool: not found"
+    exit 1
+  ;;
 esac
 
 # Function to grep and get value from github releases
@@ -40,26 +45,34 @@ result=`curl -s https://api.github.com/repos/${repo}/releases/latest > response_
 # Get values that we need
 tag_name=`clean_up "$(cat response_${tool})" "tag_name"`
 version="${tag_name//[^0-9.]/}"
-download_url=`clean_up "$(cat response_${tool})" "browser_download_url"`
-filename="${download_url##*/}"
-ext="${download_url##*.}"
-rm -rf "response_${tool}"
-
-# Download latest release, and delete the old one for checkstyle
-if [[ ${type} =~ "download" ]]; then
-  old_file=`find docker -name "${tool}*.jar"`
-  old_file="$(basename $old_file)"
-  rm "docker/${old_file}"
-  curl -s -o docker/${filename} -L ${download_url}
-fi
 
 # Update docker / gemfile version
 if [[ ${type} =~ "docker" ]]; then
   file="docker/${tool}.Dockerfile"
-  sed -i.bak "s/${old_file}/${filename}/g" ${file} && rm "${file}.bak"
+
+  # Download latest release, and delete the old one for checkstyle
+  if [[ ${type} =~ "download" ]]; then
+    download_url=`clean_up "$(cat response_${tool})" "browser_download_url"`
+    filename="${download_url##*/}"
+    ext="${filename##*.}"
+
+    old_file=`find docker -name "${tool}*.${ext}"`
+    find_string="$(basename $old_file)"
+    rm "${old_file}"
+
+    curl -s -o docker/${filename} -L ${download_url}
+    replace_string=${filename}
+    sed -i.bak "s/${find_string}/${replace_string}/g" ${file} && rm "${file}.bak"
+  else
+    replace_string="${find_string}${version}"
+    sed -i.bak "s/.*${find_string}.*/${replace_string}/" ${file} && rm "${file}.bak"
+  fi
 elif [[ ${type} =~ "gemfile" ]]; then
   sed -i.bak "s/.*${tool}.*/gem '${tool}', '~>${version}'/" docker/Gemfile && rm docker/Gemfile.bak
 fi
+
+
+rm -rf "response_${tool}"
 
 # Create new branch, and commit the update
 cmd="git checkout -b update-${tool}-version"
