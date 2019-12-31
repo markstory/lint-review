@@ -16,3 +16,4 @@ tags
 /.bundle
 output.log
 go.sum
+response_*
