@@ -15,6 +15,11 @@ case $tool in
     repo="sider/goodcheck"
     type="gemfile"
   ;;
+  ktlint)
+    repo="pinterest/ktlint"
+    type="docker"
+    find_string="ARG ktlint_version="
+  ;;
   puppet-lint)
     repo="rodjek/puppet-lint"
     type="gemfile"
@@ -23,10 +28,10 @@ case $tool in
     repo="rubocop-hq/rubocop"
     type="gemfile"
   ;;
-  ktlint)
-    repo="pinterest/ktlint"
+  swiftlint)
+    repo="realm/swiftlint"
     type="docker"
-    find_string="ARG ktlint_version="
+    find_string="FROM norionomura\/swiftlint:"
   ;;
   *)
     echo "Tool $tool: not found"
@@ -78,4 +83,5 @@ rm -rf "response_${tool}"
 cmd="git checkout -b update-${tool}-version"
 cmd="${cmd} && git add -A"
 cmd="${cmd} && git commit -m \"Update $tool to version $version\""
-eval ${cmd}
+#eval ${cmd}
+echo $cmd
