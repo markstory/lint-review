@@ -79,5 +79,4 @@ rm -rf "response_${tool}"
 cmd="git checkout -b update-${tool}-version"
 cmd="${cmd} && git add -A"
 cmd="${cmd} && git commit -m \"Update $tool to version $version\""
-#eval ${cmd}
-echo $cmd
+eval ${cmd}
