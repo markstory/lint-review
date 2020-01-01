@@ -6,6 +6,8 @@ FROM node:8-alpine
 RUN mkdir /src \
   && mkdir /tool \
   && apk --update add bash \
+  # To handle 'not get uid/gid'
+  && npm config set unsafe-perm true \
   # Upgrade yarn to get latest release
   && npm install yarn@latest -g \
   && rm -rf /var/cache/apk/*
