@@ -7,10 +7,6 @@ case $tool in
     repo="checkstyle/checkstyle"
     type="docker download"
   ;;
-  foodcritic)
-    repo="Foodcritic/foodcritic"
-    type="gemfile"
-  ;;
   goodcheck)
     repo="sider/goodcheck"
     type="gemfile"
