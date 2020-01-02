@@ -34,3 +34,9 @@ tag: guard-VERSION
 	python setup.py sdist upload
 
 release: tag
+
+args = $(filter-out $@,$(MAKECMDGOALS))
+
+update: ## Update [tool] to latest release from github
+	$(eval tool = $(args))
+	@./update_tool.sh $(tool)
