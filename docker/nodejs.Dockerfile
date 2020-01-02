@@ -8,7 +8,7 @@ RUN mkdir /src \
   # To handle 'not get uid/gid'
   && npm config set unsafe-perm true \
   # Upgrade yarn to get latest release
-  && npm install yarn@latest -g \
+  && npm install yarn@latest --force -g \
   && rm -rf /var/cache/apk/*
 
 COPY package.json /tool
