@@ -65,7 +65,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == linty_filename
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'C: Metrics/LineLength: Line is too long. [82/80]' in long_line.body
+        assert 'C: Layout/LineLength: Line is too long. [82/80]' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_one_file_fail_display_cop_names__bool(self):
@@ -81,7 +81,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == linty_filename
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'C: Metrics/LineLength: Line is too long. [82/80]' in long_line.body
+        assert 'C: Layout/LineLength: Line is too long. [82/80]' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files__invalid_rubocop_yml(self):
