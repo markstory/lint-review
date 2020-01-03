@@ -475,14 +475,15 @@ Uses [go-lint](https://github.com/golang/lint) to lint go code.
 
 #### Ktlint
 
-Uses [ktlint](https://github.com/shyiko/ktlint) to lint kotlin code.
+Uses [ktlint](https://github.com/pinterest/ktlint) to lint kotlin code.
 
 *Options*
 
 * `android` Set to `true` to pass rule set in error messages.
-* `config` Provide a path to the [.editorconfig](http://editorconfig.org/) file for ktlint.
-* `experimental` Set to `true` to add `experimental/indent` rule ([#338](https://github.com/shyiko/ktlint/issues/338)).
-* `ruleset` Provide a path to the JAR containing one or more [Rule](https://github.com/shyiko/ktlint/blob/master/ktlint-core/src/main/kotlin/com/github/shyiko/ktlint/core/Rule.kt)s gathered together in a [RuleSet](https://github.com/shyiko/ktlint/blob/master/ktlint-core/src/main/kotlin/com/github/shyiko/ktlint/core/RuleSet.kt). [Ruleset Template](https://github.com/shyiko/ktlint/blob/master/ktlint-ruleset-template)
+* `config` Provide a path to the [.editorconfig](https://github.com/pinterest/ktlint/#EditorConfig) file for ktlint.
+* `experimental` Set to `true` to add [`experimental rules`](https://github.com/pinterest/ktlint/#experimental-rules).
+* `fixer` Set to `true` to fix any deviations from the code style
+* `ruleset` Provide ["ruleset"](https://github.com/pinterest/ktlint/#experimental-rules) a path to JAR containing one or more [Rule](https://github.com/pinterest/ktlint/blob/master/ktlint-core/src/main/kotlin/com/pinterest/ktlint/core/Rule.kt)s gathered together in a [RuleSet](https://github.com/pinterest/ktlint/blob/master/ktlint-core/src/main/kotlin/com/github/shyiko/ktlint/core/RuleSet.kt).
 
 
 ### Lua
