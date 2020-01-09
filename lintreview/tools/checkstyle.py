@@ -66,6 +66,11 @@ class Checkstyle(Tool):
         # Only one line is generally a config error. Replay the error
         # to the user.
         lines = output.strip().split('\n')
+
+        # Checkstyle >=8.28 outputs non-xml summary data at the beginning.
+        if lines[0].startswith('Checkstyle ends with'):
+            lines = lines[1:]
+
         if not lines[0].startswith('<'):
             msg = ("Running `checkstyle` failed with:\n"
                    "```\n"
@@ -75,11 +80,11 @@ class Checkstyle(Tool):
             return self.problems.add(IssueComment(msg % (lines[0],)))
 
         # Remove the last line if it is not XML
-        # Checkstyle outputs text after the XML if there are errors.
+        # Checkstyle may output text after the XML if there are errors.
         if not lines[-1].strip().startswith('<'):
             lines = lines[0:-1]
-        output = ''.join(lines)
 
+        output = ''.join(lines)
         process_checkstyle(self.problems, output, docker.strip_base)
 
     def setup_properties(self, properties_file):

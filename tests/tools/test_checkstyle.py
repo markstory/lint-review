@@ -48,7 +48,6 @@ class TestCheckstyle(TestCase):
             fname,
             1,
             1,
-            "Missing a Javadoc comment.\n"
             "Utility classes should not have a public or default constructor.")
         self.assertEqual(expected, problems[0])
 
@@ -56,7 +55,6 @@ class TestCheckstyle(TestCase):
             fname,
             3,
             3,
-            "Missing a Javadoc comment.\n"
             "Parameter args should be final."
         )
         self.assertEqual(expected, problems[2])
