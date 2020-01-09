@@ -1,7 +1,7 @@
 FROM alpine:3.7
 
 RUN mkdir /tool && mkdir /src
-COPY checkstyle-7.7.jar /tool/checkstyle.jar
+COPY checkstyle-8.28-all.jar /tool/checkstyle.jar
 
 RUN apk update \
   && apk add openjdk8-jre \
