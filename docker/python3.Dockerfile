@@ -1,6 +1,6 @@
 # Use debian instead of alpine as ninja (a dep of pytype)
 # doesn't build with musl because of timestamp struct problems
-FROM python:3.7-slim-stretch
+FROM python:3.8-slim-buster
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
