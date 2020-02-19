@@ -15,9 +15,9 @@ class Pytype(Tool):
     name = 'pytype'
 
     def check_dependencies(self):
-        """See if the python3 image exists
+        """See if the pytype image exists
         """
-        return docker.image_exists('python3')
+        return docker.image_exists('pytype')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -40,7 +40,7 @@ class Pytype(Tool):
         command += files
 
         output = docker.run(
-            'python3',
+            'pytype',
             command,
             source_dir=self.base_path)
         if not output:
@@ -129,7 +129,7 @@ class Pytype(Tool):
         # run in a container that sticks around so we can
         # run merge-pyi on the output files.
         docker.run(
-            'python3',
+            'pytype',
             command,
             source_dir=self.base_path,
             name=container_name)
