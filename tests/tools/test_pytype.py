@@ -23,12 +23,12 @@ class TestPytype(TestCase):
         self.assertTrue(self.tool.match_file('test.py'))
         self.assertTrue(self.tool.match_file('dir/name/test.py'))
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -45,7 +45,7 @@ class TestPytype(TestCase):
             fname, 9, 9, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -65,7 +65,7 @@ class TestPytype(TestCase):
             fname, 9, 9, "Invalid __slot__ entry: '1' [bad-slots]")
         self.assertEqual(expected, problems[1])
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_process_files__config_invalid(self):
         options = {
             'config': 'tests/fixtures/pytype/derp'
@@ -77,7 +77,7 @@ class TestPytype(TestCase):
         self.assertIn('Pytype failed', problems[0].body)
         self.assertIn('config file', problems[0].body)
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_process_files__config(self):
         options = {
             'config': 'tests/fixtures/pytype/pytype.ini'
@@ -97,7 +97,7 @@ class TestPytype(TestCase):
         tool = Pytype(self.problems, {'fixer': True}, root_dir)
         self.assertEqual(True, tool.has_fixer())
 
-    @requires_image('python3')
+    @requires_image('pytype')
     def test_run_fixer(self):
         tool = Pytype(self.problems, {'fixer': True}, root_dir)
 
