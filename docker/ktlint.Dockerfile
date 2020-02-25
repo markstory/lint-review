@@ -1,4 +1,4 @@
-FROM openjdk:8-alpine
+FROM openjdk:15-alpine
 
 # Install ktlint
 ARG ktlint_version=0.36.0
