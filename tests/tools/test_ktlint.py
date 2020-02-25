@@ -36,7 +36,7 @@ class TestKtlint(TestCase):
     @requires_image('ktlint')
     def test_process_files_pass(self):
         file_no_errors = self.fixtures[0]
-        self.tool.process_files(file_no_errors)
+        self.tool.process_files([file_no_errors])
         self.assertEqual([], self.problems.all(file_no_errors))
 
     @requires_image('ktlint')
