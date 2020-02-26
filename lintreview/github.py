@@ -56,7 +56,7 @@ def get_lintrc(repo, ref):
     """
     log.info('Fetching lintrc file')
     response = repo.file_contents('.lintrc', ref)
-    return response.decoded
+    return response.decoded.decode('utf-8')
 
 
 def register_hook(repo, hook_url):
