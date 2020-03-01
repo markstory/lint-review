@@ -16,7 +16,7 @@ def log_io_error(func):
         try:
             return func(*args, **kwargs)
         except IOError as e:
-            log.error(str(e))
+            log.info(str(e))
             raise
     return wrapper
 
@@ -26,7 +26,7 @@ def get_repo_path(user, repo, number, settings):
     """
     try:
         path = settings['WORKSPACE']
-    except:
+    except Exception:
         raise KeyError("You have not defined the WORKSPACE config"
                        " option. This is required for lintreview to work.")
     path = path.rstrip('/')
@@ -233,7 +233,7 @@ def exists(path):
         log.debug("Checking for path '%s'", path)
         os.stat(path)
         return True
-    except:
+    except Exception:
         log.debug('Path does not exist, or .git dir was missing')
         return False
 
