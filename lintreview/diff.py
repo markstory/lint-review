@@ -141,7 +141,8 @@ class DiffCollection(object):
         if not ignore_patterns:
             return False
         matches = [fnmatch.fnmatch(filename, pattern)
-                   for pattern in ignore_patterns]
+                   for pattern in ignore_patterns
+                   if pattern]
         return any(matches)
 
     def all_changes(self, filename):

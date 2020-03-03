@@ -60,7 +60,7 @@ class TestDiffCollection(TestCase):
         expected = [
             "Console/Command/Task/AssetBuildTask.php",
         ]
-        ignore = ['Test/**']
+        ignore = ['Test/**', None, False]
         result = changes.get_files(ignore_patterns=ignore)
         self.assertEqual(expected, result)
 
