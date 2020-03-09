@@ -5,22 +5,12 @@ import sys
 
 from flask import url_for
 from lintreview.web import app
-from lintreview.cli.parsers import add_register_command
+from lintreview.cli.parsers import add_register_command, add_unregister_command
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     args.func(args)
-
-
-def remove_hook(args):
-    try:
-        process_hook(github.unregister_hook, args)
-        sys.stdout.write('Hook removed successfully\n')
-    except Exception as e:
-        sys.stderr.write('Hook removal failed\n')
-        sys.stderr.write(e.message + '\n')
-        sys.exit(2)
 
 
 def register_org_hook(args):
@@ -90,23 +80,7 @@ def create_parser():
         description="Valid subcommands")
 
     add_register_command(commands)
-
-    desc = """
-    Unregister webhooks for a given user & repo.
-    """
-    remove = commands.add_parser('unregister', help=desc)
-    remove.add_argument(
-        '-u', '--user',
-        dest='login_user',
-        help="The OAuth token of the user that has admin rights to the repo "
-             "you are removing hooks from. Useful when the "
-             "user in settings is not the administrator of "
-             "your repositories.")
-    remove.add_argument('user',
-                        help="The user or organization the repo is under.")
-    remove.add_argument('repo',
-                        help="The repository to remove a hook from.")
-    remove.set_defaults(func=remove_hook)
+    add_unregister_command(commands)
 
     desc = """
     Register webhook for a given organization
