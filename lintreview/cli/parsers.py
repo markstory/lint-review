@@ -1,4 +1,8 @@
-from lintreview.cli.handlers import register_hook, remove_hook, register_org_hook
+from lintreview.cli.handlers import (
+    register_hook,
+    remove_hook,
+    register_org_hook
+)
 
 def add_register_command(subcommands_parser):
     desc = (

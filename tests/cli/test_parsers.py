@@ -2,8 +2,16 @@ from unittest import TestCase
 from mock import Mock, call
 
 from tests import conditionally_return
-from lintreview.cli.parsers import add_register_command, add_unregister_command, add_org_register_command
-from lintreview.cli.handlers import register_hook, remove_hook, register_org_hook
+from lintreview.cli.parsers import (
+    add_register_command,
+    add_unregister_command,
+    add_org_register_command
+)
+from lintreview.cli.handlers import (
+    register_hook,
+    remove_hook,
+    register_org_hook
+)
 
 class TestCliParsers(TestCase):
 

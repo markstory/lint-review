@@ -5,7 +5,11 @@ import sys
 
 from flask import url_for
 from lintreview.web import app
-from lintreview.cli.parsers import add_register_command, add_unregister_command, add_org_register_command
+from lintreview.cli.parsers import (
+    add_register_command,
+    add_unregister_command,
+    add_org_register_command
+)
 
 def main():
     parser = create_parser()
