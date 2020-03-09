@@ -1,4 +1,4 @@
-from lintreview.cli.handlers import register_hook, remove_hook
+from lintreview.cli.handlers import register_hook, remove_hook, register_org_hook
 
 def add_register_command(subcommands_parser):
     desc = (
@@ -22,6 +22,7 @@ def add_register_command(subcommands_parser):
                           help="The repository to install a hook into.")
     register.set_defaults(func=register_hook)
 
+
 def add_unregister_command(subcommands_parser):
     desc = "Unregister webhooks for a given user & repo."
 
@@ -38,3 +39,24 @@ def add_unregister_command(subcommands_parser):
     remove.add_argument('repo',
                         help="The repository to remove a hook from.")
     remove.set_defaults(func=remove_hook)
+
+
+def add_org_register_command(subcommands_parser):
+    desc = (
+        "Register webhook for a given organization\n"
+        "The installed webhook will be used to trigger lint\n"
+        "reviews as pull requests are opened/updated.\n"
+    )
+
+    register = subcommands_parser.add_parser('org-register', help=desc)
+    register.add_argument(
+        '-u',
+        '--user',
+        dest='login_user',
+        help="The OAuth token of the user that has admin rights to the org "
+             "you are adding hooks to. Useful when the user "
+             "in settings is not the administrator of "
+             "your organization.")
+    register.add_argument('org_name',
+                          help="The login name of the organization.")
+    register.set_defaults(func=register_org_hook)

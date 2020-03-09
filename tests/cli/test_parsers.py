@@ -2,8 +2,8 @@ from unittest import TestCase
 from mock import Mock, call
 
 from tests import conditionally_return
-from lintreview.cli.parsers import add_register_command, add_unregister_command
-from lintreview.cli.handlers import register_hook, remove_hook
+from lintreview.cli.parsers import add_register_command, add_unregister_command, add_org_register_command
+from lintreview.cli.handlers import register_hook, remove_hook, register_org_hook
 
 class TestCliParsers(TestCase):
 
@@ -83,3 +83,40 @@ class TestCliParsers(TestCase):
 
         remove_command_parser.add_argument.assert_has_calls(expected_add_argument_calls)
         remove_command_parser.set_defaults.assert_has_calls(expected_set_defaults_calls)
+
+    def test_add_org_register_command_adds_register_org_hook_invocation(self):
+        commands = Mock()
+        org_register_command_parser = Mock()
+
+        desc = (
+            "Register webhook for a given organization\n"
+            "The installed webhook will be used to trigger lint\n"
+            "reviews as pull requests are opened/updated.\n"
+        )
+
+        commands.add_parser = conditionally_return(org_register_command_parser, 'org-register', help=desc)
+
+        expected_add_argument_calls = [
+            call(
+                '-u',
+                '--user',
+                dest='login_user',
+                help="The OAuth token of the user that has admin rights to the org "
+                    "you are adding hooks to. Useful when the user "
+                    "in settings is not the administrator of "
+                    "your organization."
+            ),
+            call(
+                'org_name',
+                help="The login name of the organization."
+            )
+        ]
+
+        expected_set_defaults_calls = [
+            call(func=register_org_hook)
+        ]
+
+        add_org_register_command(commands)
+
+        org_register_command_parser.add_argument.assert_has_calls(expected_add_argument_calls)
+        org_register_command_parser.set_defaults.assert_has_calls(expected_set_defaults_calls)
