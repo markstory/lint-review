@@ -33,30 +33,60 @@ def remove_hook(args):
         sys.exit(2)
 
 
+def register_org_hook(args):
+    try:
+        process_org_hook(github.register_org_hook, args)
+        sys.stdout.write('Org hook registered successfully\n')
+    except Exception as e:
+        sys.stderr.write('Org hook registration failed\n')
+        sys.stderr.write(e.message + '\n')
+        sys.exit(2)
+
+
+def remove_org_hook(args):
+    try:
+        process_org_hook(github.unregister_org_hook, args)
+        sys.stdout.write('Org hook removed successfully\n')
+    except Exception as e:
+        sys.stderr.write('Org hook removal failed\n')
+        sys.stderr.write(e.message + '\n')
+        sys.exit(2)
+
+
 def process_hook(func, args):
     """
     Generic helper for processing hook commands.
     """
-    credentials = None
-    if args.login_user:
-        credentials = {
-            'GITHUB_OAUTH_TOKEN': args.login_user,
-        }
-
-    with app.app_context():
-        if credentials:
-            credentials['GITHUB_URL'] = app.config['GITHUB_URL']
-            repo = github.get_repository(
-                credentials,
-                args.user,
-                args.repo)
-        else:
-            repo = github.get_repository(
-                app.config,
-                args.user,
-                args.repo)
-        endpoint = url_for('start_review', _external=True)
+    credentials = get_credentials(args)
+    repo = github.get_repository(credentials, args.user, args.repo)
+    endpoint = get_endpoint()
     func(repo, endpoint)
+
+
+def process_org_hook(func, args):
+    """
+    Generic helper for processing org hook commands.
+    """
+    credentials = get_credentials(args)
+    org = github.get_organization(credentials, args.org_name)
+    endpoint = get_endpoint()
+    func(org, endpoint)
+
+
+def get_credentials(args):
+    with app.app_context():
+        if args.login_user:
+            return {
+                'GITHUB_OAUTH_TOKEN': args.login_user,
+                'GITHUB_URL': app.config['GITHUB_URL']
+            }
+        else:
+            return app.config
+
+
+def get_endpoint():
+    with app.app_context():
+        return url_for('start_review', _external=True)
 
 
 def create_parser():
@@ -79,15 +109,10 @@ def create_parser():
         '-u',
         '--user',
         dest='login_user',
-        help="The user that has admin rights to the repo "
+        help="The OAuth token of the user that has admin rights to the repo "
              "you are adding hooks to. Useful when the user "
              "in settings is not the administrator of "
              "your repositories.")
-    register.add_argument(
-        '-p',
-        '--password',
-        dest='login_pass',
-        help="The password of the admin user.")
     register.add_argument('user',
                           help="The user or organization the repo is under.")
     register.add_argument('repo',
@@ -110,6 +135,39 @@ def create_parser():
     remove.add_argument('repo',
                         help="The repository to remove a hook from.")
     remove.set_defaults(func=remove_hook)
+
+    desc = """
+    Register webhook for a given organization
+    The installed webhook will be used to trigger lint
+    reviews as pull requests are opened/updated.
+    """
+    register = commands.add_parser('org-register', help=desc)
+    register.add_argument(
+        '-u',
+        '--user',
+        dest='login_user',
+        help="The OAuth token of the user that has admin rights to the org "
+             "you are adding hooks to. Useful when the user "
+             "in settings is not the administrator of "
+             "your organization.")
+    register.add_argument('org_name',
+                          help="The login name of the organization.")
+    register.set_defaults(func=register_org_hook)
+
+    desc = """
+    Unregister webhooks for a given organization.
+    """
+    remove = commands.add_parser('org-unregister', help=desc)
+    remove.add_argument(
+        '-u', '--user',
+        dest='login_user',
+        help="The OAuth token of the user that has admin rights to the org "
+             "you are removing hooks from. Useful when the "
+             "user in settings is not the administrator of "
+             "your organization.")
+    remove.add_argument('org_name',
+                        help="The login name of the organization.")
+    remove.set_defaults(func=remove_org_hook)
 
     return parser
 
