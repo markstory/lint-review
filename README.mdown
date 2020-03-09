@@ -129,14 +129,30 @@ docker-compose run web lintreview register mark awesome-stuff
 ```
 
 The above register webhooks for the given user & repository. You can use the
-`--user` and `--password` options to provide the repository admin credentials
-if the user lint-review runs as does not have admin access to the repository.
-You can also use the cli tool to remove webhooks:
+`--user` option or the `GITHUB_OAUTH_TOKEN` environment variable to provide the
+repository admin OAuth token if the user lint-review runs as does not have admin
+access to the repository. You can also use the cli tool to remove webhooks:
 
 ```bash
 source env/bin/activate
 lintreview unregister mark awesome-stuff
 ```
+
+You can also do the same at the organization level:
+
+```bash
+source env/bin/activate
+lintreview org-register cool-org
+```
+
+```bash
+source env/bin/activate
+lintreview org-unregister cool-org
+```
+
+Keep in mind that since organizations aren't really scoped to users, you must provide
+a GitHub token using one of the methods described above.  That token must have the
+`admin:org_hook` OAuth scope.
 
 **Warning** The current web server name will be registered with github. Make sure
 it is configured properly before registering hooks, or you'll need to remove
