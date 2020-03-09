@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 import json
-from mock import call, Mock
+from mock import call, Mock, patch
 from unittest import TestCase
 
 import lintreview.github as github
 
 from . import load_fixture
+from tests import conditionally_return
 import github3
 from github3 import GitHub
 from github3.session import GitHubSession
@@ -153,3 +154,14 @@ class TestGithub(TestCase):
                           github.unregister_org_hook,
                           org,
                           url)
+
+    def test_get_repository_uses_credentials_with_client_to_produce_repo(self):
+        mock_client = Mock()
+        mock_config = Mock()
+        mock_repo = Mock()
+
+        mock_get_client = conditionally_return(mock_client, mock_config)
+        mock_client.repository = conditionally_return(mock_repo, owner='user', repository='repo')
+
+        with patch('lintreview.github.get_client', mock_get_client):
+            self.assertEqual(github.get_repository(mock_config, 'user', 'repo'), mock_repo)
