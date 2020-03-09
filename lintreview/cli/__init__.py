@@ -5,22 +5,12 @@ import sys
 
 from flask import url_for
 from lintreview.web import app
-
+from lintreview.cli.parsers import add_register_command
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     args.func(args)
-
-
-def register_hook(args):
-    try:
-        process_hook(github.register_hook, args)
-        sys.stdout.write('Hook registered successfully\n')
-    except Exception as e:
-        sys.stderr.write('Hook registration failed\n')
-        sys.stderr.write(e.message + '\n')
-        sys.exit(2)
 
 
 def remove_hook(args):
@@ -99,25 +89,7 @@ def create_parser():
         title="Subcommands",
         description="Valid subcommands")
 
-    desc = """
-    Register webhooks for a given user & repo
-    The installed webhook will be used to trigger lint
-    reviews as pull requests are opened/updated.
-    """
-    register = commands.add_parser('register', help=desc)
-    register.add_argument(
-        '-u',
-        '--user',
-        dest='login_user',
-        help="The OAuth token of the user that has admin rights to the repo "
-             "you are adding hooks to. Useful when the user "
-             "in settings is not the administrator of "
-             "your repositories.")
-    register.add_argument('user',
-                          help="The user or organization the repo is under.")
-    register.add_argument('repo',
-                          help="The repository to install a hook into.")
-    register.set_defaults(func=register_hook)
+    add_register_command(commands)
 
     desc = """
     Unregister webhooks for a given user & repo.

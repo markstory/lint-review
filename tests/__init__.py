@@ -90,6 +90,16 @@ def teardown_repo():
         git.destroy(clone_path)
 
 
+def conditionally_return(to_return, *expected_args, **expected_kwargs):
+    def callback(*args, **kwargs):
+        if args != expected_args or kwargs != expected_kwargs:
+            error_message = "expected this to be called with args={} kwargs={} (called with args={}, kwargs={})"
+            raise AssertionError(error_message.format(expected_args, expected_kwargs, args, kwargs))
+
+        return to_return
+    return callback
+
+
 fixer_ini = """
 [tools]
 linters = phpcs, eslint
