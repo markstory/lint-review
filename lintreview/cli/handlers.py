@@ -33,6 +33,16 @@ def register_org_hook(args):
         sys.exit(2)
 
 
+def remove_org_hook(args):
+    try:
+        process_org_hook(github.unregister_org_hook, args)
+        sys.stdout.write('Org hook removed successfully\n')
+    except Exception as e:
+        sys.stderr.write('Org hook removal failed\n')
+        sys.stderr.write(e.message + '\n')
+        sys.exit(2)
+
+
 def process_hook(func, args):
     """
     Generic helper for processing hook commands.

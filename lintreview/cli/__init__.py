@@ -8,33 +8,15 @@ from lintreview.web import app
 from lintreview.cli.parsers import (
     add_register_command,
     add_unregister_command,
-    add_org_register_command
+    add_org_register_command,
+    add_org_unregister_command
 )
+
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     args.func(args)
-
-
-def remove_org_hook(args):
-    try:
-        process_org_hook(github.unregister_org_hook, args)
-        sys.stdout.write('Org hook removed successfully\n')
-    except Exception as e:
-        sys.stderr.write('Org hook removal failed\n')
-        sys.stderr.write(e.message + '\n')
-        sys.exit(2)
-
-
-def process_org_hook(func, args):
-    """
-    Generic helper for processing org hook commands.
-    """
-    credentials = get_credentials(args)
-    org = github.get_organization(credentials, args.org_name)
-    endpoint = get_endpoint()
-    func(org, endpoint)
 
 
 def get_credentials(args):
@@ -66,21 +48,7 @@ def create_parser():
     add_register_command(commands)
     add_unregister_command(commands)
     add_org_register_command(commands)
-
-    desc = """
-    Unregister webhooks for a given organization.
-    """
-    remove = commands.add_parser('org-unregister', help=desc)
-    remove.add_argument(
-        '-u', '--user',
-        dest='login_user',
-        help="The OAuth token of the user that has admin rights to the org "
-             "you are removing hooks from. Useful when the "
-             "user in settings is not the administrator of "
-             "your organization.")
-    remove.add_argument('org_name',
-                        help="The login name of the organization.")
-    remove.set_defaults(func=remove_org_hook)
+    add_org_unregister_command(commands)
 
     return parser
 
