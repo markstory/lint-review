@@ -9,6 +9,7 @@ from . import load_fixture
 import github3
 from github3 import GitHub
 from github3.session import GitHubSession
+from github3.orgs import Organization, OrganizationHook
 from github3.repos import Repository
 from github3.repos.hook import Hook
 
@@ -98,4 +99,57 @@ class TestGithub(TestCase):
                           repo,
                           url)
 
-        repo.hook().delete.asert_called()
+    def test_register_org_hook(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = []
+
+        url = 'http://example.com/review/start'
+        github.register_org_hook(org, url)
+
+        assert org.create_hook.called, 'Create not called'
+        calls = org.create_hook.call_args_list
+        expected = call(
+            name='web',
+            active=True,
+            config={
+                'content_type': 'json',
+                'url': url,
+            },
+            events=['pull_request']
+        )
+        self.assertEqual(calls[0], expected)
+
+    def test_register_org_hook__already_exists(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = [
+            OrganizationHook(f, session)
+            for f in json.loads(load_fixture('webhook_list.json'))
+        ]
+        url = 'http://example.com/review/start'
+
+        github.register_org_hook(org, url)
+        assert org.create_hook.called is False, 'Create called'
+
+    def test_unregister_org_hook__success(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = [
+            OrganizationHook(f, session)
+            for f in json.loads(load_fixture('webhook_list.json'))
+        ]
+        url = 'http://example.com/review/start'
+        github.unregister_org_hook(org, url)
+        assert org.hook().delete.called, 'Delete not called'
+
+    def test_unregister_org_hook__not_there(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = []
+        url = 'http://example.com/review/start'
+
+        self.assertRaises(Exception,
+                          github.unregister_org_hook,
+                          org,
+                          url)

@@ -50,6 +50,11 @@ def get_repository(config, user, repo):
     return gh.repository(owner=user, repository=repo)
 
 
+def get_organization(config, org_name):
+    gh = get_client(config)
+    return gh.organization(username=org_name)
+
+
 def get_lintrc(repo, ref):
     """
     Download the .lintrc from a repo
@@ -59,27 +64,20 @@ def get_lintrc(repo, ref):
     return response.decoded.decode('utf-8')
 
 
-def register_hook(repo, hook_url):
-    """
-    Register a new hook with a user's repository.
-    """
-    log.info('Registering webhook for %s on %s', hook_url, repo.full_name)
-    hooks = repo.hooks()
-    found = False
+def get_hook_by_url(hook_owner, hook_url):
+    hooks = hook_owner.hooks()
+
     for hook in hooks:
         if hook.name != 'web':
             continue
         if hook.config['url'] == hook_url:
-            found = True
-            break
+            return hook
 
-    if found:
-        msg = ("Found existing hook. "
-               "No additional hooks registered.")
-        log.warn(msg)
-        return
+    return None
 
-    hook = {
+
+def get_hook_payload(hook_url):
+    return {
         'name': 'web',
         'active': True,
         'config': {
@@ -88,6 +86,22 @@ def register_hook(repo, hook_url):
         },
         'events': ['pull_request']
     }
+
+
+def register_hook(repo, hook_url):
+    """
+    Register a new hook with a user's repository.
+    """
+    log.info('Registering webhook for %s on %s', hook_url, repo.full_name)
+    existing_hook = get_hook_by_url(repo, hook_url)
+
+    if existing_hook is not None:
+        msg = ("Found existing hook. "
+               "No additional hooks registered.")
+        log.warn(msg)
+        return
+
+    hook = get_hook_payload(hook_url)
     try:
         repo.create_hook(**hook)
     except:
@@ -103,25 +117,64 @@ def unregister_hook(repo, hook_url):
     Remove a registered webhook.
     """
     log.info('Removing webhook for %s on %s', hook_url, repo.full_name)
-    hooks = repo.hooks()
-    hook_id = False
-    for hook in hooks:
-        if hook.name != 'web':
-            continue
-        if hook.config['url'] == hook_url:
-            hook_id = hook.id
-            break
+    hook = get_hook_by_url(repo, hook_url)
 
-    if not hook_id:
+    if hook is None:
         msg = ("Could not find hook for '%s' "
                "No hooks removed.") % (hook_url)
         log.error(msg)
         raise Exception(msg)
     try:
-        repo.hook(hook_id).delete()
+        repo.hook(hook.id).delete()
     except:
         message = ("Unable to remove webhook. You will need admin "
                    "privileges over the repository to remove webhooks.")
+        log.error(message)
+        raise
+    log.info('Removed hook successfully')
+
+
+def register_org_hook(org, hook_url):
+    """
+    Register a new hook within a GitHub organization.
+    """
+    log.info('Registering webhook for %s in organization %s', hook_url, org.name)
+    existing_hook = get_hook_by_url(org, hook_url)
+
+    if existing_hook is not None:
+        msg = ("Found existing org hook. "
+               "No additional org hooks registered.")
+        log.warn(msg)
+        return
+
+    hook = get_hook_payload(hook_url)
+    try:
+        org.create_hook(**hook)
+    except:
+        message = ("Unable to save webhook. You need to have administration"
+                   "privileges over the organization to add org webhooks.")
+        log.error(message)
+        raise
+    log.info('Registered hook successfully')
+
+
+def unregister_org_hook(org, hook_url):
+    """
+    Remove a registered org webhook.
+    """
+    log.info('Removing webhook for %s in organization %s', hook_url, org.name)
+    hook = get_hook_by_url(org, hook_url)
+
+    if hook is None:
+        msg = ("Could not find org hook for '%s' "
+               "No org hooks removed.") % (hook_url)
+        log.error(msg)
+        raise Exception(msg)
+    try:
+        org.hook(hook.id).delete()
+    except:
+        message = ("Unable to remove webhook. You will need admin "
+                   "privileges over the organization to remove org webhooks.")
         log.error(message)
         raise
     log.info('Removed hook successfully')
