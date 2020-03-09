@@ -4,6 +4,7 @@ dist/
 *.egg-info
 .pytype
 .pytest_cache
+.mypy_cache
 .DS_Store
 tags
 /env
