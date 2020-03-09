@@ -165,3 +165,14 @@ class TestGithub(TestCase):
 
         with patch('lintreview.github.get_client', mock_get_client):
             self.assertEqual(github.get_repository(mock_config, 'user', 'repo'), mock_repo)
+
+    def test_get_organization_uses_credentials_with_client_to_produce_org(self):
+        mock_client = Mock()
+        mock_config = Mock()
+        mock_org = Mock()
+
+        mock_get_client = conditionally_return(mock_client, mock_config)
+        mock_client.organization = conditionally_return(mock_org, username='org_name')
+
+        with patch('lintreview.github.get_client', mock_get_client):
+            self.assertEqual(github.get_organization(mock_config, 'org_name'), mock_org)
