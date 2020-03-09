@@ -1,6 +1,24 @@
+from flask import url_for
 import sys
 
 import lintreview.github as github
+from lintreview.web import app
+
+
+def get_credentials(args):
+    with app.app_context():
+        if args.login_user:
+            return {
+                'GITHUB_OAUTH_TOKEN': args.login_user,
+                'GITHUB_URL': app.config['GITHUB_URL']
+            }
+        else:
+            return app.config
+
+
+def get_endpoint():
+    with app.app_context():
+        return url_for('start_review', _external=True)
 
 
 def register_hook(args):

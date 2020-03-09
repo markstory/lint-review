@@ -5,6 +5,7 @@ from lintreview.cli.handlers import (
     remove_org_hook
 )
 
+
 def add_register_command(subcommands_parser):
     desc = (
         "Register webhooks for a given user & repo\n"

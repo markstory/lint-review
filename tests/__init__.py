@@ -93,7 +93,10 @@ def teardown_repo():
 def conditionally_return(to_return, *expected_args, **expected_kwargs):
     def callback(*args, **kwargs):
         if args != expected_args or kwargs != expected_kwargs:
-            error_message = "expected this to be called with args={} kwargs={} (called with args={}, kwargs={})"
+            error_message = (
+                "expected this to be called with args={} kwargs={}"
+                " (called with args={}, kwargs={})"
+            )
             raise AssertionError(error_message.format(expected_args, expected_kwargs, args, kwargs))
 
         return to_return

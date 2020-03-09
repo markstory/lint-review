@@ -15,6 +15,7 @@ from lintreview.cli.handlers import (
     remove_org_hook
 )
 
+
 class TestCliParsers(TestCase):
 
     def test_add_register_command_adds_register_hook_invocation(self):
@@ -34,10 +35,12 @@ class TestCliParsers(TestCase):
                 '-u',
                 '--user',
                 dest='login_user',
-                help="The OAuth token of the user that has admin rights to the repo "
+                help=(
+                    "The OAuth token of the user that has admin rights to the repo "
                     "you are adding hooks to. Useful when the user "
                     "in settings is not the administrator of "
                     "your repositories."
+                )
             ),
             call(
                 'user',
@@ -70,10 +73,12 @@ class TestCliParsers(TestCase):
             call(
                 '-u', '--user',
                 dest='login_user',
-                help="The OAuth token of the user that has admin rights to the repo "
+                help=(
+                    "The OAuth token of the user that has admin rights to the repo "
                     "you are removing hooks from. Useful when the "
                     "user in settings is not the administrator of "
                     "your repositories."
+                )
             ),
             call(
                 'user',
@@ -104,17 +109,23 @@ class TestCliParsers(TestCase):
             "reviews as pull requests are opened/updated.\n"
         )
 
-        commands.add_parser = conditionally_return(org_register_command_parser, 'org-register', help=desc)
+        commands.add_parser = conditionally_return(
+            org_register_command_parser,
+            'org-register',
+            help=desc
+        )
 
         expected_add_argument_calls = [
             call(
                 '-u',
                 '--user',
                 dest='login_user',
-                help="The OAuth token of the user that has admin rights to the org "
+                help=(
+                    "The OAuth token of the user that has admin rights to the org "
                     "you are adding hooks to. Useful when the user "
                     "in settings is not the administrator of "
                     "your organization."
+                )
             ),
             call(
                 'org_name',
@@ -137,16 +148,22 @@ class TestCliParsers(TestCase):
 
         desc = "Unregister webhooks for a given organization.\n"
 
-        commands.add_parser = conditionally_return(org_unregister_command_parser, 'org-unregister', help=desc)
+        commands.add_parser = conditionally_return(
+            org_unregister_command_parser,
+            'org-unregister',
+            help=desc
+        )
 
         expected_add_argument_calls = [
             call(
                 '-u', '--user',
                 dest='login_user',
-                help="The OAuth token of the user that has admin rights to the org "
+                help=(
+                    "The OAuth token of the user that has admin rights to the org "
                     "you are removing hooks from. Useful when the "
                     "user in settings is not the administrator of "
                     "your organization."
+                )
             ),
             call(
                 'org_name',
