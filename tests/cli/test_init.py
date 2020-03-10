@@ -1,15 +1,15 @@
 import json
 import responses
-import sys
 
 from tests import load_fixture, temp_env
 from unittest import TestCase
+
 
 class TestParseArgs(TestCase):
 
     def _do_parse(self, args):
         # force config regeneration between tests
-        
+
         from lintreview.cli import parse_args
         from lintreview.config import load_config
         import lintreview.web as web
@@ -44,7 +44,12 @@ class TestParseArgs(TestCase):
             status=201
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['register', '--user', 'cool-token', 'markstory', 'lint-test'])
 
         webhook_creation_request = responses.calls[2].request
@@ -82,7 +87,12 @@ class TestParseArgs(TestCase):
             status=200
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['register', '--user', 'cool-token', 'markstory', 'lint-test'])
 
         for request_call in responses.calls:
@@ -120,7 +130,12 @@ class TestParseArgs(TestCase):
             status=204
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['unregister', '--user', 'cool-token', 'markstory', 'lint-test'])
 
         webhook_deletion_request = responses.calls[3].request
@@ -146,7 +161,12 @@ class TestParseArgs(TestCase):
             status=200
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             with self.assertRaises(SystemExit):
                 self._do_parse(['unregister', '--user', 'cool-token', 'markstory', 'lint-test'])
 
@@ -175,7 +195,12 @@ class TestParseArgs(TestCase):
             status=201
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['org-register', '--user', 'cool-token', 'github'])
 
         webhook_creation_request = responses.calls[2].request
@@ -213,7 +238,12 @@ class TestParseArgs(TestCase):
             status=200
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['org-register', '--user', 'cool-token', 'github'])
 
         for request_call in responses.calls:
@@ -251,7 +281,12 @@ class TestParseArgs(TestCase):
             status=204
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             self._do_parse(['org-unregister', '--user', 'cool-token', 'github'])
 
         webhook_deletion_request = responses.calls[3].request
@@ -277,6 +312,11 @@ class TestParseArgs(TestCase):
             status=200
         )
 
-        with temp_env({'LINTREVIEW_SETTINGS': 'settings.sample.py', 'LINTREVIEW_SERVER_NAME': 'example.com'}):
+        mock_env = {
+            'LINTREVIEW_SETTINGS': 'settings.sample.py',
+            'LINTREVIEW_SERVER_NAME': 'example.com'
+        }
+
+        with temp_env(mock_env):
             with self.assertRaises(SystemExit):
                 self._do_parse(['org-unregister', '--user', 'cool-token', 'github'])
