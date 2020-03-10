@@ -55,7 +55,10 @@ class TestParseArgs(TestCase):
         webhook_creation_request = responses.calls[2].request
 
         self.assertEqual(webhook_creation_request.headers['Authorization'], 'token cool-token')
-        self.assertEqual(webhook_creation_request.url, 'https://api.github.com/repos/markstory/lint-test/hooks')
+        self.assertEqual(
+            webhook_creation_request.url,
+            'https://api.github.com/repos/markstory/lint-test/hooks'
+        )
         self.assertEqual(webhook_creation_request.method, responses.POST)
         self.assertEqual(
             json.loads(webhook_creation_request.body),
@@ -141,7 +144,10 @@ class TestParseArgs(TestCase):
         webhook_deletion_request = responses.calls[3].request
 
         self.assertEqual(webhook_deletion_request.headers['Authorization'], 'token cool-token')
-        self.assertEqual(webhook_deletion_request.url, 'https://api.github.com/repos/markstory/lint-test/hooks/706986')
+        self.assertEqual(
+            webhook_deletion_request.url,
+            'https://api.github.com/repos/markstory/lint-test/hooks/706986'
+        )
         self.assertEqual(webhook_deletion_request.method, responses.DELETE)
 
     @responses.activate
@@ -292,7 +298,10 @@ class TestParseArgs(TestCase):
         webhook_deletion_request = responses.calls[3].request
 
         self.assertEqual(webhook_deletion_request.headers['Authorization'], 'token cool-token')
-        self.assertEqual(webhook_deletion_request.url, 'https://api.github.com/orgs/github/hooks/706986')
+        self.assertEqual(
+            webhook_deletion_request.url,
+            'https://api.github.com/orgs/github/hooks/706986'
+        )
         self.assertEqual(webhook_deletion_request.method, responses.DELETE)
 
     @responses.activate
