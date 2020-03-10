@@ -1,9 +1,29 @@
+import argparse
+
 from lintreview.cli.handlers import (
     register_hook,
     remove_hook,
     register_org_hook,
     remove_org_hook
 )
+
+
+def create_parser():
+    desc = """
+    Command line utilities for lintreview.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+
+    commands = parser.add_subparsers(
+        title="Subcommands",
+        description="Valid subcommands")
+
+    add_register_command(commands)
+    add_unregister_command(commands)
+    add_org_register_command(commands)
+    add_org_unregister_command(commands)
+
+    return parser
 
 
 def add_register_command(subcommands_parser):

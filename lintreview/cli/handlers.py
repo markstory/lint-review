@@ -27,7 +27,7 @@ def register_hook(args):
         sys.stdout.write('Hook registered successfully\n')
     except Exception as e:
         sys.stderr.write('Hook registration failed\n')
-        sys.stderr.write(e.message + '\n')
+        sys.stderr.write(str(e) + '\n')
         sys.exit(2)
 
 
@@ -37,7 +37,7 @@ def remove_hook(args):
         sys.stdout.write('Hook removed successfully\n')
     except Exception as e:
         sys.stderr.write('Hook removal failed\n')
-        sys.stderr.write(e.message + '\n')
+        sys.stderr.write(str(e) + '\n')
         sys.exit(2)
 
 
@@ -47,7 +47,7 @@ def register_org_hook(args):
         sys.stdout.write('Org hook registered successfully\n')
     except Exception as e:
         sys.stderr.write('Org hook registration failed\n')
-        sys.stderr.write(e.message + '\n')
+        sys.stderr.write(str(e) + '\n')
         sys.exit(2)
 
 
@@ -57,7 +57,7 @@ def remove_org_hook(args):
         sys.stdout.write('Org hook removed successfully\n')
     except Exception as e:
         sys.stderr.write('Org hook removal failed\n')
-        sys.stderr.write(e.message + '\n')
+        sys.stderr.write(str(e) + '\n')
         sys.exit(2)
 
 

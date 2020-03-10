@@ -19,6 +19,19 @@ session = GitHubSession()
 temp_repo_dir = tempfile.mkdtemp()
 
 
+class temp_env(object):
+
+    def __init__(self, env_vars_dict):
+        self._old_env_vars = os.environ.copy()
+        self._temp_env_vars = env_vars_dict
+
+    def __enter__(self):
+        os.environ.update(self._temp_env_vars)
+
+    def __exit__(self, *args):
+        os.environ = self._old_env_vars
+
+
 def load_fixture(filename):
     filename = os.path.join(fixtures_path, filename)
     fh = open(filename, 'r')
