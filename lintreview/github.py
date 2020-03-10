@@ -105,7 +105,7 @@ def register_hook(repo, hook_url):
     try:
         repo.create_hook(**hook)
     except:
-        message = ("Unable to save webhook. You need to have administration"
+        message = ("Unable to save webhook. You need to have administration "
                    "privileges over the repository to add webhooks.")
         log.error(message)
         raise
@@ -127,7 +127,7 @@ def unregister_hook(repo, hook_url):
     try:
         repo.hook(hook.id).delete()
     except:
-        message = ("Unable to remove webhook. You will need admin "
+        message = ("Unable to remove webhook. You need to have administration "
                    "privileges over the repository to remove webhooks.")
         log.error(message)
         raise
@@ -151,7 +151,7 @@ def register_org_hook(org, hook_url):
     try:
         org.create_hook(**hook)
     except:
-        message = ("Unable to save webhook. You need to have administration"
+        message = ("Unable to save org webhook. You need to have administration "
                    "privileges over the organization to add org webhooks.")
         log.error(message)
         raise
@@ -173,7 +173,7 @@ def unregister_org_hook(org, hook_url):
     try:
         org.hook(hook.id).delete()
     except:
-        message = ("Unable to remove webhook. You will need admin "
+        message = ("Unable to remove org webhook. You need to have administration "
                    "privileges over the organization to remove org webhooks.")
         log.error(message)
         raise

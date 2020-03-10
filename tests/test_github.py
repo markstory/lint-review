@@ -65,6 +65,23 @@ class TestGithub(TestCase):
         )
         self.assertEqual(calls[0], expected)
 
+    def test_register_hook_logs_message_on_failure(self):
+        repo = Mock(spec=Repository,
+                    full_name='mark/lint-review')
+        repo.hooks.return_value = []
+
+        repo.create_hook.side_effect = Exception('uh oh')
+        fake_logger = Mock()
+
+        with self.assertRaises(Exception), patch('lintreview.github.log', fake_logger):
+            url = 'http://example.com/review/start'
+            github.register_hook(repo, url)
+
+        fake_logger.error.assert_called_with(
+            "Unable to save webhook. You need to have administration "
+            "privileges over the repository to add webhooks."
+        )
+
     def test_register_hook__already_exists(self):
         repo = Mock(spec=Repository,
                     full_name='mark/lint-review')
@@ -80,14 +97,36 @@ class TestGithub(TestCase):
     def test_unregister_hook__success(self):
         repo = Mock(spec=Repository,
                     full_name='mark/lint-review')
-        hooks = [
+        repo.hooks.return_value = [
             github3.repos.hook.Hook(f, session)
             for f in json.loads(load_fixture('webhook_list.json'))
         ]
-        repo.hooks.return_value = hooks
         url = 'http://example.com/review/start'
         github.unregister_hook(repo, url)
         assert repo.hook().delete.called, 'Delete not called'
+
+    def test_unregister_hook_logs_message_on_failure(self):
+        repo = Mock(spec=Repository,
+                    full_name='mark/lint-review')
+        repo.hooks.return_value = [
+            github3.repos.hook.Hook(f, session)
+            for f in json.loads(load_fixture('webhook_list.json'))
+        ]
+
+        hook_delete = Mock()
+        hook_delete.side_effect = Exception('uh oh')
+        repo.hook.return_value.delete = hook_delete
+
+        fake_logger = Mock()
+
+        with self.assertRaises(Exception), patch('lintreview.github.log', fake_logger):
+            url = 'http://example.com/review/start'
+            github.unregister_hook(repo, url)
+
+        fake_logger.error.assert_called_with(
+            "Unable to remove webhook. You need to have administration "
+            "privileges over the repository to remove webhooks."
+        )
 
     def test_unregister_hook__not_there(self):
         repo = Mock(spec=Repository,
@@ -121,6 +160,23 @@ class TestGithub(TestCase):
         )
         self.assertEqual(calls[0], expected)
 
+    def test_register_org_hook_logs_message_on_failure(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = []
+
+        org.create_hook.side_effect = Exception('uh oh')
+        fake_logger = Mock()
+
+        with self.assertRaises(Exception), patch('lintreview.github.log', fake_logger):
+            url = 'http://example.com/review/start'
+            github.register_org_hook(org, url)
+
+        fake_logger.error.assert_called_with(
+            "Unable to save org webhook. You need to have administration "
+            "privileges over the organization to add org webhooks."
+        )
+
     def test_register_org_hook__already_exists(self):
         org = Mock(spec=Organization)
         org.name = 'mark'
@@ -143,6 +199,29 @@ class TestGithub(TestCase):
         url = 'http://example.com/review/start'
         github.unregister_org_hook(org, url)
         assert org.hook().delete.called, 'Delete not called'
+
+    def test_unregister_org_hook_logs_message_on_failure(self):
+        org = Mock(spec=Organization)
+        org.name = 'mark'
+        org.hooks.return_value = [
+            OrganizationHook(f, session)
+            for f in json.loads(load_fixture('webhook_list.json'))
+        ]
+
+        hook_delete = Mock()
+        hook_delete.side_effect = Exception('uh oh')
+        org.hook.return_value.delete = hook_delete
+
+        fake_logger = Mock()
+
+        with self.assertRaises(Exception), patch('lintreview.github.log', fake_logger):
+            url = 'http://example.com/review/start'
+            github.unregister_org_hook(org, url)
+
+        fake_logger.error.assert_called_with(
+            "Unable to remove org webhook. You need to have administration "
+            "privileges over the organization to remove org webhooks."
+        )
 
     def test_unregister_org_hook__not_there(self):
         org = Mock(spec=Organization)
