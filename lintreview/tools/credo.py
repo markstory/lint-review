@@ -60,6 +60,8 @@ class Credo(Tool):
         return command
 
     def parse_ini_bool(self, value):
+        if value is None:
+            return False
         if isinstance(value, bool):
             return value
         if isinstance(value, int):
