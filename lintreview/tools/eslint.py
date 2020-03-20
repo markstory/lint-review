@@ -37,7 +37,6 @@ class Eslint(Tool):
     def process_files(self, files):
         """Run code checks with ESLint.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self._create_command()
         command += files
 

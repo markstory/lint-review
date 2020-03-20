@@ -43,7 +43,6 @@ class Checkstyle(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         if 'config' not in self.options:
             msg = ("We could not run `checkstyle` you did not set "
                    "the `config` option to a valid checkstyle XML file.")

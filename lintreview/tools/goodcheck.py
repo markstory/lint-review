@@ -21,7 +21,6 @@ class Goodcheck(Tool):
         """
         Run checks with goodcheck
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self._create_command()
         command += files
         output = docker.run('ruby2', command, self.base_path)

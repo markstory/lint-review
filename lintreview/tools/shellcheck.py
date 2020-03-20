@@ -41,7 +41,6 @@ class Shellcheck(Tool):
         """
         Run code checks with shellcheck.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
         output = docker.run('shellcheck', command, self.base_path)
         process_checkstyle(self.problems, output, docker.strip_base)

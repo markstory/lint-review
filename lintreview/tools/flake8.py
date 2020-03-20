@@ -64,7 +64,6 @@ class Flake8(Tool):
         """
         Run code checks with flake8.
         """
-        log.debug('Processing %s files with %s', len(files), self.name)
         command = self.make_command(files)
         image = self.get_image_name(files)
 

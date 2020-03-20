@@ -29,7 +29,6 @@ class Sasslint(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = ['sass-lint', '-f', 'checkstyle', '-v', '-q']
         command += files
         if self.options.get('ignore'):

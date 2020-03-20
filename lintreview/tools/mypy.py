@@ -28,8 +28,6 @@ class Mypy(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
-
         command = ['mypy', '--no-error-summary', '--show-absolute-path']
         if 'config' in self.options:
             command += ['--config-file', stringify(self.options.get('config'))]

@@ -34,7 +34,6 @@ class Py3k(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self.make_command(files)
         output = docker.run('python2', command, self.base_path)
         if not output:

@@ -35,7 +35,6 @@ class Pytype(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self._apply_options(['pytype'])
         command += files
 

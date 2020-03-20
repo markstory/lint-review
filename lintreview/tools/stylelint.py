@@ -35,7 +35,6 @@ class Stylelint(Tool):
         """
         Run code checks with stylelint.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self._create_command()
         command += files
         output = docker.run(

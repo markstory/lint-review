@@ -34,7 +34,6 @@ class Pep8(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         pep8_options = ['exclude',
                         'filename',
                         'select',
