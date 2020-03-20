@@ -29,7 +29,6 @@ class Standardjs(Tool):
         """
         Run code checks with standard.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = ['standard'] + list(files)
         output = docker.run(
             'nodejs',

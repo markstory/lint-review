@@ -29,7 +29,6 @@ class Credo(Tool):
         """
         Run code checks with credo.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command()
         command += files
         output = docker.run('credo', command, self.base_path)

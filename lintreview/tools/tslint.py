@@ -31,7 +31,6 @@ class Tslint(Tool):
         """
         Run code checks with TSLint.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = ['tslint', '--format', 'checkstyle']
 
         # Add config file or default to recommended linters

@@ -28,7 +28,6 @@ class Jshint(Tool):
         Only a single process is made for all files
         to save resources.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
         output = docker.run(
             'nodejs',

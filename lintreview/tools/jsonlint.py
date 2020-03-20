@@ -29,8 +29,6 @@ class Jsonlint(Tool):
         to save resources.
         Configuration is not supported at this time
         """
-        log.debug('Processing %s files with %s', files, self.name)
-
         command = ['jsonlint']
         command += files
 

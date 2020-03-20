@@ -29,7 +29,6 @@ class Swiftlint(Tool):
         """
         Run code checks with swiftlit.
         """
-        log.debug('Processing %s files with %s', files, self.name)
 
         command = [
             'swiftlint',

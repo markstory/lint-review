@@ -46,6 +46,7 @@ class Tool(object):
             return
 
         log.info('Running %s on %d files', self.name, num_files)
+        log.debug('Processing %s files with %s', matching_files, self.name)
         try:
             self.process_files(matching_files)
         except docker.TimeoutError:

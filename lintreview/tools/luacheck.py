@@ -27,7 +27,6 @@ class Luacheck(Tool):
         """
         Run code checks with luacheck.
         """
-        log.debug('Processing %s files with %s', files, self.name)
         command = self.create_command(files)
         output = docker.run('luacheck', command, self.base_path)
         output = output.split("\n")
