@@ -168,7 +168,7 @@ def factory(config, problems, base_path):
             clazz = getattr(mod, classname)
             tool = clazz(problems, linter_config, base_path)
             tools.append(tool)
-        except:
+        except Exception:
             log.error("Unable to import tool '%s'", linter)
             raise
     return tools
