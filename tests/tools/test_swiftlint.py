@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from unittest import TestCase
+import os.path
 
 from lintreview.review import Problems, Comment
 from lintreview.tools.swiftlint import Swiftlint
@@ -43,3 +44,22 @@ class TestSwiftlint(TestCase):
                "a type and next to the key in dictionary literals.")
         expected = [Comment(FILE_WITH_ERRORS, 2, 2, msg)]
         self.assertEqual(expected, problems)
+
+    @requires_image('swiftlint')
+    def test_process_files_config_error(self):
+        path = os.path.join(root_dir, 'tests', 'fixtures', 'swiftlint', 'bad_config')
+        self.tool = Swiftlint(self.problems, {}, path)
+        self.tool.process_files(['has_errors.swift'])
+        problems = self.problems.all()
+        self.assertEqual(2, len(problems))
+
+        msg = (
+            "Your `swiftlint` configuration generated warnings:"
+            "\n"
+            "```\n"
+            "Invalid configuration for 'empty_count'. Falling back to default.\n"
+            "```"
+        )
+        assert problems[0].body == msg
+        assert "Colons should be next to the identifier" in problems[1].body
+        assert problems[1].line == 2

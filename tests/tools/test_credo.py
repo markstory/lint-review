@@ -50,3 +50,4 @@ class TestCredo(TestCase):
         expected = Comment(fname, 1, 1,
                            'Modules should have a @moduledoc tag.')
         self.assertEqual(expected, problems[0])
+        assert False
