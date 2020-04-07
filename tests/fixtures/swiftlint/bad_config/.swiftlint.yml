@@ -1,0 +1,4 @@
+opt_in_rules:
+  - empty_count
+
+empty_count: warning

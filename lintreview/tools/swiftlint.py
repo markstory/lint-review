@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 import logging
 import os
+
 import lintreview.docker as docker
+from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle
 
 log = logging.getLogger(__name__)
@@ -29,7 +31,6 @@ class Swiftlint(Tool):
         """
         Run code checks with swiftlit.
         """
-
         command = [
             'swiftlint',
             'lint',
@@ -50,4 +51,24 @@ class Swiftlint(Tool):
             command,
             self.base_path,
             env=env)
+        if not output.strip().startswith('<?xml'):
+            output = self._process_warnings(output)
         process_checkstyle(self.problems, output, docker.strip_base)
+
+    def _process_warnings(self, output):
+        warnings = []
+        lines = output.split("\n")
+        for i, line in enumerate(lines):
+            if line.startswith('<?xml'):
+                break
+            else:
+                warnings.append(line)
+        if warnings:
+            msg = [
+                "Your `swiftlint` configuration generated warnings:",
+                "```",
+                "\n".join(warnings),
+                "```",
+            ]
+            self.problems.add(IssueComment("\n".join(msg)))
+        return "\n".join(lines[i:])
