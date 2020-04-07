@@ -36,11 +36,6 @@ class Testshellcheck(TestCase):
         self.assertTrue(self.tool.check_dependencies())
 
     @requires_image('shellcheck')
-    def test_process_files__one_file_pass(self):
-        self.tool.process_files([self.fixtures[0]])
-        self.assertEqual([], self.problems.all(self.fixtures[0]))
-
-    @requires_image('shellcheck')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -59,23 +54,23 @@ class Testshellcheck(TestCase):
             fname,
             4,
             4,
-            'BASE appears unused. Verify it or export it.\n'
-            'Use $(..) instead of legacy \`..\`.')
+            'BASE appears unused. Verify use (or export if used externally).\n'
+            'Use $(...) notation instead of legacy backticked \\`...\\`.')
         self.assertEqual(expected, problems[1])
 
         expected = Comment(
             fname,
             6,
             6,
-            ("The order of the 2>&1 and the redirect matters. "
-             "The 2>&1 has to be last."))
+            ("To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' "
+             "to clarify)."))
         self.assertEqual(expected, problems[2])
 
     @requires_image('shellcheck')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
-        self.assertEqual([], self.problems.all(self.fixtures[0]))
+        self.assertEqual(1, len(self.problems.all(self.fixtures[0])))
 
         problems = self.problems.all(self.fixtures[1])
         self.assertEqual(3, len(problems))

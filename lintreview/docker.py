@@ -139,6 +139,7 @@ def run(image,                     # type: str
 
     # Only log the first 15 parameters.
     log.info('Running container: %s', u' '.join(run_args['command'][0:15]))
+    print(u' '.join(run_args['command'][0:15]))
     client = _get_client()
     try:
         container = client.containers.run(**run_args)
