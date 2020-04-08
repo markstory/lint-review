@@ -10,3 +10,4 @@ ignore:
     - 'tests/fixtures/pep8/*'
     - 'tests/fixtures/py3k/*'
     - 'tests/fixtures/pytype/*'
+    - 'tests/fixtures/rubocop/*'
