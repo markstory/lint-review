@@ -31,15 +31,29 @@ class Rubocop(Tool):
         command += files
         output = docker.run('ruby2', command, self.base_path)
         if not output:
-            log.debug('No rubocop errors found.')
             return
         output = output.split("\n")
+
+        # rubocop will emit warnings at the beginning of its output.
         if '.rubocop.yml' in output[0]:
-            msg = u'Your rubocop configuration output the following error:\n' \
-                   '```\n' \
-                   '{}\n' \
-                   '```'
-            return self.problems.add(IssueComment(msg.format(output[0])))
+            warnings = []
+            for i, line in enumerate(output):
+                # Stack trace when rubocop fails.
+                if line.startswith("/usr/local"):
+                    continue
+                # Likely a lint error.
+                elif line.count(":") >= 2:
+                    break
+                else:
+                    warnings.append(line)
+            msg = [
+                "Your rubocop configuration output the following error:",
+                "```",
+                "\n".join(warnings),
+                "```",
+            ]
+            self.problems.add(IssueComment("\n".join(msg)))
+            output = output[i:]
 
         process_quickfix(self.problems, output, docker.strip_base)
 
