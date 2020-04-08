@@ -1,0 +1,17 @@
+AllCops:
+  Include:
+    - '**/Gemfile*'
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 16
+
+Naming/FileName:
+  Exclude:
+    - 'Gemfile*'
+
+Style/FrozenStringLiteralComment:
+  Include:
+    - '*.rb'

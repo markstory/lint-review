@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from unittest import TestCase
 
-from lintreview.review import Comment, Problems
+from lintreview.review import Problems
 from lintreview.tools.rubocop import Rubocop
 from tests import (
     root_dir, read_file, read_and_restore_file, requires_image
@@ -91,6 +91,20 @@ class TestRubocop(TestCase):
         assert 1 == len(problems)
         assert 'Your rubocop configuration' in problems[0].body
         assert 'expected key while parsing' in problems[0].body
+
+    @requires_image('ruby2')
+    def test_process_files__incomplete_rubocop_yml(self):
+        self.tool.process_files(['tests/fixtures/rubocop/incompleteconfig/has_errors.rb'])
+
+        problems = self.problems.all()
+        assert 4 == len(problems)
+        # Check config warning.
+        assert 'Your rubocop configuration' in problems[0].body
+        assert 'The following cops were added' in problems[0].body
+        assert '- Style/HashEachMethods' in problems[0].body
+
+        # Has other errors too.
+        assert 'C: Missing frozen string literal comment.' in problems[1].body
 
     def test_has_fixer__not_enabled(self):
         tool = Rubocop(self.problems, {}, root_dir)
