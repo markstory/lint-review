@@ -81,13 +81,13 @@ class TestPhpcs(TestCase):
     @requires_image('php')
     def test_process_files__with_optional_package(self):
         config = {
-            'standard': 'CakePHP4'
+            'standard': 'CakePHP3'
         }
         tool = Phpcs(self.problems, config, root_dir)
         tool.process_files([self.fixtures[1]])
 
         problems = self.problems.all(self.fixtures[1])
-        assert 'strict_types' in problems[0].body, 'Should use custom rules'
+        assert 'strict_types' not in problems[0].body, 'Should use custom rules'
 
         for image in docker.images():
             self.assertNotIn('phpcs-', image, 'no phpcs image remains')
@@ -146,6 +146,7 @@ class TestPhpcs(TestCase):
         tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
         expected = [
+            'phpcs-run',
             'phpcs',
             '--report=checkstyle',
             '--standard=Zend',
@@ -163,6 +164,7 @@ class TestPhpcs(TestCase):
         tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
         expected = [
+            'phpcs-run',
             'phpcs',
             '--report=checkstyle',
             '--standard=/src/test/CodeStandards',
@@ -182,6 +184,7 @@ class TestPhpcs(TestCase):
         tool = Phpcs(self.problems, config, root_dir)
         result = tool.create_command(['some/file.php'])
         expected = [
+            'phpcs-run',
             'phpcs',
             '--report=checkstyle',
             '--standard=PSR2',

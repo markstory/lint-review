@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "squizlabs/php_codesniffer": "3.*",
-        "cakephp/cakephp-codesniffer": "3.*",
+        "cakephp/cakephp-codesniffer": "4.*",
         "phpmd/phpmd": "^2.6"
     },
     "prefer-stable": true
