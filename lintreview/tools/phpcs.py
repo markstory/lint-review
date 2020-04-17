@@ -19,7 +19,8 @@ log = logging.getLogger(__name__)
 Package = namedtuple('Package', ['package', 'name'])
 
 OPTIONAL_PACKAGES = {
-    'CakePHP4': Package('cakephp/cakephp-codesniffer:^4.0', 'CakePHP')
+    'CakePHP2': Package('cakephp/cakephp-codesniffer:^2.0', 'CakePHP'),
+    'CakePHP3': Package('cakephp/cakephp-codesniffer:^3.0', 'CakePHP'),
 }
 
 
@@ -70,7 +71,7 @@ class Phpcs(Tool):
         return docker.apply_base(path)
 
     def create_command(self, files):
-        command = ['phpcs']
+        command = ['phpcs-run', 'phpcs']
         command += ['--report=checkstyle']
         command = self._apply_options(command)
         command += docker.replace_basedir(self.base_path, files)
@@ -115,7 +116,7 @@ class Phpcs(Tool):
             source_dir=self.base_path)
 
     def create_fixer_command(self, files):
-        command = ['phpcbf']
+        command = ['phpcs-run', 'phpcbf']
         command = self._apply_options(command)
         command += docker.replace_basedir(self.base_path, files)
         return command
