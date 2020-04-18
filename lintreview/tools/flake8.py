@@ -9,7 +9,6 @@ from lintreview.tools import (
     Tool,
     process_quickfix,
     python_image,
-    stringify
 )
 
 log = logging.getLogger(__name__)

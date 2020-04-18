@@ -21,6 +21,7 @@ Package = namedtuple('Package', ['package', 'name'])
 OPTIONAL_PACKAGES = {
     'CakePHP2': Package('cakephp/cakephp-codesniffer:^2.0', 'CakePHP'),
     'CakePHP3': Package('cakephp/cakephp-codesniffer:^3.0', 'CakePHP'),
+    'CakePHP4': Package('cakephp/cakephp-codesniffer:^4.0', 'CakePHP'),
 }
 
 
