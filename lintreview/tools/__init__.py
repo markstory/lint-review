@@ -236,11 +236,11 @@ def _parse_xml(xml):
         return ElementTree.fromstring(xml)
     except Exception:
         if len(xml) > 8192:
-            head = xml[0:250]
-            tail = xml[-250:]
+            head = xml[0:250].encode('utf-8')
+            tail = xml[-250:].encode('utf-8')
             log.error("Unable to parse XML head=%s, tail=%s", head, tail)
         else:
-            log.error('Unable to parse XML %s', xml)
+            log.error('Unable to parse XML %s', xml.encode('utf-8'))
         raise
 
 
