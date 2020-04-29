@@ -61,6 +61,7 @@ class TestProcessor(TestCase):
                           subject.run_tools)
 
     def test_run_tools__import_error(self):
+        self.tool_patcher.stop()
         pull = self.get_pull_request()
         repo = Mock()
 
@@ -72,6 +73,8 @@ linters = nope
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
         subject.run_tools()
+        self.tool_patcher.start()
+
         problems = subject.problems.all()
 
         assert len(problems) == 1

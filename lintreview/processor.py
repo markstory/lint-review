@@ -59,6 +59,7 @@ class Processor(object):
                 '```\n'
             )
             self.problems.add(IssueComment(msg.format(str(e))))
+            return
 
         if config.fixers_enabled():
             self.apply_fixers(tool_list, files_to_check)
