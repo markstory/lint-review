@@ -145,7 +145,7 @@ class Eslint(Tool):
 
     def _config_error(self, output):
         if 'Cannot read config file' in output:
-            if 'no such file' in output:
+            if 'no such file' in output and 'config' in self.options:
                 msg = (u'Your eslint config file is missing or invalid. '
                        u'Please ensure that `{}` exists and is valid.')
                 msg = msg.format(self.options['config'])
