@@ -65,9 +65,9 @@ class TestProcessor(TestCase):
         repo = Mock()
 
         ini = """
-        [tools]
-        linters = nope
-        """
+[tools]
+linters = nope
+"""
         config = build_review_config(ini, app_config)
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
