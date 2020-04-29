@@ -4,7 +4,7 @@ import lintreview.tools as tools
 import lintreview.fixers as fixers
 from lintreview.diff import DiffCollection
 from lintreview.fixers.error import ConfigurationError, WorkflowError
-from lintreview.review import Problems, Review, InfoComment
+from lintreview.review import Problems, Review, IssueComment, InfoComment
 
 log = logging.getLogger(__name__)
 
@@ -44,10 +44,21 @@ class Processor(object):
         )
         commits_to_check = self._pull_request.commits()
 
-        tool_list = tools.factory(
-            config,
-            self.problems,
-            self._target_path)
+        try:
+            tool_list = tools.factory(
+                config,
+                self.problems,
+                self._target_path)
+        except Exception as e:
+            msg = (
+                u'We could not load linters for your repository. '
+                'Building linters failed with:'
+                '\n'
+                '```\n'
+                '{}\n'
+                '```\n'
+            )
+            self.problems.add(IssueComment(msg.format(str(e))))
 
         if config.fixers_enabled():
             self.apply_fixers(tool_list, files_to_check)
