@@ -72,7 +72,7 @@ linters = nope
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
         subject.run_tools()
-        problems = self.problems.all()
+        problems = subject.problems.all()
 
         assert len(problems) == 1
         assert 'could not load linters' in problems[0].body
