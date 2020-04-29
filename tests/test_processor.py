@@ -60,6 +60,26 @@ class TestProcessor(TestCase):
         self.assertRaises(RuntimeError,
                           subject.run_tools)
 
+    def test_run_tools__import_error(self):
+        self.tool_patcher.stop()
+        pull = self.get_pull_request()
+        repo = Mock()
+
+        ini = """
+[tools]
+linters = nope
+"""
+        config = build_review_config(ini, app_config)
+        subject = Processor(repo, pull, './tests', config)
+        subject.load_changes()
+        subject.run_tools()
+        self.tool_patcher.start()
+
+        problems = subject.problems.all()
+
+        assert len(problems) == 1
+        assert 'could not load linters' in problems[0].body
+
     def test_run_tools__ignore_patterns(self):
         pull = self.get_pull_request()
         repo = Mock()
