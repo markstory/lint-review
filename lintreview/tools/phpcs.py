@@ -157,7 +157,6 @@ class Phpcs(Tool):
             docker.rm_container(container_name)
             self.custom_image = container_name
             buildlog.info('Installed phpcs package %s', standard)
-            foooo
 
         return container_name
 
