@@ -8,6 +8,7 @@ from functools import wraps
 from six.moves.urllib.parse import urlparse, urlunparse
 
 log = logging.getLogger(__name__)
+buildlog = logging.getLogger('build.log')
 
 
 def log_io_error(func):
@@ -16,7 +17,7 @@ def log_io_error(func):
         try:
             return func(*args, **kwargs)
         except IOError as e:
-            log.info(str(e))
+            buildlog.info(str(e))
             raise
     return wrapper
 
@@ -71,13 +72,13 @@ def clone_or_update(config, url, path, head):
     """Clone a new repository and checkout commit,
     or update an existing clone to the new head
     """
-    log.info("Cloning repository '%s' into '%s'", url, path)
+    buildlog.info("Cloning repository '%s' into '%s'", url, path)
     if 'GITHUB_OAUTH_TOKEN' in config:
         authenticated_clone(config, url, path)
     else:
-        log.warn('No github oauth token present. Using public clone.')
+        buildlog.warn('No github oauth token present. Using public clone.')
         clone(url, path)
-    log.info("Checking out '%s'", head)
+    buildlog.info("Checking out '%s'", head)
     checkout(path, head)
 
 

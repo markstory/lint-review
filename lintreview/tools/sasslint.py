@@ -1,11 +1,7 @@
 from __future__ import absolute_import
-import logging
 import os
 from lintreview.tools import Tool, process_checkstyle
 import lintreview.docker as docker
-
-
-log = logging.getLogger(__name__)
 
 
 class Sasslint(Tool):

@@ -10,6 +10,7 @@ from lintreview.review import IssueComment
 from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Tool(object):
@@ -45,7 +46,7 @@ class Tool(object):
             log.debug('No matching files for %s', self.name)
             return
 
-        log.info('Running %s on %d files', self.name, num_files)
+        buildlog.info('Running %s on %d files', self.name, num_files)
         log.debug('Processing %s files with %s', matching_files, self.name)
         try:
             self.process_files(matching_files)
@@ -76,7 +77,7 @@ class Tool(object):
         num_files = len(matching_files)
         if not num_files:
             return
-        log.info('Running fixer %s on %d files', self.name, num_files)
+        buildlog.info('Running fixer %s on %d files', self.name, num_files)
         self.process_fixer(matching_files)
 
     def has_fixer(self):
@@ -190,11 +191,10 @@ def run(lint_tools, files, commits):
 
     log.info('Running for %d files', len(files))
     for tool in lint_tools:
-        log.debug('Running %s tool', tool)
         previous_total = len(tool.problems)
         tool.execute(files)
         tool.execute_commits(commits)
-        log.info('Added %s review notes', len(tool.problems) - previous_total)
+        buildlog.info('Added %s review notes', len(tool.problems) - previous_total)
 
 
 def process_quickfix(problems, output, filename_converter, columns=3):

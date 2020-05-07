@@ -5,7 +5,7 @@ import lintreview.docker as docker
 import re
 from lintreview.tools import Tool, process_quickfix, stringify
 
-log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Py3k(Tool):
@@ -37,7 +37,6 @@ class Py3k(Tool):
         command = self.make_command(files)
         output = docker.run('python2', command, self.base_path)
         if not output:
-            log.debug('No py3k errors found.')
             return False
 
         output = output.split("\n")
@@ -66,7 +65,7 @@ class Py3k(Tool):
         for option in self.options:
             if option in accepted_options:
                 continue
-            log.warning('Set non-existent py3k option: %s', option)
+            buildlog.warning('Set non-existent py3k option: %s', option)
         command.extend(files)
         return command
 

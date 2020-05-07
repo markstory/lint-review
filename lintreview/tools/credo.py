@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 import os
-import logging
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix
-
-log = logging.getLogger(__name__)
 
 
 class Credo(Tool):
@@ -33,7 +30,6 @@ class Credo(Tool):
         command += files
         output = docker.run('credo', command, self.base_path)
         if not output:
-            log.debug('No credo errors found.')
             return False
 
         process_quickfix(
