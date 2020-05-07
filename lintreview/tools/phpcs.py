@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 import six
+import logging
 
 from collections import namedtuple
 
@@ -156,6 +157,7 @@ class Phpcs(Tool):
             docker.rm_container(container_name)
             self.custom_image = container_name
             buildlog.info('Installed phpcs package %s', standard)
+            foooo
 
         return container_name
 
