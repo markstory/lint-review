@@ -4,8 +4,6 @@ import lintreview.docker as docker
 
 from lintreview.tools import Tool
 
-log = logging.getLogger(__name__)
-
 
 class Foodcritic(Tool):
 
@@ -28,7 +26,6 @@ class Foodcritic(Tool):
         output = docker.run('ruby2', command, self.base_path)
 
         if output[0] == '\n':
-            log.debug('No foodcritic errors found.')
             return False
 
         for line in output.split("\n"):
@@ -42,7 +39,6 @@ class Foodcritic(Tool):
         foodcritic only generates results as stdout.
         Parse the output for real data.
         """
-        log.debug('Line: %s' % line)
         parts = line.split(': ')
 
         filename = parts[2].split(':')[0].strip()

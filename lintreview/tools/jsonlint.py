@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 import os
-import logging
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix
-
-log = logging.getLogger(__name__)
 
 
 class Jsonlint(Tool):
@@ -37,7 +34,6 @@ class Jsonlint(Tool):
             command,
             source_dir=self.base_path)
         if not output:
-            log.debug('No jsonlint errors found.')
             return False
 
         output = output.split("\n")

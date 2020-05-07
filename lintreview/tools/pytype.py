@@ -7,7 +7,7 @@ import lintreview.docker as docker
 from lintreview.tools import Tool
 from lintreview.review import IssueComment
 
-log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Pytype(Tool):
@@ -133,7 +133,7 @@ class Pytype(Tool):
             source_dir=self.base_path,
             name=container_name)
 
-        log.info('Creating temporary image for %s', container_name)
+        buildlog.info('Creating cusotm image for pytype')
         docker.commit(container_name)
         docker.rm_container(container_name)
 
@@ -148,7 +148,7 @@ class Pytype(Tool):
                 source_dir=self.base_path
             )
         except Exception as e:
-            log.warning('Pytype merging failed. error=%s output=%s', e, out)
+            buildlog.warning('Pytype merging failed. error=%s output=%s', e, out)
         finally:
-            log.info('Removing temporary image for %s', container_name)
+            buildlog.info('Removing custom pytype image')
             docker.rm_image(container_name)

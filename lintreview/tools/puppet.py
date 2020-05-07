@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 import os
-import logging
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix
-
-log = logging.getLogger(__name__)
 
 
 class Puppet(Tool):
@@ -31,7 +28,6 @@ class Puppet(Tool):
         output = docker.run('ruby2', command, self.base_path)
 
         if not output:
-            log.debug('No puppet-lint errors found.')
             return False
 
         output = output.split("\n")

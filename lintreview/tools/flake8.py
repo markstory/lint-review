@@ -11,7 +11,7 @@ from lintreview.tools import (
     python_image,
 )
 
-log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Flake8(Tool):
@@ -163,7 +163,7 @@ class Flake8(Tool):
 
         container_name = docker.generate_container_name('flake8', files)
         if self.custom_image is None:
-            log.info('Installing flake8 plugins into %s', container_name)
+            buildlog.info('Installing flake8 plugins')
 
             docker.run(
                 image,
@@ -174,7 +174,7 @@ class Flake8(Tool):
             docker.commit(container_name)
             docker.rm_container(container_name)
             self.custom_image = container_name
-            log.info('Installed flake8 plugins %s', plugins)
+            buildlog.info('Installed flake8 plugins %s', plugins)
 
         return container_name
 
@@ -183,6 +183,6 @@ class Flake8(Tool):
         """
         if self.custom_image is None:
             return
-        log.info('Removing temporary image %s', self.custom_image)
+        buildlog.info('Removing custom flake8 image')
         docker.rm_image(self.custom_image)
         self.custom_image = None

@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import logging
 import os
 from lintreview.review import IssueComment
 from lintreview.tools import (
@@ -7,8 +6,6 @@ from lintreview.tools import (
     process_pmd
 )
 import lintreview.docker as docker
-
-log = logging.getLogger(__name__)
 
 
 class Phpmd(Tool):

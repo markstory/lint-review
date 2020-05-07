@@ -1,11 +1,8 @@
 from __future__ import absolute_import
 import os
-import logging
 import lintreview.docker as docker
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix, stringify
-
-log = logging.getLogger(__name__)
 
 
 class Mypy(Tool):
@@ -35,7 +32,6 @@ class Mypy(Tool):
 
         output = docker.run('python3', command, source_dir=self.base_path)
         if not output:
-            log.debug('No mypy errors found.')
             return False
         output = output.strip().split("\n")
         if len(output) and output[-1].startswith('mypy: error:'):

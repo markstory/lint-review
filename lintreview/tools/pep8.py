@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 import os
-import logging
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix, python_image
-
-log = logging.getLogger(__name__)
 
 
 class Pep8(Tool):
@@ -48,7 +45,6 @@ class Pep8(Tool):
         image = python_image(self.options)
         output = docker.run(image, command, source_dir=self.base_path)
         if not output:
-            log.debug('No pep8 errors found.')
             return False
         output = output.split("\n")
 

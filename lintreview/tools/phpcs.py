@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import logging
 import os
 import six
 
@@ -14,7 +13,7 @@ from lintreview.tools import (
     stringify
 )
 
-log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 Package = namedtuple('Package', ['package', 'name'])
 
@@ -145,7 +144,7 @@ class Phpcs(Tool):
 
         container_name = docker.generate_container_name('phpcs-', files)
         if self.custom_image is None:
-            log.info('Installing phpcs package into %s', container_name)
+            buildlog.info('Installing phpcs package')
 
             docker.run(
                 image,
@@ -156,7 +155,7 @@ class Phpcs(Tool):
             docker.commit(container_name)
             docker.rm_container(container_name)
             self.custom_image = container_name
-            log.info('Installed phpcs package %s', standard)
+            buildlog.info('Installed phpcs package %s', standard)
 
         return container_name
 
@@ -165,6 +164,6 @@ class Phpcs(Tool):
         """
         if self.custom_image is None:
             return
-        log.info('Removing temporary image %s', self.custom_image)
+        buildlog.info('Removing custom phpcs image')
         docker.rm_image(self.custom_image)
         self.custom_image = None

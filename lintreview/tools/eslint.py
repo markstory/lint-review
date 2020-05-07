@@ -7,7 +7,7 @@ from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle, commalist
 import lintreview.docker as docker
 
-log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Eslint(Tool):
@@ -74,7 +74,7 @@ class Eslint(Tool):
 
         container_name = docker.generate_container_name('eslint', files)
         if self.custom_image is None:
-            log.info('Installing eslint plugins into %s', container_name)
+            buildlog.info('Installing additional eslint plugins')
             output = docker.run(
                 'eslint',
                 ['eslint-install'],
@@ -90,7 +90,7 @@ class Eslint(Tool):
                 for line in output.splitlines()
                 if line.startswith('add:')
             ]
-            log.info('Installed eslint plugins %s', installed)
+            buildlog.info('Installed eslint plugins %s', installed)
         return container_name
 
     def _create_command(self):
@@ -117,7 +117,7 @@ class Eslint(Tool):
         """
         if self.custom_image is None:
             return
-        log.info('Removing temporary image %s', self.custom_image)
+        buildlog.info('Removing custom eslint image')
         docker.rm_image(self.custom_image)
         self.custom_image = None
 

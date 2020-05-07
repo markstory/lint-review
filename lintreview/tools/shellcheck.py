@@ -1,11 +1,8 @@
 from __future__ import absolute_import
-import logging
 import os
 import lintreview.docker as docker
 from lintreview.tools import Tool,  process_checkstyle
 from six.moves import map
-
-log = logging.getLogger(__name__)
 
 
 class Shellcheck(Tool):

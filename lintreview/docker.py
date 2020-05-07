@@ -14,6 +14,7 @@ from docker.errors import (
 from requests.exceptions import ReadTimeout, ConnectionError
 
 log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 # The base path for all docker operations
 DOCKER_BASE = '/src'
@@ -138,8 +139,7 @@ def run(image,                     # type: str
         run_args['user'] = os.getuid()
 
     # Only log the first 15 parameters.
-    log.info('Running container: %s', u' '.join(run_args['command'][0:15]))
-    print(u' '.join(run_args['command'][0:15]))
+    buildlog.info('Running container: %s', u' '.join(run_args['command'][0:15]))
     client = _get_client()
     try:
         container = client.containers.run(**run_args)

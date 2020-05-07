@@ -7,7 +7,6 @@ import re
 
 
 log = logging.getLogger(__name__)
-
 config = load_config()
 
 

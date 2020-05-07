@@ -1,12 +1,9 @@
 from __future__ import absolute_import
-import logging
 import os
 import re
 
 import lintreview.docker as docker
 from lintreview.tools import Tool
-
-log = logging.getLogger(__name__)
 
 # matches: '  1:4  warning  Incorrect list-item indent: add 1 space  list-item-indent  remark-lint'
 # matches: '  18:71-19:1  error  Missing new line after list item  list-item-spacing  remark-lint',
