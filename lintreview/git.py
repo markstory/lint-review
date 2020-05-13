@@ -8,7 +8,7 @@ from functools import wraps
 from six.moves.urllib.parse import urlparse, urlunparse
 
 log = logging.getLogger(__name__)
-buildlog = logging.getLogger('build.log')
+buildlog = logging.getLogger('buildlog')
 
 
 def log_io_error(func):
