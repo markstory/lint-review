@@ -7,6 +7,7 @@ LEVEL_INFO = 'info'
 LEVEL_ERROR = 'error'
 
 log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class IssueLabel(object):
@@ -166,9 +167,11 @@ class Review(object):
         supported by lint-review directly but is supported
         by stickler-ci.
         """
+        comment_count = len(problems)
+        buildlog.info('Publishing %s new comments', comment_count)
         log.info("Publishing result for checkrun=%s. %s new comments for %s",
                  check_run_id,
-                 len(problems),
+                 comment_count,
                  self._pr.display_name)
 
         has_problems = problems.error_count() > 0
@@ -314,8 +317,10 @@ class Review(object):
         parameter. changes is used to fetch the commit sha
         for the comments on a given file.
         """
+        comment_count = len(problems)
+        buildlog.info('Publishing %s new comments', comment_count)
         log.info("Publishing review of %s new comments for %s",
-                 len(problems),
+                 comment_count,
                  self._pr.display_name)
         self.remove_ok_label()
         review = self._build_review(problems, head_commit)
