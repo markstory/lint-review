@@ -194,7 +194,7 @@ def run(lint_tools, files, commits):
         previous_total = len(tool.problems)
         tool.execute(files)
         tool.execute_commits(commits)
-        buildlog.info('Added %s review notes', len(tool.problems) - previous_total)
+        buildlog.info('%s added %s review notes', tool.name, len(tool.problems) - previous_total)
 
 
 def process_quickfix(problems, output, filename_converter, columns=3):
