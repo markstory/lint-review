@@ -1,7 +1,7 @@
 # Eslint requires its own docker file
 # because eslint 5.x has a number of incompatibilities
 # with other eslint based tools like xo and standardjs
-FROM node:8-alpine
+FROM node:12-alpine
 
 RUN mkdir /src \
   && mkdir /tool \

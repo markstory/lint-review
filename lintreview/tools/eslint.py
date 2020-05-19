@@ -158,7 +158,7 @@ class Eslint(Tool):
                    '```\n')
             # Grab the first few lines as they contain the
             # JSON/YAML parse error
-            error_text = u'\n'.join(output.split('\n')[0:5])
+            error_text = u'\n'.join(output.split('\n')[0:8])
             comment = IssueComment(msg.format(error_text))
             return self.problems.add(comment)
 
