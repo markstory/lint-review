@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+import re
 import os
 import logging
 import hashlib
@@ -18,6 +20,7 @@ buildlog = logging.getLogger('buildlog')
 
 # The base path for all docker operations
 DOCKER_BASE = '/src'
+CUSTOM_IMAGE_PATTERN = re.compile(r'^\w+-[a-f0-9]+$')
 
 
 class TimeoutError(Exception):
@@ -137,6 +140,9 @@ def run(image,                     # type: str
 
     if run_as_current_user:
         run_args['user'] = os.getuid()
+
+    if CUSTOM_IMAGE_PATTERN.match(image):
+        buildlog.info('Using custom image %', image)
 
     # Only log the first 15 parameters.
     buildlog.info('Running container: %s', u' '.join(run_args['command'][0:15]))
