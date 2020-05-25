@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from unittest import TestCase
 import os.path
+import pytest
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
@@ -138,6 +139,7 @@ class TestEslint(TestCase):
         expected = 'ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
         self.assertIn(expected, error.body)
 
+    @pytest.mark.xfail(reason='eslint does not emit deprecations in eslint7 for our usecase')
     @requires_image('eslint')
     def test_process_files__deprecated_option(self):
         options = {'config': 'tests/fixtures/eslint/deprecatedoption.json'}

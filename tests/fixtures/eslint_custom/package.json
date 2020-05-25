@@ -2,6 +2,6 @@
   "name": "lintreview-custom-eslint",
   "version": "0.0.1",
   "dependencies": {
-    "eslint-config-airbnb-base": "17.*"
+    "eslint-config-airbnb-base": "14.*"
   }
 }
