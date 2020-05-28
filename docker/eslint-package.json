@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "babel-eslint": "^9.0.0",
-    "eslint": "7.x",
+    "eslint": "6.x",
     "eslint-plugin-ember": "^6.6",
     "eslint-plugin-ember-best-practices": "^1.1",
     "eslint-plugin-import": "^2.18.2",

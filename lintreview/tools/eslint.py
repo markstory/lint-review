@@ -96,8 +96,8 @@ class Eslint(Tool):
 
     def _create_command(self):
         command = [
+            'eslint-run',
             'eslint',
-            '--resolve-plugins-relative-to', '/tool',
             '--format', 'checkstyle'
         ]
 
