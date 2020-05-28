@@ -120,6 +120,11 @@ class TestGithubPullRequest(TestCase):
         expected = 'a840e46033fab78c30fccb31d4d58dd0a8160d40'
         assert expected == pull.head
 
+    def test_base(self):
+        pull = GithubPullRequest(self.model)
+        expected = '55a0965a0af4165058b17ebd0951fa483e8043c8'
+        assert expected == pull.base
+
     def test_clone_url(self):
         pull = GithubPullRequest(self.model)
         expected = 'https://github.com/contributor/lint-test.git'
