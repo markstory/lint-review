@@ -111,7 +111,7 @@ def diff(path, files=None):
 
 
 @log_io_error
-def commit_range_diff(path, base, head):
+def diff_commit_range(path, base, head):
     """Get a diff between the base and head commit.
 
     Use lintreview.diff.parse_diff if you need to create

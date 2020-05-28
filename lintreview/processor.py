@@ -41,7 +41,7 @@ class Processor(object):
         base = self._pull_request.base
         log.debug('Parsing changes between %s and %s', base, head)
 
-        diff_text = git.commit_range_diff(self._target_path, base, head)
+        diff_text = git.diff_commit_range(self._target_path, base, head)
         self._changes = parse_diff(diff_text)
         self.problems.set_changes(self._changes)
 

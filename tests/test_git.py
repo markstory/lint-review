@@ -1,17 +1,19 @@
 from __future__ import absolute_import
+
 import os
+import pytest
 from unittest import TestCase
 from mock import patch
 
 import lintreview.git as git
 from .test_github import config
 from . import (
+    root_dir,
     setup_repo,
     teardown_repo,
     clone_path,
     cant_write_to_test
 )
-from unittest import skipIf
 
 settings = {
     'WORKSPACE': os.path.join(clone_path, '/tests')
@@ -69,7 +71,7 @@ class TestGit(TestCase):
                           'git://github.com/markstory/it will never work.git',
                           clone_path)
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_repo_operations(self):
         teardown_repo()
         res = git.clone(
@@ -80,7 +82,7 @@ class TestGit(TestCase):
         git.destroy(clone_path)
         assert not(git.exists(clone_path)), 'Cloned dir should be gone.'
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     @patch('lintreview.git.checkout')
     @patch('lintreview.git.fetch')
     def test_clone_or_update(self, mock_fetch, mock_checkout):
@@ -92,7 +94,7 @@ class TestGit(TestCase):
             'e4f880c77e6b2c81c81cad5d45dd4e1c39b919a0')
         assert git.exists(clone_path)
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_diff(self):
         with open(clone_path + '/README.mdown', 'w') as f:
             f.write('New readme')
@@ -103,14 +105,14 @@ class TestGit(TestCase):
         self.assertIn('+New readme', result)
         self.assertIn('-# Lint Review', result)
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_diff__files_list(self):
         with open(clone_path + '/README.mdown', 'w') as f:
             f.write('New readme')
         result = git.diff(clone_path, ['LICENSE'])
         self.assertEqual('', result)
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_diff__non_git_path(self):
         path = os.path.abspath(clone_path + '/../../../')
         self.assertRaises(
@@ -119,7 +121,21 @@ class TestGit(TestCase):
             path
         )
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    def test_diff_commit_range(self):
+        result = git.diff_commit_range(
+            root_dir,
+            'aa7a9d074132280b54c0eee67221bb955adaaeaf',
+            'c02fb764459f040c8007afa97479fedaf8587866'
+        )
+        assert 'lintreview/tools/rubocop.py' in result
+        assert 'tests/tools/test_rubocop.py' in result
+
+    def test_diff_commit_range__invalid(self):
+        with pytest.raises(IOError) as err:
+            git.diff_commit_range(root_dir, 'bad', 'nope')
+        assert 'unknown revision' in str(err)
+
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_apply_cached(self):
         with open(clone_path + '/README.mdown', 'w') as f:
             f.write('New readme')
@@ -131,7 +147,7 @@ class TestGit(TestCase):
         diff = git.diff(clone_path)
         self.assertEqual(diff, '')
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_apply_cached__empty(self):
         git.apply_cached(clone_path, '')
 
@@ -139,7 +155,7 @@ class TestGit(TestCase):
         diff = git.diff(clone_path)
         self.assertEqual(diff, '')
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_apply_cached__bad_patch(self):
         self.assertRaises(
             IOError,
@@ -148,7 +164,7 @@ class TestGit(TestCase):
             'not a diff'
         )
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_apply_cached__non_git_path(self):
         path = os.path.abspath(clone_path + '/../../')
         self.assertRaises(
@@ -158,7 +174,7 @@ class TestGit(TestCase):
             'not a patch'
         )
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_commit_and_status(self):
         with open(clone_path + '/README.mdown', 'w') as f:
             f.write('New readme')
@@ -172,7 +188,7 @@ class TestGit(TestCase):
         status = git.status(clone_path)
         self.assertEqual('', status, 'No changes unstaged, or uncommitted')
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_add_remote(self):
         output = git.add_remote(
             clone_path,
@@ -180,31 +196,30 @@ class TestGit(TestCase):
             'git://github.com/markstory/lint-review.git')
         self.assertEqual('', output)
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_add_remote__duplicate(self):
-        try:
+        with pytest.raises(IOError) as err:
             git.add_remote(
                 clone_path,
                 'origin',
                 'git://github.com/markstory/lint-review.git')
-        except IOError as e:
-            self.assertIn('Unable to add remote origin', str(e))
+        self.assertIn('Unable to add remote origin', str(err))
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_push__fails(self):
         try:
             git.push(clone_path, 'origin', 'master')
         except IOError as e:
             self.assertIn('origin:master', str(e))
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_create_branch(self):
         git.create_branch(clone_path, 'testing')
         self.assertEqual(True, git.branch_exists(clone_path, 'master'))
         self.assertEqual(True, git.branch_exists(clone_path, 'testing'))
         self.assertEqual(False, git.branch_exists(clone_path, 'nope'))
 
-    @skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')
+    @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_destroy_unicode_paths(self):
         full_clone_path = os.path.join(clone_path, "\u2620.txt")
         with open(full_clone_path, 'w') as f:
