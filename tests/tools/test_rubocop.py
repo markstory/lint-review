@@ -39,7 +39,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == self.fixtures[1]
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'C: Line is too long. [82/80]' in long_line.body
+        assert 'W: Unused method argument' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_two_files(self):
@@ -65,7 +65,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == linty_filename
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'C: Layout/LineLength: Line is too long. [82/80]' in long_line.body
+        assert 'Lint/UnusedMethodArgument' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_one_file_fail_display_cop_names__bool(self):
@@ -81,7 +81,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == linty_filename
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'C: Layout/LineLength: Line is too long. [82/80]' in long_line.body
+        assert 'Lint/UnusedMethodArgument' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files__invalid_rubocop_yml(self):
@@ -136,6 +136,5 @@ class TestRubocop(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        self.assertEqual(1, len(self.problems.all()),
+        self.assertEqual(0, len(self.problems.all()),
                          'Most errors should be fixed')
-        self.assertIn('too long', self.problems.all()[0].body)

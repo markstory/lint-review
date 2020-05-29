@@ -1,7 +1,7 @@
 # Eslint requires its own docker file
 # because eslint 5.x has a number of incompatibilities
 # with other eslint based tools like xo and standardjs
-FROM node:8-alpine
+FROM node:12-alpine
 
 RUN mkdir /src \
   && mkdir /tool \
@@ -14,6 +14,7 @@ RUN mkdir /src \
 
 COPY eslint-package.json /tool/package.json
 COPY eslint-install.sh /usr/bin/eslint-install
+COPY eslint-run.sh /usr/bin/eslint-run
 
 # Install node tools
 RUN cd /tool && yarn install
@@ -24,6 +25,7 @@ RUN ln -s /tool/node_modules/.bin/eslint /usr/bin/eslint \
   # Copy package.json so that it is an ancestor of /src allowing
   # eslint and xo to use it for config
   && cp /tool/package.json / \
-  && chmod +x /usr/bin/eslint-install
+  && chmod +x /usr/bin/eslint-install \
+  && chmod +x /usr/bin/eslint-run
 
 WORKDIR /src

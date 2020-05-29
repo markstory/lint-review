@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from unittest import TestCase
 import os.path
+import pytest
 
 from lintreview.review import Problems, Comment, IssueComment
 from lintreview.tools.eslint import Eslint
@@ -121,8 +122,8 @@ class TestEslint(TestCase):
         error = problems[0]
         self.assertIn('Your eslint configuration output the following error',
                       error.body)
-        self.assertIn("Cannot find module 'eslint-config-invalid-rules'",
-                      error.body)
+        self.assertIn("couldn't find", error.body)
+        self.assertIn('config "invalid-rules"', error.body)
 
     @requires_image('eslint')
     def test_process_files__missing_plugin(self):
@@ -138,6 +139,7 @@ class TestEslint(TestCase):
         expected = 'ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
         self.assertIn(expected, error.body)
 
+    @pytest.mark.xfail(reason='eslint does not emit deprecations in eslint7 for our usecase')
     @requires_image('eslint')
     def test_process_files__deprecated_option(self):
         options = {'config': 'tests/fixtures/eslint/deprecatedoption.json'}

@@ -13,6 +13,7 @@ tags
 /node_modules
 /vendor
 /bundle
+/tests/fixtures/eslint_custom/node_modules
 /.bundle
 /.venv
 /.python-version

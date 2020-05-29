@@ -7,6 +7,7 @@ from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle, commalist
 import lintreview.docker as docker
 
+log = logging.getLogger(__name__)
 buildlog = logging.getLogger('buildlog')
 
 
@@ -94,7 +95,11 @@ class Eslint(Tool):
         return container_name
 
     def _create_command(self):
-        command = ['eslint', '--format', 'checkstyle']
+        command = [
+            'eslint-run',
+            'eslint',
+            '--format', 'checkstyle'
+        ]
 
         # Add config file or default to recommended linters
         if self.options.get('config'):
@@ -124,6 +129,9 @@ class Eslint(Tool):
     def _process_output(self, output, files):
         # Strip deprecations off as they break XML parsing
         if re.match(r'.*?DeprecationWarning', output):
+            log.warning(
+                "Received deprecation warning from eslint which should not happen in eslint7."
+            )
             output = self._handle_deprecation_warning(output)
 
         if not output.strip().startswith('<?xml'):
@@ -158,7 +166,7 @@ class Eslint(Tool):
                    '```\n')
             # Grab the first few lines as they contain the
             # JSON/YAML parse error
-            error_text = u'\n'.join(output.split('\n')[0:5])
+            error_text = u'\n'.join(output.split('\n')[0:8])
             comment = IssueComment(msg.format(error_text))
             return self.problems.add(comment)
 
