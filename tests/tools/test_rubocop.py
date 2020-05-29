@@ -136,6 +136,5 @@ class TestRubocop(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        self.assertEqual(2, len(self.problems.all()),
+        self.assertEqual(0, len(self.problems.all()),
                          'Most errors should be fixed')
-        self.assertIn('too long', self.problems.all()[0].body)
