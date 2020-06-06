@@ -21,7 +21,6 @@ class TestDiffCollection(TestCase):
     # Diff with removed files
     removed_files = load_fixture('diff/diff_with_removed_files.txt')
 
-    # single_line_add_json = load_fixture('diff_single_line_add.json')
     single_line_add = load_fixture('diff/diff_single_line_add.txt')
 
     def test_create_one_element(self):
@@ -61,8 +60,8 @@ class TestDiffCollection(TestCase):
         self.assertEqual(expected, result)
 
     def test_get_files__ignore_pattern__multiple_wildcard(self):
-        data = load_fixture('multiple_wildcard_pull_request.json')
-        changes = DiffCollection(create_pull_files(data))
+        data = load_fixture('diff/multiple_wildcard_pull_request.txt')
+        changes = parse_diff(data)
         expected = [
             "buildpacks/buildpack-ruby/tests/ruby-sinatra/test_web.rb",
         ]
