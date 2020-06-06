@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from . import load_fixture, create_pull_files
+from . import load_fixture
 from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
