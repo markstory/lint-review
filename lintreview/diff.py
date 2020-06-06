@@ -27,16 +27,16 @@ def parse_diff(text):
     for chunk in blocks:
         if len(chunk) == 0:
             continue
-        diffs.append(parse_file_diff(chunk))
-    if not diffs:
-        msg = u'Could not parse any diffs from provided diff text.'
-        raise ParseError(msg)
+        diff = parse_file_diff(chunk)
+        if diff:
+            diffs.append(diff)
 
     return DiffCollection(diffs)
 
 
 def parse_file_diff(chunk):
     filename = None
+    no_changes = False
     patch = []
     for line in chunk.split('\n'):
         # Ignore the - filename and index refspec
@@ -45,10 +45,17 @@ def parse_file_diff(chunk):
         if line.startswith('+++'):
             filename = line[6:]
             continue
+        if line.startswith('Binary files'):
+            no_changes = True
+            continue
+        if line.startswith('rename from'):
+            no_changes = True
+            continue
         if not filename:
             continue
         patch.append(line)
-
+    if no_changes:
+        return None
     if not patch:
         msg = u'Could not parse diff for {}'.format(filename)
         raise ParseError(msg)

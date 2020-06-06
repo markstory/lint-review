@@ -1,0 +1,6 @@
+diff --git a/some.js b/some.js
+index 1f65acd..caab2e0 100644
+--- a/some.js
++++ b/some.js
+@@ -0,0 +1 @@
++alert('hi!');

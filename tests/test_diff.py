@@ -3,43 +3,39 @@ from . import load_fixture, create_pull_files
 from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 from unittest import TestCase
 from mock import patch
+
 import re
+import pytest
 
 
 class TestDiffCollection(TestCase):
-
     # Single file, single commit
-    one_file_json = load_fixture('one_file_pull_request.json')
+    one_file = load_fixture('diff/one_file_pull_request.txt')
 
     # Two files modified in the same commit
-    two_files_json = load_fixture('two_file_pull_request.json')
+    two_files = load_fixture('diff/two_file_pull_request.txt')
 
     # Diff with renamed files
-    renamed_files_json = load_fixture('diff_with_rename_and_blob.json')
+    renamed_files = load_fixture('diff/diff_with_rename_and_blob.txt')
 
     # Diff with removed files
-    removed_files_json = load_fixture('diff_with_removed_files.json')
+    removed_files = load_fixture('diff/diff_with_removed_files.txt')
 
-    single_line_add_json = load_fixture('diff_single_line_add.json')
-
-    def setUp(self):
-        self.one_file = create_pull_files(self.one_file_json)
-        self.two_files = create_pull_files(self.two_files_json)
-        self.renamed_files = create_pull_files(self.renamed_files_json)
-        self.removed_files = create_pull_files(self.renamed_files_json)
+    # single_line_add_json = load_fixture('diff_single_line_add.json')
+    single_line_add = load_fixture('diff/diff_single_line_add.txt')
 
     def test_create_one_element(self):
-        changes = DiffCollection(self.one_file)
+        changes = parse_diff(self.one_file)
         self.assertEqual(1, len(changes))
         self.assert_instances(changes, 1, Diff)
 
     def test_create_two_files(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         self.assertEqual(2, len(changes))
         self.assert_instances(changes, 2, Diff)
 
     def test_get_files__one_file(self):
-        changes = DiffCollection(self.one_file)
+        changes = parse_diff(self.one_file)
         result = changes.get_files()
         expected = [
             "View/Helper/AssetCompressHelper.php"
@@ -47,7 +43,7 @@ class TestDiffCollection(TestCase):
         self.assertEqual(expected, result)
 
     def test_get_files__two_files(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         result = changes.get_files()
         expected = [
             "Console/Command/Task/AssetBuildTask.php",
@@ -56,7 +52,7 @@ class TestDiffCollection(TestCase):
         self.assertEqual(expected, result)
 
     def test_get_files__two_files__ignore_pattern(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         expected = [
             "Console/Command/Task/AssetBuildTask.php",
         ]
@@ -75,17 +71,17 @@ class TestDiffCollection(TestCase):
         self.assertEqual(expected, result)
 
     def test_has_line_changed__no_file(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         self.assertFalse(changes.has_line_changed('derp', 99))
 
     def test_has_line_changed__no_line(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         self.assertFalse(changes.has_line_changed(
             'Console/Command/Task/AssetBuildTask.php',
             99999))
 
     def test_has_line_changed__two_files(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         filename = 'Console/Command/Task/AssetBuildTask.php'
 
         # True for additions
@@ -100,33 +96,32 @@ class TestDiffCollection(TestCase):
 
     def test_has_line_changed__single_line(self):
         filename = 'some.js'
-        pull_file = create_pull_files(self.single_line_add_json)
-        changes = DiffCollection(pull_file)
+        changes = parse_diff(self.single_line_add)
 
         self.assertTrue(changes.has_line_changed(filename, 1))
         self.assertFalse(changes.has_line_changed(filename, 0))
         self.assertFalse(changes.has_line_changed(filename, 2))
 
     def test_parsing_diffs_removed__file(self):
-        changes = DiffCollection(self.removed_files)
+        changes = parse_diff(self.removed_files)
         self.assertEqual(0, len(changes),
                          'Should be no files as the file was removed')
         self.assertEqual([], changes.get_files())
 
     def test_parsing_diffs__renamed_file_and_blob(self):
-        changes = DiffCollection(self.renamed_files)
-        self.assertEqual(0, len(changes),
-                         'Should be no files as a blob and a rename happened')
-        self.assertEqual([], changes.get_files())
+        changes = parse_diff(self.renamed_files)
+        assert len(changes) == 0, 'Should be no files as a blob and a rename happened'
+        assert [] == changes.get_files()
 
     @patch('lintreview.diff.log')
     def test_parsing_diffs__renamed_file_and_blob_no_log(self, log):
-        DiffCollection(self.renamed_files)
+        diff = parse_diff(self.renamed_files)
+        assert len(diff) == 0
         self.assertEqual(False, log.warn.called)
         self.assertEqual(False, log.error.called)
 
     def test_first_changed_line(self):
-        changes = DiffCollection(self.two_files)
+        changes = parse_diff(self.two_files)
         filename = 'Console/Command/Task/AssetBuildTask.php'
 
         assert changes.first_changed_line('not there') is None
@@ -147,21 +142,19 @@ class TestDiffCollection(TestCase):
 
 
 class TestDiff(TestCase):
-
-    fixture_json = load_fixture('one_file_pull_request.json')
-    two_files_json = load_fixture('two_file_pull_request.json')
+    one_file = load_fixture('diff/one_file_pull_request.txt')
+    two_files = load_fixture('diff/two_file_pull_request.txt')
 
     # Block offset so lines don't match offsets
-    block_offset = load_fixture('pull_request_line_offset.json')
+    block_offset = load_fixture('diff/pull_request_line_offset.txt')
 
     def setUp(self):
-        res = create_pull_files(self.fixture_json)
-        self.diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diffs = parse_diff(self.one_file)
+        self.diff = diffs[0]
 
     def test_parse_diff__no_input(self):
-        with self.assertRaises(ParseError) as ctx:
+        with pytest.raises(ParseError):
             parse_diff('')
-        self.assertIn('No diff', str(ctx.exception))
 
     def test_parse_diff__headers_removed(self):
         data = load_fixture('diff/one_file.txt')
@@ -222,17 +215,13 @@ class TestDiff(TestCase):
             parse_diff(data)
         self.assertIn('Could not parse', str(ctx.exception))
 
-    def test_properties(self):
+    def test_filename(self):
         self.assertEqual("View/Helper/AssetCompressHelper.php",
                          self.diff.filename)
-        expected = '7f73f381ad3284eeb5a23d3a451b5752c957054c'
-        self.assertEqual(expected, self.diff.commit)
 
     def test_patch_property(self):
-        res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
-
-        self.assertEqual(res[0].patch, diff.patch)
+        diff = parse_diff(self.one_file)[0]
+        assert diff.patch in self.one_file
 
     def test_as_diff__one_hunk(self):
         data = load_fixture('diff/no_intersect_updated.txt')
@@ -257,8 +246,7 @@ class TestDiff(TestCase):
         self.assertTrue(self.diff.has_line_changed(464))
 
     def test_has_line_changed__not_find_deletes(self):
-        res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diff = parse_diff(self.two_files)[0]
 
         self.assertTrue(diff.has_line_changed(117))
         # No unchanged lines.
@@ -269,24 +257,21 @@ class TestDiff(TestCase):
         self.assertFalse(diff.has_line_changed(148))
 
     def test_has_line_changed__blocks_offset(self):
-        res = create_pull_files(self.block_offset)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diff = parse_diff(self.block_offset)[0]
 
         self.assertTrue(diff.has_line_changed(32))
         self.assertEqual(26, diff.line_position(23))
         self.assertEqual(40, diff.line_position(32))
 
     def test_added_lines(self):
-        res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diff = parse_diff(self.two_files)[0]
 
         adds = diff.added_lines()
         self.assertEqual(2, len(adds), 'incorrect addition length')
         self.assertEqual(set([117, 119]), adds, 'added line numbers are wrong')
 
     def test_deleted_lines(self):
-        res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diff = parse_diff(self.two_files)[0]
 
         dels = diff.deleted_lines()
         self.assertEqual(3, len(dels), 'incorrect deleted length')
@@ -297,8 +282,7 @@ class TestDiff(TestCase):
         self.assertEqual(set([117, 119]), overlap)
 
     def test_hunk_parsing(self):
-        res = create_pull_files(self.two_files_json)
-        diff = Diff(res[0].patch, res[0].filename, res[0].sha)
+        diff = parse_diff(self.two_files)[0]
 
         hunks = diff.hunks
         self.assertEqual(2, len(hunks))
@@ -316,10 +300,9 @@ class TestDiff(TestCase):
         self.assertEqual(diff.line_position(119), hunks[0].line_position(119))
 
     def test_construct_with_hunks_kwarg(self):
-        res = create_pull_files(self.two_files_json)[0]
-        proto = Diff(res.patch, res.filename, res.sha)
+        proto = parse_diff(self.two_files)[0]
 
-        diff = Diff(None, res.filename, res.sha, hunks=proto.hunks)
+        diff = Diff(None, proto.filename, None, hunks=proto.hunks)
         self.assertEqual(len(diff.hunks), len(proto.hunks))
         self.assertEqual(diff.hunks[0].patch, proto.hunks[0].patch)
 

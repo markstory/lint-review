@@ -35,6 +35,9 @@ class TestProcessor(TestCase):
         fixture = load_fixture('pull_request.json')
         model = PullRequest.from_json(fixture, self.session)
 
+        # TODO This needs to be adapted for local diffs
+        # Perhaps pull.read_diff can be added and mocked
+        # here?
         files = load_fixture('one_file_pull_request.json')
         model.files = lambda: create_pull_files(files)
 
