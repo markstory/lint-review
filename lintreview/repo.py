@@ -94,6 +94,11 @@ class GithubPullRequest(object):
         return data['head']['sha']
 
     @property
+    def base(self):
+        data = self.pull.as_dict()
+        return data['base']['sha']
+
+    @property
     def clone_url(self):
         """Get the clone url
 

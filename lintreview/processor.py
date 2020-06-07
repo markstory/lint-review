@@ -1,8 +1,11 @@
 from __future__ import absolute_import
+
 import logging
-import lintreview.tools as tools
+
+import lintreview.git as git
 import lintreview.fixers as fixers
-from lintreview.diff import DiffCollection
+import lintreview.tools as tools
+from lintreview.diff import DiffCollection, parse_diff
 from lintreview.fixers.error import ConfigurationError, WorkflowError
 from lintreview.review import Problems, Review, IssueComment, InfoComment
 
@@ -31,6 +34,18 @@ class Processor(object):
         log.debug('Loading pull request patches from github.')
         files = self._pull_request.files()
         self._changes = DiffCollection(files)
+        self.problems.set_changes(self._changes)
+
+    def parse_changes(self):
+        # TODO perhaps this should call a method on the PullRequest
+        # to get the diff? That would make it easier to mock the text diff
+        # with fixture files.
+        head = self._pull_request.head
+        base = self._pull_request.base
+        log.debug('Parsing changes between %s and %s', base, head)
+
+        diff_text = git.diff_commit_range(self._target_path, base, head)
+        self._changes = parse_diff(diff_text)
         self.problems.set_changes(self._changes)
 
     def run_tools(self):

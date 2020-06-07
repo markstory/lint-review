@@ -1,0 +1,7 @@
+diff --git a/images/example.png b/images/example.png
+new file mode 100644
+index 0000000000..13d54454e7
+Binary files /dev/null and b/images/example.png
+diff --git a/Test/test_files/View/Parse/singel.ctp b/Test/test_files/View/Parse/single.ctp
+rename from Test/test_files/View/Parse/singel.ctp
+rename to Test/test_files/View/Parse/single.ctp

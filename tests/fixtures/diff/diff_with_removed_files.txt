@@ -1,0 +1,4 @@
+diff --git a/Test/test_files/View/Parse/single.ctp b/Test/test_files/View/Parse/single.ctp
+deleted file mode 100644
+index 13d54454e7..0000000000
+Binary files a/Test/test_files/View/Parse/single.ctp and b/dev/null

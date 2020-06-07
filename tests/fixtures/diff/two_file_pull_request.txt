@@ -1,0 +1,42 @@
+diff --git a/Console/Command/Task/AssetBuildTask.php b/Console/Command/Task/AssetBuildTask.php
+index 1f65acd..caab2e0 100644
+--- a/Console/Command/Task/AssetBuildTask.php
++++ b/Console/Command/Task/AssetBuildTask.php
+index 1f65acd..caab2e0 100644
+@@ -114,9 +114,9 @@ public function scanFiles() {
+ 
+            $content = file_get_contents($file);
+            $tokens = token_get_all($content);
+-           foreach ($tokens as $token) {
++           foreach ($tokens as $i => $token) {
+                // found a helper method start grabbing tokens.
+-               if (is_array($token) && in_array($token[1], $this->helperTokens)) {
++               if (is_array($token) && in_array($token[1], $this->helperTokens) && is_array($tokens[$i+2]) && in_array($tokens[$i+2][1], $this->_methods)) {
+                     $capturing = true;
+                     $call = array();
+                 }
+@@ -145,10 +145,6 @@ public function parse() {
+ \n
+         foreach ($this->_tokens as $call) {
+             $method = $call[2][1];
+-            if (!in_array($method, $this->_methods)) {
+-                continue;
+-            }
+-
+             $args = array_slice($call, 3);
+ 
+             list($files, $build) = $this->_parseArgs($args);
+diff --git a/Test/test_files/View/Parse/single.ctp b/Test/test_files/View/Parse/single.ctp
+index 1f65acd..caab2e0 100644
+--- a/Test/test_files/View/Parse/single.ctp
++++ b/Test/test_files/View/Parse/single.ctp
+index 1f65acd..caab2e0 100644
+@@ -1,5 +1,9 @@
+ <?php
+ 
++if (isset($this->AssetCompress)) {
++    $available = true;
++}
++
+ $this->AssetCompress->addScript('one_file', 'single');
+ $this->AssetCompress->addScript('no_build');

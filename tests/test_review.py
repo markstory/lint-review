@@ -5,11 +5,10 @@ from mock import Mock, patch
 
 from . import load_fixture, fixer_ini
 from lintreview.config import load_config, build_review_config
-from lintreview.diff import DiffCollection
+from lintreview.diff import DiffCollection, parse_diff
 from lintreview.review import Review, Problems, Comment, IssueComment, InfoComment
 from lintreview.repo import GithubRepository, GithubPullRequest
 from github3.issues.comment import IssueComment as GhIssueComment
-from github3.pulls import PullFile
 from github3.session import GitHubSession
 
 config = load_config()
@@ -518,11 +517,10 @@ class TestReview(TestCase):
 
 
 class TestProblems(TestCase):
-
-    two_files_json = load_fixture('two_file_pull_request.json')
+    two_files = load_fixture('diff/two_file_pull_request.txt')
 
     # Block offset so lines don't match offsets
-    block_offset = load_fixture('pull_request_line_offset.json')
+    block_offset = load_fixture('diff/pull_request_line_offset.txt')
 
     def setUp(self):
         self.problems = Problems()
@@ -564,10 +562,7 @@ class TestProblems(TestCase):
         self.assertEqual(expected, result[0].body)
 
     def test_add__with_diff_containing_block_offset(self):
-        res = [
-            PullFile(f, self.session) for f in json.loads(self.block_offset)
-        ]
-        changes = DiffCollection(res)
+        changes = parse_diff(self.block_offset)
 
         problems = Problems(changes=changes)
         line_num = 32
@@ -618,10 +613,7 @@ class TestProblems(TestCase):
         assert 2 == len(self.problems)
 
     def test_limit_to_changes__remove_problems(self):
-        res = [
-            PullFile(f, self.session) for f in json.loads(self.two_files_json)
-        ]
-        changes = DiffCollection(res)
+        changes = parse_diff(self.two_files)
 
         # Setup some fake problems.
         filename_1 = 'Console/Command/Task/AssetBuildTask.php'
@@ -658,10 +650,7 @@ class TestProblems(TestCase):
         self.assertEqual(result, expected)
 
     def test_limit_to_changes__first_line_in_diff(self):
-        res = [
-            PullFile(f, self.session) for f in json.loads(self.two_files_json)
-        ]
-        changes = DiffCollection(res)
+        changes = parse_diff(self.two_files)
 
         # Add problems
         filename = 'Test/test_files/View/Parse/single.ctp'
