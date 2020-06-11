@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 import jprops
 import lintreview.docker as docker

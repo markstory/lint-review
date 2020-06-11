@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import lintreview.docker as docker
 from lintreview.review import IssueComment
 from lintreview.tools import Tool

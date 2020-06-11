@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import fnmatch
 import re
 import logging
@@ -328,7 +327,7 @@ class Hunk(object):
     Each Diff is made of multiple hunks of various sizes.
     Each Hunk begins with the ``@@`` delimiter.
     """
-    start_line_pattern = re.compile('\@\@ \-(\d+),\d+ \+(\d+)(?:,\d+)? \@\@')
+    start_line_pattern = re.compile(r'@@ -(\d+),\d+ \+(\d+)(?:,\d+)? @@')
 
     def __init__(self, header, patch, offset):
         self._header = header

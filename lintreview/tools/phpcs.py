@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-
 import os
-import six
 import logging
 
 from collections import namedtuple
@@ -134,7 +131,7 @@ class Phpcs(Tool):
         if not standard or standard not in OPTIONAL_PACKAGES:
             return image
 
-        if not isinstance(standard, six.string_types):
+        if not isinstance(standard, str):
             error = IssueComment(
                 u'The `phpcs.standard` option must be a string got `{}` instead.'.format(
                     standard.__class__.__name__

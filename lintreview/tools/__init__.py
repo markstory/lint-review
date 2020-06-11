@@ -1,8 +1,6 @@
-from __future__ import absolute_import
 import logging
 import os
 import collections
-import six
 
 import lintreview.docker as docker
 
@@ -232,9 +230,6 @@ def _parse_xml(xml):
         # Some tools return "" if no errors are found
         return
     try:
-        # Needed for Python 2.7; http://bugs.python.org/issue11033
-        if isinstance(xml, six.text_type):
-            xml = xml.encode('utf-8')
         return ElementTree.fromstring(xml)
     except Exception:
         if len(xml) > 8192:
@@ -312,7 +307,7 @@ def stringify(value):
     because of how it handles options we have to do bad things
     with string concatenation.
     """
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
         return value
     if isinstance(value, collections.Iterable):
         return ','.join(value)
@@ -325,7 +320,7 @@ def commalist(value):
     If ``value`` is already a list or tuple it will
     be returned.
     """
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
         return [v.strip() for v in value.split(',')]
     if isinstance(value, (set, list)):
         return value

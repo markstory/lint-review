@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from tests import load_fixture, create_commits
 from lintreview.review import Problems
 from lintreview.review import IssueComment

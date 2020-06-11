@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 from lintreview.review import Comment, Problems
 from lintreview.tools.foodcritic import Foodcritic

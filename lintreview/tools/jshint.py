@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 from lintreview.tools import Tool, process_checkstyle
 import lintreview.docker as docker

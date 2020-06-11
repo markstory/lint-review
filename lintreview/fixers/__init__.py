@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.diff import parse_diff, Diff
 from lintreview.fixers.commit_strategy import CommitStrategy
 from lintreview.fixers.error import ConfigurationError

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.pytype import Pytype
 from unittest import TestCase

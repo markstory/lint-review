@@ -1,10 +1,9 @@
-from __future__ import absolute_import
 import os
 import logging.config
 
 from flask.config import Config
-from six.moves.configparser import ConfigParser
-from six import StringIO
+from configparser import ConfigParser
+from io import StringIO
 
 
 def load_config():
@@ -218,7 +217,7 @@ class ReviewConfig(object):
         ini_config is assumed to be a string of the ini file contents.
         """
         parser = ConfigParser()
-        parser.readfp(StringIO(ini_config))
+        parser.read_file(StringIO(ini_config))
         data = {
             'linters': {},
             'files': {},

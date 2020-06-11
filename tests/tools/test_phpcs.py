@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from lintreview import docker
 from lintreview.review import Problems, Comment
 from lintreview.tools.phpcs import Phpcs

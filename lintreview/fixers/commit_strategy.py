@@ -1,8 +1,6 @@
-from __future__ import absolute_import
 from lintreview.fixers.error import WorkflowError
 import lintreview.git as git
 import logging
-import six
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +39,7 @@ class CommitStrategy(object):
         try:
             git.push(self.path, 'origin', u'stylefixes:{}'.format(remote_branch))
         except IOError as err:
-            message = six.text_type(err)
+            message = str(err)
             log.debug(message)
             if '(permission denied)' in message:
                 raise WorkflowError(
