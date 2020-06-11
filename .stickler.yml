@@ -1,7 +1,9 @@
 linters:
   flake8:
     config: ./.flake8
+    fixer: true
   rubocop: {  }
+
 files:
   ignore:
     - 'bower_components/*'
@@ -11,3 +13,6 @@ files:
     - 'tests/fixtures/py3k/*'
     - 'tests/fixtures/pytype/*'
     - 'tests/fixtures/rubocop/*'
+
+fixers:
+  enable: true
