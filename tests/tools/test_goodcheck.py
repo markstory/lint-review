@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.review import Comment, Problems
 from lintreview.tools.goodcheck import Goodcheck
 from tests import (

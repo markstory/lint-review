@@ -1,11 +1,9 @@
-from __future__ import absolute_import
 import os
 import logging
 import shutil
 import subprocess
-import six
 from functools import wraps
-from six.moves.urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 log = logging.getLogger(__name__)
 buildlog = logging.getLogger('buildlog')
@@ -269,7 +267,7 @@ def _process(command, input_val=None, chdir=False):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=False)
-    if isinstance(input_val, six.string_types):
+    if isinstance(input_val, str):
         input_val = input_val.encode('utf8')
     output, error = process.communicate(input=input_val)
     return_code = process.returncode

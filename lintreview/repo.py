@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import lintreview.github as github
 import logging
 import json

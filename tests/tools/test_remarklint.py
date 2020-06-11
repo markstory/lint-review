@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.tools.remarklint import Remarklint
 from unittest import TestCase

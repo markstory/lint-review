@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.tools import Tool
 from lintreview.review import IssueComment
 from lintreview.config import load_config

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import json
 from mock import call, Mock
 from unittest import TestCase

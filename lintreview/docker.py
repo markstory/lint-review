@@ -1,12 +1,9 @@
-from __future__ import absolute_import
-
 import re
 import os
 import logging
 import hashlib
 from typing import Dict, List, Optional  # noqa: F401
 
-import six
 import docker
 from docker.errors import (
     ImageNotFound,
@@ -124,7 +121,7 @@ def run(image,                     # type: str
 
     run_args = {
         'image': image,
-        'command': [six.text_type(c) for c in command],
+        'command': [str(c) for c in command],
         'environment': env,
         'volumes': {source_dir: {'bind': docker_base, 'mode': 'rw'}},
         'stdout': True,
@@ -165,15 +162,12 @@ def run(image,                     # type: str
         output += container.logs(stdout=True, stderr=False)
     except (APIError, ReadTimeout, ConnectionError) as e:
         log.error("%s container timed out error=%s.", image, e)
-        raise TimeoutError(six.text_type(e))
+        raise TimeoutError(str(e))
     finally:
         if name is None:
             container.remove(v=True, force=True)
 
-    # Workaround for bytestr in py2 and str in py3
-    if isinstance(output, six.binary_type):
-        return output.decode('utf8')
-    return output
+    return output.decode('utf8')
 
 
 def rm_container(name):

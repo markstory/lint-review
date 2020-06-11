@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-import logging
 import lintreview.docker as docker
 
 from lintreview.tools import Tool

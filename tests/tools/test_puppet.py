@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.review import Problems, Comment
 from lintreview.tools.puppet import Puppet
 from unittest import TestCase

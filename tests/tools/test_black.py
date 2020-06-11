@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from lintreview.review import Problems
 from lintreview.tools.black import Black
 from unittest import TestCase

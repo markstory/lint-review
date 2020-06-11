@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import os
 import pytest
 from unittest import TestCase

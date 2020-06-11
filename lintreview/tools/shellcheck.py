@@ -1,8 +1,6 @@
-from __future__ import absolute_import
 import os
 import lintreview.docker as docker
 from lintreview.tools import Tool,  process_checkstyle
-from six.moves import map
 
 
 class Shellcheck(Tool):
@@ -44,7 +42,7 @@ class Shellcheck(Tool):
         list(map(self.escape_backtick, self.problems))
 
     def escape_backtick(self, problem):
-        problem.body = problem.body.replace('`', '\`')
+        problem.body = problem.body.replace('`', '\\`')
 
     def create_command(self, files):
         command = ['shellcheck']
