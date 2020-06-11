@@ -11,7 +11,7 @@ and updates pull requests with line comments where lint errors would be introduc
 
 Lint Review requires:
 
-* Python 2.7 or Python 3.6+
+* Python 3.6+
 * RabbitMQ (or any other Message broker that is compatible with Celery)
 * A publically addressable hostname/IP that either GitHub or your github:enterprise
   can reach.
