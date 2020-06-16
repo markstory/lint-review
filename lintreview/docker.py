@@ -139,7 +139,7 @@ def run(image,                     # type: str
         run_args['user'] = os.getuid()
 
     if CUSTOM_IMAGE_PATTERN.match(image):
-        buildlog.info('Using custom image %', image)
+        buildlog.info('Using custom image %s', image)
 
     # Only log the first 15 parameters.
     buildlog.info('Running container: %s', u' '.join(run_args['command'][0:15]))
