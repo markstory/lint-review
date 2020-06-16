@@ -115,7 +115,7 @@ def diff_commit_range(path, base, head):
     Use lintreview.diff.parse_diff if you need to create
     objects out of the diff output.
     """
-    command = ['git', 'diff', '{}...{}'.format(base, head)]
+    command = ['git', 'diff', '{}..{}'.format(base, head)]
     return_code, output = _process(command, chdir=path)
     if return_code:
         raise IOError(u"Unable to generate diff '{}'".format(output))
