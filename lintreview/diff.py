@@ -55,7 +55,7 @@ def parse_file_diff(chunk):
         patch.append(line)
     if no_changes:
         return None
-    if not patch:
+    if not patch and filename:
         msg = u'Could not parse diff for {}'.format(filename)
         raise ParseError(msg)
 

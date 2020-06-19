@@ -1,0 +1,16 @@
+diff --git a/app/__init__.py b/app/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/app/models.py b/app/models.py
+index fa9a814..769886c 100644
+--- a/app/models.py
++++ b/app/models.py
+@@ -1,6 +1,8 @@
+ import re
+
+ from django.core.exceptions import ValidationError
++from django.contrib.postgres.fields import JSONField
++from django.db import models
+ from django.utils.translation import ugettext as _
+
+ from app.ext.things import (

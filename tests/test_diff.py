@@ -22,6 +22,8 @@ class TestDiffCollection(TestCase):
 
     single_line_add = load_fixture('diff/diff_single_line_add.txt')
 
+    new_empty_file = load_fixture('diff/new_empty_file.txt')
+
     def test_create_one_element(self):
         changes = parse_diff(self.one_file)
         self.assertEqual(1, len(changes))
@@ -98,7 +100,14 @@ class TestDiffCollection(TestCase):
 
         self.assertTrue(changes.has_line_changed(filename, 1))
         self.assertFalse(changes.has_line_changed(filename, 0))
+
         self.assertFalse(changes.has_line_changed(filename, 2))
+
+    def test_parse_diff_empty_file(self):
+        changes = parse_diff(self.new_empty_file)
+        self.assertEqual(1, len(changes))
+        self.assert_instances(changes, 1, Diff)
+        assert changes[0].filename == 'app/models.py'
 
     def test_parsing_diffs_removed__file(self):
         changes = parse_diff(self.removed_files)
@@ -117,6 +126,49 @@ class TestDiffCollection(TestCase):
         assert len(diff) == 0
         self.assertEqual(False, log.warn.called)
         self.assertEqual(False, log.error.called)
+
+    def test_parse_diff__no_input(self):
+        with pytest.raises(ParseError):
+            parse_diff('')
+
+    def test_parse_diff__changed_lines_parsed(self):
+        data = load_fixture('diff/one_file.txt')
+        out = parse_diff(data)
+
+        assert isinstance(out, DiffCollection)
+        change = out.all_changes('tests/test_diff.py')
+        self.assertEqual(1, len(change))
+
+        expected = set([6, 9, 10, 55])
+        self.assertEqual(expected, change[0].deleted_lines())
+
+    def test_parse_diff__multiple_files(self):
+        data = load_fixture('diff/two_files.txt')
+        out = parse_diff(data)
+        self.assertEqual(2, len(out))
+        self.assertEqual(['lintreview/git.py', 'tests/test_git.py'],
+                         out.get_files())
+
+        for change in out:
+            assert change.filename, 'has a filename'
+            assert change.commit is None, 'No commit'
+            self.assertNotIn('git --diff', change.patch)
+            self.assertNotIn('index', change.patch)
+            self.assertNotIn('--- a', change.patch)
+            self.assertNotIn('+++ b', change.patch)
+            self.assertIn('@@', change.patch)
+        change = out.all_changes('tests/test_git.py')[0]
+        self.assertEqual({205, 206, 207, 208, 209, 210, 211, 212, 213},
+                         change.added_lines())
+
+    def test_parse_diff__bad_input(self):
+        data = """diff --git a/app/models.py b/app/models.py
+index fa9a814..769886c 100644
+--- a/app/models.py
++++ b/app/models.py"""
+        with self.assertRaises(ParseError) as ctx:
+            parse_diff(data)
+        self.assertIn('Could not parse', str(ctx.exception))
 
     def test_first_changed_line(self):
         changes = parse_diff(self.two_files)
@@ -150,10 +202,6 @@ class TestDiff(TestCase):
         diffs = parse_diff(self.one_file)
         self.diff = diffs[0]
 
-    def test_parse_diff__no_input(self):
-        with pytest.raises(ParseError):
-            parse_diff('')
-
     def test_parse_diff__headers_removed(self):
         data = load_fixture('diff/one_file.txt')
         out = parse_diff(data)
@@ -174,44 +222,6 @@ class TestDiff(TestCase):
         self.assertNotIn('--- a', change[0].patch)
         self.assertNotIn('+++ b', change[0].patch)
         self.assertIn('@@', change[0].patch)
-
-    def test_parse_diff__changed_lines_parsed(self):
-        data = load_fixture('diff/one_file.txt')
-        out = parse_diff(data)
-
-        assert isinstance(out, DiffCollection)
-        change = out.all_changes('tests/test_diff.py')
-        self.assertEqual(1, len(change))
-
-        expected = set([6, 9, 10, 55])
-        self.assertEqual(expected, change[0].deleted_lines())
-
-    def test_parse_diff__multiple_files(self):
-        data = load_fixture('diff/two_files.txt')
-        out = parse_diff(data)
-        self.assertEqual(2, len(out))
-        self.assertEqual(['lintreview/git.py', 'tests/test_git.py'],
-                         out.get_files())
-
-        for change in out:
-            assert change.filename, 'has a filename'
-            assert change.commit is None, 'No commit'
-            self.assertNotIn('git --diff', change.patch)
-            self.assertNotIn('index', change.patch)
-            self.assertNotIn('--- a', change.patch)
-            self.assertNotIn('+++ b', change.patch)
-            self.assertIn('@@', change.patch)
-        change = out.all_changes('tests/test_git.py')[0]
-        self.assertEqual({205, 206, 207, 208, 209, 210, 211, 212, 213},
-                         change.added_lines())
-
-    def test_parse_diff__bad_input(self):
-        data = """
-        some dumb stuff
-        """
-        with self.assertRaises(ParseError) as ctx:
-            parse_diff(data)
-        self.assertIn('Could not parse', str(ctx.exception))
 
     def test_filename(self):
         self.assertEqual("View/Helper/AssetCompressHelper.php",
