@@ -24,10 +24,10 @@ class TimeoutError(Exception):
     """Exception for when we timeout waiting for docker."""
 
 
-def _get_client():
+def _get_client(timeout=60):
     # type: () -> docker.DockerClient
     """Get a docker client."""
-    return docker.from_env()
+    return docker.from_env(timeout=timeout)
 
 
 def replace_basedir(base, files):
@@ -194,10 +194,11 @@ def rm_image(name):
         raise ValueError("Could not remove: {0}".format(name))
 
 
-def commit(name):
+def commit(name, timeout=120):
     # type: (str) -> None
     """Commit a container state into a new images."""
-    client = _get_client()
+    client = _get_client(timeout=timeout)
+    log.info('Commiting new image for %s', name)
     try:
         container = client.containers.get(name)
         container.commit(repository=name)
