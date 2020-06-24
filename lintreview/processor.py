@@ -34,16 +34,18 @@ class Processor(object):
         self._changes = DiffCollection(files)
         self.problems.set_changes(self._changes)
 
-    def parse_changes(self):
+    def parse_local_changes(self):
         # TODO perhaps this should call a method on the PullRequest
         # to get the diff? That would make it easier to mock the text diff
         # with fixture files.
         head = self._pull_request.head
         base = self._pull_request.base
-        log.debug('Parsing changes between %s and %s', base, head)
 
         diff_text = git.diff_commit_range(self._target_path, base, head)
-        self._changes = parse_diff(diff_text)
+        return parse_diff(diff_text)
+
+    def parse_changes(self):
+        self._changes = self.parse_local_changes()
         self.problems.set_changes(self._changes)
 
     def run_tools(self):
