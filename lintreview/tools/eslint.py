@@ -85,7 +85,7 @@ class Eslint(Tool):
             self.custom_image = container_name
 
             installed = [
-                line.strip('add:')
+                line.strip('add:').strip()
                 for line in output.splitlines()
                 if line.startswith('add:')
             ]
