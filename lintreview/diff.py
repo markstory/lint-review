@@ -42,7 +42,7 @@ def parse_file_diff(chunk):
         if line.startswith('---') or line.startswith('index'):
             continue
         if line.startswith('+++'):
-            filename = line[6:]
+            filename = line[6:].strip()
             continue
         if line.startswith('Binary files'):
             no_changes = True
