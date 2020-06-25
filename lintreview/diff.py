@@ -13,6 +13,9 @@ DiffAdapter = namedtuple(
      'additions', 'deletions', 'changes')
 )
 
+block_pattern = re.compile(r'diff \-\-git a/.* b/.*')
+filename_pattern = re.compile(r'^[+]{3}\s*(?:[ab]/)?(.*)$')
+
 
 def parse_diff(text):
     """Parse the output of `git diff` into
@@ -20,8 +23,7 @@ def parse_diff(text):
     """
     if not text:
         raise ParseError('No diff provided')
-    file_pattern = r'diff \-\-git a/.* b/.*'
-    blocks = re.split(file_pattern, text)
+    blocks = re.split(block_pattern, text)
     diffs = []
     for chunk in blocks:
         if len(chunk) == 0:
@@ -34,20 +36,25 @@ def parse_diff(text):
 
 
 def parse_file_diff(chunk):
-    filename = None
     no_changes = False
+    filename = None
     patch = []
-    for line in chunk.split('\n'):
+    chunks = chunk.lstrip().split('\n')
+
+    # Skip deleted and renamed files.
+    first_line = chunks[0]
+    if first_line.startswith('deleted file') or first_line.startswith('rename from'):
+        return None
+
+    for line in chunks:
         # Ignore the - filename and index refspec
         if line.startswith('---') or line.startswith('index'):
             continue
         if line.startswith('+++'):
-            filename = line[6:].strip()
+            match = filename_pattern.match(line)
+            filename = match.group(1).strip()
             continue
         if line.startswith('Binary files'):
-            no_changes = True
-            continue
-        if line.startswith('rename from'):
             no_changes = True
             continue
         if not filename:

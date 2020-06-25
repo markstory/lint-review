@@ -2,3 +2,13 @@ diff --git a/Test/test_files/View/Parse/single.ctp b/Test/test_files/View/Parse/
 deleted file mode 100644
 index 13d54454e7..0000000000
 Binary files a/Test/test_files/View/Parse/single.ctp and b/dev/null
+diff --git a/lib/scraper.rb b/lib/scraper.rb
+deleted file mode 100644
+index 612baf7..0000000
+--- a/lib/scraper.rb
++++ /dev/null
+@@ -1,3 +0,0 @@
+-def scraper
+-
+-end
+\ No newline at end of file
