@@ -277,4 +277,4 @@ def _process(command, input_val=None, chdir=False):
     if return_code > 0:
         log.error('STDERR output: %s', error)
 
-    return return_code, (output + error).decode('utf-8')
+    return return_code, (output + error).decode('utf-8', 'ignore')
