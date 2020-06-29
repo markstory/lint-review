@@ -22,6 +22,7 @@ before_install:
   - docker tag markstory/swiftlint swiftlint
 
 install:
+  - git fetch aa7a9d074132280b54c0eee67221bb955adaaeaf
   - pip install -r requirements-dev.txt
   - pip install .
   # Sample config file
