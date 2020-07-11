@@ -1,13 +1,20 @@
 import os
 import re
+from functools import cached_property
+
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_checkstyle
+from lintreview.tools import Tool, process_checkstyle, extract_version
 import lintreview.docker as docker
 
 
 class Tslint(Tool):
 
     name = 'tslint'
+
+    @cached_property
+    def version(self):
+        output = docker.run('nodejs', ['tslint', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

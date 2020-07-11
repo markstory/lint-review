@@ -1,8 +1,11 @@
 import os
+from functools import cached_property
+
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
-    process_pmd
+    process_pmd,
+    extract_version
 )
 import lintreview.docker as docker
 
@@ -10,6 +13,11 @@ import lintreview.docker as docker
 class Phpmd(Tool):
 
     name = 'phpmd'
+
+    @cached_property
+    def version(self):
+        output = docker.run('php', ['phpmd', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

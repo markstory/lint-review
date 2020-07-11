@@ -16,6 +16,9 @@ class TestPuppet(TestCase):
         self.problems = Problems()
         self.tool = Puppet(self.problems, {}, root_dir)
 
+    def test_version(self):
+        assert self.tool.version != ''
+
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('dir/name/test.py'))

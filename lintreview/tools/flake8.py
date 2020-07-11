@@ -1,10 +1,12 @@
 import logging
 import os
+from functools import cached_property
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
 from lintreview.tools import (
     Tool,
+    extract_version,
     process_quickfix,
     python_image,
 )
@@ -45,6 +47,11 @@ class Flake8(Tool):
         'flake8-tidy-imports',
         'flake8-docstrings',
     )
+
+    @cached_property
+    def version(self):
+        output = docker.run('python3', ['flake8', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

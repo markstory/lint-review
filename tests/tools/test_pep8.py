@@ -15,6 +15,9 @@ class TestPep8(TestCase):
         self.problems = Problems()
         self.tool = Pep8(self.problems, {}, root_dir)
 
+    def test_version(self):
+        assert self.tool.version != ''
+
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))
         self.assertFalse(self.tool.match_file('test.js'))

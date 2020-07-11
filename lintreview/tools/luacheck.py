@@ -1,17 +1,21 @@
 import os
+from functools import cached_property
+
 import lintreview.docker as docker
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_quickfix
+from lintreview.tools import Tool, process_quickfix, extract_version
 
 
 class Luacheck(Tool):
 
     name = 'luacheck'
 
+    @cached_property
+    def version(self):
+        output = docker.run('luacheck', ['luacheck', '--version'], self.base_path)
+        return extract_version(output)
+
     def check_dependencies(self):
-        """
-        See if luacheck image exists
-        """
         return docker.image_exists('luacheck')
 
     def match_file(self, filename):

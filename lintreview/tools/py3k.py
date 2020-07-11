@@ -1,8 +1,11 @@
 import os
 import logging
-import lintreview.docker as docker
 import re
-from lintreview.tools import Tool, process_quickfix, stringify
+
+from functools import cached_property
+
+import lintreview.docker as docker
+from lintreview.tools import Tool, process_quickfix, stringify, extract_version
 
 buildlog = logging.getLogger('buildlog')
 
@@ -15,6 +18,11 @@ class Py3k(Tool):
     """
 
     name = 'py3k'
+
+    @cached_property
+    def version(self):
+        output = docker.run('python2', ['pylint', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

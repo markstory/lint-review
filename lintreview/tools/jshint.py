@@ -1,11 +1,18 @@
 import os
-from lintreview.tools import Tool, process_checkstyle
+from functools import cached_property
+
+from lintreview.tools import Tool, process_checkstyle, extract_version
 import lintreview.docker as docker
 
 
 class Jshint(Tool):
 
     name = 'jshint'
+
+    @cached_property
+    def version(self):
+        output = docker.run('nodejs', ['jshint', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

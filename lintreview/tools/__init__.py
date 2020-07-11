@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import collections
 
 import lintreview.docker as docker
@@ -9,6 +10,18 @@ from xml.etree import ElementTree
 
 log = logging.getLogger(__name__)
 buildlog = logging.getLogger('buildlog')
+
+version_re = re.compile(r'([\d]+[\d.a-z]+)')
+
+
+def extract_version(text):
+    """
+    Extract the first matching version number from text.
+    """
+    match = version_re.search(text)
+    if match:
+        return match.group(1)
+    return ''
 
 
 class Tool(object):
@@ -30,6 +43,15 @@ class Tool(object):
         executable or other dependencies.
         """
         return True
+
+    @property
+    def version(self):
+        """
+        Get the version number for the tool. Implementations
+        should consider using functools.cached_property to
+        avoid wasting time.
+        """
+        return ''
 
     def execute(self, files):
         """
@@ -190,6 +212,8 @@ def run(lint_tools, files, commits):
     log.info('Running for %d files', len(files))
     for tool in lint_tools:
         previous_total = len(tool.problems)
+        if tool.version:
+            buildlog.info('%s version is: %s', tool.name, tool.version)
         tool.execute(files)
         tool.execute_commits(commits)
         buildlog.info('%s added %s review notes', tool.name, len(tool.problems) - previous_total)

@@ -1,11 +1,18 @@
 import os
+from functools import cached_property
+
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_checkstyle
+from lintreview.tools import Tool, process_checkstyle, extract_version
 
 
 class Ktlint(Tool):
 
     name = 'ktlint'
+
+    @cached_property
+    def version(self):
+        output = docker.run('ktlint', ['ktlint', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

@@ -16,6 +16,9 @@ class Testluacheck(TestCase):
         self.problems = Problems()
         self.tool = Luacheck(self.problems, {}, root_dir)
 
+    def test_version(self):
+        assert self.tool.version != ''
+
     def test_match_file(self):
         self.assertTrue(self.tool.match_file('test.lua'))
         self.assertTrue(self.tool.match_file('dir/name/test.lua'))

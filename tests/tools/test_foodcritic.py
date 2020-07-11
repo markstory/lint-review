@@ -15,6 +15,9 @@ class TestFoodcritic(TestCase):
     def setUp(self):
         self.problems = Problems()
 
+    def test_version(self):
+        assert self.tool.version != ''
+
     @requires_image('ruby2')
     def test_process_cookbook_pass__no_path(self):
         self.tool = Foodcritic(self.problems,

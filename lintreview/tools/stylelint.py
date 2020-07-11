@@ -1,13 +1,19 @@
 import os
+from functools import cached_property
 
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_quickfix
+from lintreview.tools import Tool, process_quickfix, extract_version
 import lintreview.docker as docker
 
 
 class Stylelint(Tool):
 
     name = 'stylelint'
+
+    @cached_property
+    def version(self):
+        output = docker.run('nodejs', ['stylelint', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """
