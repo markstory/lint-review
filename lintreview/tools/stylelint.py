@@ -1,5 +1,5 @@
 import os
-from functools import cached_property
+from cached_property import cached_property
 
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix, extract_version

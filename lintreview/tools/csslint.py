@@ -1,6 +1,6 @@
 import os
 import re
-from functools import cached_property
+from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.tools import Tool, stringify, extract_version

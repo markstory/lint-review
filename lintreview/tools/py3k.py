@@ -2,7 +2,7 @@ import os
 import logging
 import re
 
-from functools import cached_property
+from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix, stringify, extract_version

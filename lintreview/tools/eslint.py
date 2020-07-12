@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from functools import cached_property
+from cached_property import cached_property
 
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle, commalist, extract_version

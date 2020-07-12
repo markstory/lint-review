@@ -1,6 +1,6 @@
 import os
 import logging
-from functools import cached_property
+from cached_property import cached_property
 
 import lintreview.docker as docker
 

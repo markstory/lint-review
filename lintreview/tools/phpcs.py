@@ -2,7 +2,7 @@ import os
 import logging
 
 from collections import namedtuple
-from functools import cached_property
+from cached_property import cached_property
 
 from lintreview import docker
 from lintreview.review import IssueComment

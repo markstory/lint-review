@@ -1,5 +1,5 @@
 import os
-from functools import cached_property
+from cached_property import cached_property
 
 from lintreview.tools import Tool, process_checkstyle, extract_version
 import lintreview.docker as docker
