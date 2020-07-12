@@ -16,6 +16,7 @@ class TestFoodcritic(TestCase):
         self.problems = Problems()
 
     def test_version(self):
+        self.tool = Foodcritic(self.problems, {}, root_dir)
         assert self.tool.version != ''
 
     @requires_image('ruby2')

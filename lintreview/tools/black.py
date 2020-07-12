@@ -12,7 +12,7 @@ class Black(Tool):
 
     @cached_property
     def version(self):
-        output = docker.run('python2', ['black', '--version'], self.base_path)
+        output = docker.run('python3', ['black', '--version'], self.base_path)
         return extract_version(output)
 
     def check_dependencies(self):

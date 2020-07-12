@@ -12,7 +12,7 @@ class Swiftlint(Tool):
 
     @cached_property
     def version(self):
-        output = docker.run('swiftlint', ['swiftlint', '--version'], self.base_path)
+        output = docker.run('swiftlint', ['swiftlint', 'version'], self.base_path)
         return extract_version(output)
 
     def check_dependencies(self):

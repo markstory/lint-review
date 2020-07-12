@@ -11,7 +11,7 @@ class Credo(Tool):
 
     @cached_property
     def version(self):
-        output = docker.run('credo', ['mix credo', '--version'], self.base_path)
+        output = docker.run('credo', ['mix', 'credo', '--version'], self.base_path)
         return extract_version(output)
 
     def check_dependencies(self):
