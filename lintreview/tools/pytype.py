@@ -2,8 +2,10 @@ import hashlib
 import os
 import re
 import logging
+from cached_property import cached_property
+
 import lintreview.docker as docker
-from lintreview.tools import Tool
+from lintreview.tools import Tool, extract_version
 from lintreview.review import IssueComment
 
 buildlog = logging.getLogger('buildlog')
@@ -12,6 +14,11 @@ buildlog = logging.getLogger('buildlog')
 class Pytype(Tool):
 
     name = 'pytype'
+
+    @cached_property
+    def version(self):
+        output = docker.run('pytype', ['pytype', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """See if the pytype image exists

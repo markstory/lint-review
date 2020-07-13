@@ -1,11 +1,17 @@
 import lintreview.docker as docker
+from cached_property import cached_property
 
-from lintreview.tools import Tool
+from lintreview.tools import Tool, extract_version
 
 
 class Foodcritic(Tool):
 
     name = 'foodcritic'
+
+    @cached_property
+    def version(self):
+        output = docker.run('ruby2', ['foodcritic', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """

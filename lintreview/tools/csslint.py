@@ -1,17 +1,21 @@
 import os
 import re
+from cached_property import cached_property
+
 import lintreview.docker as docker
-from lintreview.tools import Tool, stringify
+from lintreview.tools import Tool, stringify, extract_version
 
 
 class Csslint(Tool):
 
     name = 'csslint'
 
+    @cached_property
+    def version(self):
+        output = docker.run('nodejs', ['csslint', '--version'], self.base_path)
+        return extract_version(output)
+
     def check_dependencies(self):
-        """
-        See if nodejs image exists.
-        """
         return docker.image_exists('nodejs')
 
     def match_file(self, filename):

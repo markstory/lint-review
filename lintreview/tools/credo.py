@@ -1,19 +1,20 @@
 import os
+from cached_property import cached_property
+
 import lintreview.docker as docker
-from lintreview.tools import Tool, process_quickfix
+from lintreview.tools import Tool, process_quickfix, extract_version
 
 
 class Credo(Tool):
-    """
-    Run credo on files.
-    """
 
     name = 'credo'
 
+    @cached_property
+    def version(self):
+        output = docker.run('credo', ['mix', 'credo', '--version'], self.base_path)
+        return extract_version(output)
+
     def check_dependencies(self):
-        """
-        See if credo image exists
-        """
         return docker.image_exists('credo')
 
     def match_file(self, filename):

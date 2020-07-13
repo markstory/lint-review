@@ -1,8 +1,9 @@
 import os
 import re
+from cached_property import cached_property
 
 import lintreview.docker as docker
-from lintreview.tools import Tool
+from lintreview.tools import Tool, extract_version
 
 # matches: '  1:4  warning  Incorrect list-item indent: add 1 space  list-item-indent  remark-lint'
 # matches: '  18:71-19:1  error  Missing new line after list item  list-item-spacing  remark-lint',
@@ -13,6 +14,11 @@ filename_pattern = re.compile(r'^[\S]+.*$')
 class Remarklint(Tool):
 
     name = 'remarklint'
+
+    @cached_property
+    def version(self):
+        output = docker.run('nodejs', ['run-remark', '--version'], self.base_path)
+        return extract_version(output)
 
     def check_dependencies(self):
         """See if the node image exists

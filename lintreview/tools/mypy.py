@@ -1,16 +1,21 @@
 import os
+from cached_property import cached_property
+
 import lintreview.docker as docker
 from lintreview.review import IssueComment
-from lintreview.tools import Tool, process_quickfix, stringify
+from lintreview.tools import Tool, process_quickfix, stringify, extract_version
 
 
 class Mypy(Tool):
 
     name = 'mypy'
 
+    @cached_property
+    def version(self):
+        output = docker.run('python3', ['mypy', '--version'], self.base_path)
+        return extract_version(output)
+
     def check_dependencies(self):
-        """See if the python3 image exists
-        """
         return docker.image_exists('python3')
 
     def match_file(self, filename):

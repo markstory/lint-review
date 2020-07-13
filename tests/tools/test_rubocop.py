@@ -18,6 +18,9 @@ class TestRubocop(TestCase):
         self.problems = Problems()
         self.tool = Rubocop(self.problems, {}, root_dir)
 
+    def test_version(self):
+        assert self.tool.version != ''
+
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.py'))
         self.assertFalse(self.tool.match_file('dir/name/test.py'))
@@ -135,5 +138,5 @@ class TestRubocop(TestCase):
         tool.process_files(self.fixtures)
 
         read_and_restore_file(self.fixtures[1], original)
-        self.assertEqual(0, len(self.problems.all()),
+        self.assertEqual(1, len(self.problems.all()),
                          'Most errors should be fixed')
