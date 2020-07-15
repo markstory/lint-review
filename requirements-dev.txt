@@ -4,3 +4,4 @@ pytest-cov~=2.6
 mock~=2.0
 codecov
 coverage
+responses
