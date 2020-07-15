@@ -10,6 +10,8 @@
     "body": "Spacing is off here.  AssetCompress uses tabs for indentation.",
     "body_html": "<p>Spacing is off here.  AssetCompress uses tabs for indentation.</p>",
     "body_text": "Spacing is off here.  AssetCompress uses tabs for indentation.",
+    "diff_hunk": "",
+    "pull_request_url": "https://api.github.com/repos/markstory/asset_compress/pulls/1",
     "author_association": "OWNER",
     "_links": {
       "pull_request": {
@@ -56,6 +58,8 @@
     "body": "I changed the spaces to tabs.",
     "body_html": "<p>I changed the spaces to tabs.</p>",
     "body_text": "I changed the spaces to tabs.",
+    "diff_hunk": "",
+    "pull_request_url": "https://api.github.com/repos/markstory/asset_compress/pulls/1",
     "author_association": "CONTRIBUTOR",
     "_links": {
       "pull_request": {

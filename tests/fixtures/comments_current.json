@@ -10,6 +10,8 @@
     "body": "A pithy remark",
     "body_html": "<p>A pithy remark</p>",
     "body_text": "A pithy remark",
+    "diff_hunk": "",
+    "pull_request_url": "https://github.com/markstory/asset_compress/pulls/125",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
@@ -56,6 +58,8 @@
     "body": "Some witty comment.",
     "body_html": "<p>Some witty comment.</p>",
     "body_text": "Some witty comment.",
+    "diff_hunk": "",
+    "pull_request_url": "https://github.com/markstory/asset_compress/pulls/125",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
@@ -102,6 +106,8 @@
     "body": "Not such a good comment",
     "body_html": "<p>Not such a good comment</p>",
     "body_text": "Not such a good comment",
+    "diff_hunk": "",
+    "pull_request_url": "https://github.com/markstory/asset_compress/pulls/125",
     "user": {
       "type": "User",
       "followers_url": "https://api.github.com/users/markstory/followers",
