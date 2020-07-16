@@ -1,7 +1,6 @@
 import json
 import responses
 from unittest import TestCase
-from mock import Mock
 
 from . import load_fixture, fixer_ini
 from lintreview.config import load_config, build_review_config
@@ -17,14 +16,6 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        repo = Mock(spec=GithubRepository)
-        pr = Mock(spec=GithubPullRequest,
-                  head='abc123',
-                  display_name='markstory/lint-review#1',
-                  number=2)
-        repo.pull_request.return_value = pr
-
-        self.repo, self.pr = repo, pr
         self.config = build_review_config(fixer_ini, config)
 
         self.session = GitHubSession()
@@ -163,13 +154,12 @@ class TestReview(TestCase):
         url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
         responses.add(responses.POST, url, json={})
 
-        problems = Problems()
-
-        filename= 'Console/Command/Task/AssetBuildTask.php'
+        filename = 'Console/Command/Task/AssetBuildTask.php'
         errors = (
             Comment(filename, 117, 117, 'Something bad'),
             Comment(filename, 119, 119, 'Something bad'),
         )
+        problems = Problems()
         problems.add_many(errors)
 
         review = Review(repo, pull, self.config)
@@ -851,36 +841,6 @@ def assert_checkrun_data(request_data, errors):
     Check that the review comments match the error list.
     """
     actual = json.loads(request_data)
-    actual_annotations = actual['output']['annotations']
-    expected = []
-    for error in errors:
-        value = {
-            'message': error.body,
-            'path': error.filename,
-            'start_line': error.line,
-            'end_line': error.line,
-            'annotation_level': 'failure',
-        }
-        expected.append(value)
-
-    assert len(expected) == len(actual_annotations)
-    for i, item in enumerate(expected):
-        assert item == actual_annotations[i]
-
-    conclusion = 'success' if len(expected) == 0 else 'failure'
-    assert conclusion == actual['conclusion'], 'conclusion bad'
-    assert actual['completed_at'], 'required field completed_at missing'
-    assert actual['output']['title'], 'required field output.title missing'
-    assert 'summary' in actual['output'], 'required field output.summary missing'
-
-
-def assert_checkrun(call_args, errors, run_id, body=''):
-    """
-    Check that the review comments match the error list.
-    """
-    assert run_id == call_args[0][0], 'Runid should match'
-
-    actual = call_args[0][1]
     actual_annotations = actual['output']['annotations']
     expected = []
     for error in errors:
