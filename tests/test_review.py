@@ -27,6 +27,11 @@ class TestReview(TestCase):
             'https://api.github.com/repos/markstory/lint-test',
             json=json.loads(load_fixture('repository.json'))
         )
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/pulls/1',
+            json=json.loads(load_fixture('pull_request.json'))
+        )
         return GithubRepository(config, 'markstory', 'lint-test')
 
     def create_pull(self):
@@ -69,7 +74,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_load_comments__none_active(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         responses.add(
             responses.GET,
@@ -85,7 +90,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_load_comments__loads_comments(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         responses.add(
             responses.GET,
@@ -113,7 +118,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_filter_existing__removes_duplicates(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         responses.add(
             responses.GET,
@@ -149,7 +154,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_publish_pull_review(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
         responses.add(responses.POST, url, json={})
@@ -172,39 +177,36 @@ class TestReview(TestCase):
     @responses.activate
     def test_publish_pull_review__no_comments(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         problems = Problems()
-        sha = 'abc123'
-
         review = Review(repo, pull, self.config)
-        review.publish_pull_review(problems, sha)
+        review.publish_pull_review(problems, pull.head)
 
-        assert len(responses.calls) == 0
+        assert len(responses.calls) == 2
 
     @responses.activate
     def test_publish_pull_review__only_issue_comment(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
         responses.add(responses.POST, url, json={})
 
         problems = Problems()
         problems.add(IssueComment('Very bad'))
-        sha = 'abc123'
 
         review = Review(repo, pull, self.config)
-        review.publish_pull_review(problems, sha)
+        review.publish_pull_review(problems, pull.head)
 
         responses.assert_call_count(url, 1)
-        data = responses.calls[0].request.body
-        assert_review_data(data, [], sha, body='Very bad')
+        data = responses.calls[-1].request.body
+        assert_review_data(data, [], pull.head, body='Very bad')
 
     @responses.activate
     def test_publish__join_issue_comments(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         problems = Problems()
         url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
         responses.add(responses.POST, url, json={})
@@ -216,16 +218,15 @@ class TestReview(TestCase):
             IssueComment('Second'),
         )
         problems.add_many(errors)
-        sha = 'abc123'
         review = Review(repo, pull, self.config)
-        review.publish_pull_review(problems, sha)
+        review.publish_pull_review(problems, pull.head)
 
         responses.assert_call_count(url, 1)
-        data = responses.calls[0].request.body
+        data = responses.calls[-1].request.body
         assert_review_data(
             data,
             [errors[1]],
-            sha,
+            pull.head,
             body='First\n\nSecond')
 
     @responses.activate
@@ -238,7 +239,7 @@ class TestReview(TestCase):
         }
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         review_config = build_review_config(fixer_ini, app_config)
 
         sha = pull.head
@@ -250,7 +251,7 @@ class TestReview(TestCase):
 
         responses.assert_call_count(url, 1)
         responses.assert_call_count('https://api.github.com/repos/markstory/lint-test', 1)
-        assert len(responses.calls) == 2
+        assert len(responses.calls) == 3
 
     @responses.activate
     def test_publish_status__ok_with_comment_label(self):
@@ -262,7 +263,7 @@ class TestReview(TestCase):
         }
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         review_config = build_review_config(fixer_ini, app_config)
 
         self.stub_labels()
@@ -301,7 +302,7 @@ class TestReview(TestCase):
             'APP_NAME': 'custom-name'
         }
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         sha = pull.head
         status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
@@ -326,10 +327,9 @@ class TestReview(TestCase):
             'APP_NAME': 'custom-name'
         }
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
-        sha = pull.head
-        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
         responses.add(responses.POST, status_url, json={}, status=201)
 
         review_config = build_review_config(fixer_ini, app_config)
@@ -360,7 +360,7 @@ class TestReview(TestCase):
         review_config = build_review_config(fixer_ini, app_config)
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         self.stub_labels()
 
         status_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
@@ -381,7 +381,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_publish_review_empty_comment(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
         responses.add(responses.POST, status_url, json={}, status=201)
@@ -408,7 +408,7 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint',
         }
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         self.stub_labels()
 
         label_remove_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
@@ -417,20 +417,19 @@ class TestReview(TestCase):
         comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
         responses.add(responses.POST, comment_url, json={}, status=201)
 
-        sha = pull.head
-        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
         responses.add(responses.POST, status_url, json={}, status=201)
 
         problems = Problems(changes=DiffCollection([]))
         review_config = build_review_config(fixer_ini, app_config)
         review = Review(repo, pull, review_config)
 
-        review.publish_review(problems, sha)
+        review.publish_review(problems, pull.head)
 
         responses.assert_call_count(comment_url, 1)
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
-        data = responses.calls[-3].request.body
+        data = responses.calls[-2].request.body
         assert_comment(data, msg)
 
         responses.assert_call_count(status_url, 1)
@@ -440,7 +439,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_publish_review_comment_threshold_checks(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         app_config = {
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'SUMMARY_THRESHOLD': 1,
@@ -451,8 +450,7 @@ class TestReview(TestCase):
             'https://api.github.com/repos/markstory/lint-test/pulls/1/comments',
             json=json.loads(load_fixture('comments_current.json'))
         )
-        sha = pull.head
-        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
         responses.add(responses.POST, status_url, json={}, status=200)
 
         comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
@@ -469,10 +467,10 @@ class TestReview(TestCase):
 
         review_config = build_review_config(fixer_ini, app_config)
         review = Review(repo, pull, review_config)
-        review.publish_review(problems, sha)
+        review.publish_review(problems, pull.head)
 
         responses.assert_call_count(comment_url, 1)
-        data = json.loads(responses.calls[-3].request.body)
+        data = json.loads(responses.calls[-2].request.body)
         assert 'There are 2 errors:' in data['body']
 
         responses.assert_call_count(status_url, 1)
@@ -482,7 +480,7 @@ class TestReview(TestCase):
     @responses.activate
     def test_publish_summary(self):
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
         responses.add(responses.POST, comment_url, json={}, status=201)
@@ -529,7 +527,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         run_id = 42
         run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
@@ -539,7 +537,7 @@ class TestReview(TestCase):
         review.publish_checkrun(problems, run_id)
 
         responses.assert_call_count(run_url, 1)
-        body = responses.calls[1].request.body
+        body = responses.calls[-1].request.body
         assert_checkrun_data(body, problems)
 
     @responses.activate
@@ -558,7 +556,7 @@ class TestReview(TestCase):
         responses.add(responses.PATCH, run_url, json={}, status=200)
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         app_config = {
             'PULLREQUEST_STATUS': True,
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
@@ -611,7 +609,7 @@ class TestReview(TestCase):
         responses.add(responses.PATCH, run_url, json={}, status=200)
 
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
         review = Review(repo, pull, review_config)
         review.publish_checkrun(problems, run_id)
 
@@ -634,7 +632,7 @@ class TestReview(TestCase):
 
         problems = Problems()
         repo = self.create_repo()
-        pull = self.create_pull()
+        pull = repo.pull_request(1)
 
         review = Review(repo, pull, review_config)
         review.publish_checkrun(problems, run_id)
