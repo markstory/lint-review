@@ -145,19 +145,44 @@ class Comment(BaseComment):
 
 
 class Review(object):
-    """Holds the comments from a review can
-    add track problems logged and post new problems
+    """
+    Holds the comments from a review can
+    add/track problems logged and post new problems
     to github.
     """
 
     def __init__(self, repo, pull_request, config):
         self._repo = repo
+        # TODO remove this property and add a problems property
+        # that contains all the review notes. Remove problems from the Processor
         self._comments = Problems()
+        # TODO add diff collection to the review so that state is in fewer places.
+        # TODO rename to self.pull
         self._pr = pull_request
         self.config = config
 
     def comments(self, filename):
         return self._comments.all(filename)
+
+    def publish(self, problems, check_run_id=None, logs=None):
+        """
+        Publish the review.
+
+        Use the check_run_id to either publish a check suite result
+        or a commit status (deprecated)
+
+        The optional `logs` parameter is used by checkrun publishing
+        to update the result description with the logs.
+        """
+        problems.limit_to_changes()
+        if check_run_id:
+            self.publish_checkrun(
+                problems,
+                check_run_id)
+        else:
+            self.publish_review(
+                problems,
+                self._pr.head)
 
     def publish_checkrun(self, problems, check_run_id):
         """Publish the review as a checkrun
@@ -282,6 +307,9 @@ class Review(object):
         Results in a structure that is similar to the one used
         for problems
         """
+        # TODO Remove the comments property and have
+        # this method return the loaded comments as a Problems instance 
+        # to be used when scoping the new comments.
         log.debug("Loading comments for pull request '%s'", self._pr.number)
         comments = list(self._pr.review_comments())
 
@@ -491,7 +519,7 @@ class Problems(object):
                 lineno = changes.first_changed_line(err.filename)
                 err.line = lineno
                 err.position = changes.line_position(err.filename, lineno)
-            if changes.has_line_changed(err.filename, err.line):
+            if changes and changes.has_line_changed(err.filename, err.line):
                 return True
             return False
 
