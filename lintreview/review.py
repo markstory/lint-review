@@ -176,13 +176,9 @@ class Review(object):
         """
         problems.limit_to_changes()
         if check_run_id:
-            self.publish_checkrun(
-                problems,
-                check_run_id)
+            self.publish_checkrun(problems, check_run_id)
         else:
-            self.publish_review(
-                problems,
-                self._pr.head)
+            self.publish_review(problems, self._pr.head)
 
     def publish_checkrun(self, problems, check_run_id):
         """Publish the review as a checkrun
@@ -199,7 +195,7 @@ class Review(object):
                  self._pr.display_name)
 
         has_problems = problems.error_count() > 0
-        self.remove_ok_label()
+        self._remove_ok_label()
 
         def build_annotations(chunk):
             # Convert line comments into the format
@@ -298,7 +294,7 @@ class Review(object):
         if under_threshold:
             self.publish_pull_review(problems, head_sha)
         else:
-            self.publish_summary(problems)
+            self._publish_summary(problems)
         self.publish_status(has_problems)
 
     def load_comments(self):
@@ -349,7 +345,7 @@ class Review(object):
         log.info("Publishing review of %s new comments for %s",
                  comment_count,
                  self._pr.display_name)
-        self.remove_ok_label()
+        self._remove_ok_label()
         review = self._build_review(problems, head_commit)
         if len(review['comments']) or len(review['body']):
             self._pr.create_review(review)
@@ -383,8 +379,8 @@ class Review(object):
         state = self.config.failed_review_status()
         description = 'Lint errors found, see pull request comments.'
         if not has_problems:
-            self.publish_ok_label()
-            self.publish_ok_comment()
+            self._publish_ok_label()
+            self._publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
         self._repo.create_status(
@@ -393,12 +389,12 @@ class Review(object):
             description
         )
 
-    def remove_ok_label(self):
+    def _remove_ok_label(self):
         label = self.config.passed_review_label()
         if label:
             IssueLabel(label).remove(self._pr)
 
-    def publish_ok_label(self):
+    def _publish_ok_label(self):
         """Optionally publish the OK_LABEL if it is enabled.
         """
         label = self.config.passed_review_label()
@@ -406,7 +402,7 @@ class Review(object):
             issue_label = IssueLabel(label)
             issue_label.publish(self._repo, self._pr)
 
-    def publish_ok_comment(self):
+    def _publish_ok_comment(self):
         """Optionally publish the OK_COMMENT if it is enabled.
         """
         comment = self.config.get('OK_COMMENT', False)
@@ -415,7 +411,7 @@ class Review(object):
 
     def publish_empty_comment(self):
         log.info('Publishing empty comment.')
-        self.remove_ok_label()
+        self._remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
         self._pr.create_comment(body)
@@ -425,11 +421,11 @@ class Review(object):
             body
         )
 
-    def publish_summary(self, problems):
+    def _publish_summary(self, problems):
         num_comments = len(problems)
         log.info('Publishing summary comment for %s errors', num_comments)
 
-        self.remove_ok_label()
+        self._remove_ok_label()
         body = u"There are {0} errors:\n\n".format(num_comments)
         for problem in problems:
             body += u"* {}\n".format(problem.summary_text())
