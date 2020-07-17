@@ -438,7 +438,7 @@ class TestReview(TestCase):
         assert_status(data, 'success', msg)
 
     @responses.activate
-    def test_publish_review_comment_threshold_checks(self):
+    def test_publish_as_review_summary_output(self):
         repo = self.create_repo()
         pull = repo.pull_request(1)
         app_config = {
@@ -459,6 +459,7 @@ class TestReview(TestCase):
 
         filename = "View/Helper/AssetCompressHelper.php"
         errors = (
+            IssueComment('Terrible things'),
             Comment(filename, 454, 454, 'Something bad'),
             Comment(filename, 455, 455, 'Something bad'),
         )
@@ -468,48 +469,21 @@ class TestReview(TestCase):
 
         review_config = build_review_config(fixer_ini, app_config)
         review = Review(repo, pull, review_config)
-        review.publish_review(problems, pull.head)
+        review.publish(problems)
 
         responses.assert_call_count(comment_url, 1)
-        data = json.loads(responses.calls[-2].request.body)
-        assert 'There are 2 errors:' in data['body']
+        msg = """There are 3 errors:
+
+* Terrible things
+* View/Helper/AssetCompressHelper.php, line 454 - Something bad
+* View/Helper/AssetCompressHelper.php, line 455 - Something bad
+"""
+        data = responses.calls[-2].request.body
+        assert_comment(data, msg)
 
         responses.assert_call_count(status_url, 1)
         data = responses.calls[-1].request.body
         assert_status(data, 'failure')
-
-    @responses.activate
-    def test_publish_summary(self):
-        repo = self.create_repo()
-        pull = repo.pull_request(1)
-
-        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
-        responses.add(responses.POST, comment_url, json={}, status=201)
-
-        filename = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            IssueComment('Terrible things'),
-            Comment(filename, 117, 117, 'Something bad'),
-            Comment(filename, 119, 119, 'Something bad'),
-        )
-        problems = Problems()
-        problems.add_many(errors)
-        problems.set_changes([1])
-
-        review_config = build_review_config(fixer_ini, config)
-        review = Review(repo, pull, review_config)
-        review.publish_summary(problems)
-
-        responses.assert_call_count(comment_url, 1)
-
-        msg = """There are 3 errors:
-
-* Terrible things
-* Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
-* Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
-"""
-        data = responses.calls[-1].request.body
-        assert_comment(data, msg)
 
     @responses.activate
     def test_publish_as_checkrun(self):
@@ -649,7 +623,7 @@ class TestReview(TestCase):
         pull = repo.pull_request(1)
 
         review = Review(repo, pull, review_config)
-        review.publish_checkrun(problems, run_id)
+        review.publish(problems, run_id)
 
         responses.assert_call_count(run_url, 1)
         body = responses.calls[-1].request.body
