@@ -74,11 +74,3 @@ def process_pull_request(self, user, repo_name, number, lintrc):
                      user, repo_name, number)
         except Exception as e:
             log.exception(e)
-
-
-@celery.task(ignore_result=True)
-def cleanup_pull_request(user, repo, number):
-    """
-    No-op for backwards compat.
-    """
-    log.info("Doing nothing cleanup happens after review now.")
