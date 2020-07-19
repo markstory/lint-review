@@ -53,8 +53,8 @@ def process_pull_request(self, user, repo_name, number, lintrc):
 
         processor = Processor(repo, pull_request, target_path, review_config)
         processor.load_changes()
-        processor.run_tools()
-        processor.publish()
+        review, problems = processor.execute()
+        review.publish(problems)
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo_name, number))
