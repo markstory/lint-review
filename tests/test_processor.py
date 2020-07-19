@@ -1,15 +1,14 @@
 from unittest import TestCase
-from mock import patch, sentinel, Mock, ANY
+from mock import patch, sentinel, ANY
 import json
 import responses
 
 from lintreview.config import build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.processor import Processor
-from lintreview.repo import GithubRepository
 from lintreview.fixers.error import ConfigurationError, WorkflowError
 
-from . import load_fixture, fixer_ini
+from . import load_fixture, test_dir, requires_image, fixer_ini, create_repo
 
 
 app_config = {
@@ -32,28 +31,9 @@ class TestProcessor(TestCase):
         self.tool_patcher.stop()
         self.fixer_patcher.stop()
 
-    def create_repo(self):
-        # Stub the repository, pull request and files endpoints.
-        responses.add(
-            responses.GET,
-            'https://api.github.com/repos/markstory/lint-test',
-            json=json.loads(load_fixture('repository.json'))
-        )
-        responses.add(
-            responses.GET,
-            'https://api.github.com/repos/markstory/lint-test/pulls/1',
-            json=json.loads(load_fixture('pull_request.json'))
-        )
-        responses.add(
-            responses.GET,
-            'https://api.github.com/repos/markstory/lint-test/pulls/1/files',
-            json=json.loads(load_fixture('one_file_pull_request.json'))
-        )
-        return GithubRepository(app_config, 'markstory', 'lint-test')
-
     @responses.activate
     def test_load_changes(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         config = build_review_config('', app_config)
@@ -66,7 +46,7 @@ class TestProcessor(TestCase):
 
     @responses.activate
     def test_run_tools__no_changes(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         config = build_review_config('', app_config)
@@ -77,7 +57,7 @@ class TestProcessor(TestCase):
     @responses.activate
     def test_run_tools__import_error(self):
         self.tool_patcher.stop()
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         ini = """
@@ -97,7 +77,7 @@ linters = nope
 
     @responses.activate
     def test_run_tools__ignore_patterns(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         config = build_review_config(fixer_ini, app_config)
@@ -115,7 +95,7 @@ linters = nope
 
     @responses.activate
     def test_run_tools__execute_fixers(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
@@ -149,7 +129,7 @@ linters = nope
 
     @responses.activate
     def test_run_tools__execute_fixers_fail(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
@@ -180,7 +160,7 @@ linters = nope
             self._test_run_tools_fixer_error_scenario(error)
 
     def _test_run_tools_fixer_error_scenario(self, error):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
@@ -205,36 +185,31 @@ linters = nope
         assert 'Unable to apply fixers. ' + str(error) == subject.problems.all()[0].body
         assert 1 == len(subject.problems), 'strategy error adds pull comment'
 
+
+class TestProcessorIntegration(TestCase):
     @responses.activate
-    def test_publish(self):
-        repo = self.create_repo()
+    @requires_image('php')
+    def test_execute__integration(self):
+        repo = create_repo()
         pull = repo.pull_request(1)
 
-        config = build_review_config(fixer_ini, app_config)
-        subject = Processor(repo, pull, './tests', config)
-        subject.problems = Mock()
-        subject._review = Mock()
+        file_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/files'
+        responses.replace(
+            responses.GET,
+            file_url,
+            json=json.loads(load_fixture('integration_test_files.json'))
+        )
+        responses.add_passthru('http+docker://localhost')
 
-        subject.publish()
-        assert subject.problems.limit_to_changes.called, 'Problems should be filtered.'
-        assert subject._review.publish_review.called, 'Review should be published.'
-        subject._review.publish_review.assert_called_with(
-            subject.problems,
-            pull.head)
+        config = """
+[tools]
+linters = phpcs
+"""
+        config = build_review_config(config, app_config)
+        subject = Processor(repo, pull, test_dir, config)
+        subject.load_changes()
+        review, problems = subject.execute()
 
-    @responses.activate
-    def test_publish_checkrun(self):
-        repo = self.create_repo()
-        pull = repo.pull_request(1)
-
-        config = build_review_config(fixer_ini, app_config)
-        subject = Processor(repo, pull, './tests', config)
-        subject.problems = Mock()
-        subject._review = Mock()
-
-        subject.publish(check_run_id=9)
-        assert subject.problems.limit_to_changes.called, 'Problems should be filtered.'
-        assert subject._review.publish_checkrun.called, 'Review should be published.'
-        subject._review.publish_checkrun.assert_called_with(
-            subject.problems,
-            9)
+        assert review is not None
+        assert problems is not None
+        assert len(problems) > 0

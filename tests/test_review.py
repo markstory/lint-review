@@ -2,11 +2,10 @@ import json
 import responses
 from unittest import TestCase
 
-from . import load_fixture, fixer_ini
+from . import load_fixture, fixer_ini, create_repo
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection, parse_diff
 from lintreview.review import Review, Problems, Comment, IssueComment, InfoComment
-from lintreview.repo import GithubRepository
 
 config = load_config()
 
@@ -16,19 +15,6 @@ class TestReview(TestCase):
     def setUp(self):
         self.config = build_review_config(fixer_ini, config)
         self.one_file = parse_diff(load_fixture('diff/one_file_pull_request.txt'))
-
-    def create_repo(self):
-        responses.add(
-            responses.GET,
-            'https://api.github.com/repos/markstory/lint-test',
-            json=json.loads(load_fixture('repository.json'))
-        )
-        responses.add(
-            responses.GET,
-            'https://api.github.com/repos/markstory/lint-test/pulls/1',
-            json=json.loads(load_fixture('pull_request.json'))
-        )
-        return GithubRepository(config, 'markstory', 'lint-test')
 
     def stub_labels(self):
         # Labels require several operations to ensure they exist.
@@ -79,7 +65,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_load_comments__none_active(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments()
@@ -91,7 +77,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_load_comments__loads_comments(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments('comments_current.json')
@@ -115,7 +101,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_filter_existing__removes_duplicates(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments('comments_current.json')
@@ -147,7 +133,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_publish_as_review(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments()
@@ -178,7 +164,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_publish_as_review_no_changes(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments()
@@ -198,7 +184,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_publish_as_review__only_issue_comment(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         self.stub_comments()
@@ -222,7 +208,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_publish_as_review__join_issue_comments(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         problems = Problems()
 
@@ -262,7 +248,7 @@ class TestReview(TestCase):
             'PULLREQUEST_STATUS': False,
         }
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         review_config = build_review_config(fixer_ini, app_config)
 
@@ -286,7 +272,7 @@ class TestReview(TestCase):
             'PULLREQUEST_STATUS': True,
         }
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         review_config = build_review_config(fixer_ini, app_config)
 
@@ -325,7 +311,7 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         sha = pull.head
@@ -350,7 +336,7 @@ class TestReview(TestCase):
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
@@ -383,7 +369,7 @@ class TestReview(TestCase):
         }
         review_config = build_review_config(fixer_ini, app_config)
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         self.stub_labels()
 
@@ -408,7 +394,7 @@ class TestReview(TestCase):
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'OK_LABEL': 'No lint',
         }
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         self.stub_labels()
 
@@ -439,7 +425,7 @@ class TestReview(TestCase):
 
     @responses.activate
     def test_publish_as_review_summary_output(self):
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         app_config = {
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
@@ -508,7 +494,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         problems.set_changes(self.one_file)
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         review = Review(repo, pull, review_config)
@@ -536,7 +522,7 @@ class TestReview(TestCase):
         run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
         responses.add(responses.PATCH, run_url, json={}, status=200)
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         app_config = {
             'PULLREQUEST_STATUS': True,
@@ -592,7 +578,7 @@ class TestReview(TestCase):
         problems.add_many(errors)
         problems.set_changes(self.one_file)
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
         review = Review(repo, pull, review_config)
         review.publish(problems, run_id)
@@ -619,7 +605,7 @@ class TestReview(TestCase):
         problems = Problems()
         problems.set_changes(self.one_file)
 
-        repo = self.create_repo()
+        repo = create_repo()
         pull = repo.pull_request(1)
 
         review = Review(repo, pull, review_config)

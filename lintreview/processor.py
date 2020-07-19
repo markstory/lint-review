@@ -25,6 +25,8 @@ class Processor(object):
         self._repository = repository
         self._pull_request = pull_request
         self._target_path = target_path
+        # TODO move problems into the Review
+        # so that it is more self contained.
         self.problems = Problems()
         self._review = Review(repository, pull_request, config)
 
@@ -35,9 +37,6 @@ class Processor(object):
         self.problems.set_changes(self._changes)
 
     def parse_local_changes(self):
-        # TODO perhaps this should call a method on the PullRequest
-        # to get the diff? That would make it easier to mock the text diff
-        # with fixture files.
         head = self._pull_request.head
         base = self._pull_request.base
 
@@ -48,7 +47,24 @@ class Processor(object):
         self._changes = self.parse_local_changes()
         self.problems.set_changes(self._changes)
 
+    def execute(self):
+        """
+        Run the review and return the completed review.
+
+        Return the review object and collected problems
+        """
+        self.run_tools()
+        return (self._review, self.problems)
+
     def run_tools(self):
+        """
+        Run linters on the changed files, collecting
+        results into the review.
+
+        - Build the list of tools to run
+        - Run fixer mode of tools that support it.
+        - Run linter mode of each tool.
+        """
         if self._changes is None:
             raise RuntimeError('No loaded changes, cannot run tools. '
                                'Try calling load_changes first.')
@@ -106,14 +122,3 @@ class Processor(object):
             log.info('Fixer application failed, '
                      'rolling back working tree. Got %s', e)
             fixers.rollback_changes(self._target_path, self._pull_request.head)
-
-    def publish(self, check_run_id=None):
-        self.problems.limit_to_changes()
-        if check_run_id:
-            self._review.publish_checkrun(
-                self.problems,
-                check_run_id)
-        else:
-            self._review.publish_review(
-                self.problems,
-                self._pull_request.head)

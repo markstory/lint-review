@@ -153,8 +153,6 @@ class Review(object):
 
     def __init__(self, repo, pull_request, config):
         self._repo = repo
-        # TODO remove this property and add a problems property
-        # that contains all the review notes. Remove problems from the Processor
         self._comments = Problems()
         # TODO add diff collection to the review so that state is in fewer places.
         # TODO rename to self.pull
