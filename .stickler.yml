@@ -5,7 +5,6 @@ linters:
 
 files:
   ignore:
-    - 'bower_components/*'
     - 'node_modules/*'
     - 'tests/fixtures/black/*'
     - 'tests/fixtures/pep8/*'
