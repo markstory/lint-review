@@ -275,16 +275,18 @@ class Review(object):
 
         # If we are submitting a comment review
         # we drop comments that have already been posted.
-        self.load_comments()
+        existing_comments = self.load_comments()
 
         # Remove comments we made in the past, so that we only
-        # post previously un-reported issues
-        self.remove_existing(problems)
-        new_pulloblem_count = len(problems)
+        # post previously un-reported issues. We assume that comments
+        # that with the same line and body are from us.
+        for comment in existing_comments:
+            problems.remove(comment)
+        new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()
         under_threshold = (threshold is None or
-                           new_pulloblem_count < threshold)
+                           new_problem_count < threshold)
 
         if under_threshold:
             self._publish_pull_review(problems, head_sha)
@@ -294,14 +296,10 @@ class Review(object):
 
     def load_comments(self):
         """Load the existing comments on a pull request
-
-        Results in a structure that is similar to the one used
-        for problems
+        Return a Problems instance with the existing review comments.
         """
-        # TODO Remove the comments property and have
-        # this method return the loaded comments as a Problems instance 
-        # to be used when scoping the new comments.
         log.debug("Loading comments for pull request '%s'", self._pull.number)
+        existing = Problems()
         comments = list(self._pull.review_comments())
 
         for comment in comments:
@@ -311,24 +309,13 @@ class Review(object):
             if not guts['position']:
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
-            self._comments.add(
+            existing.add(
                 filename,
                 None,
                 comment.body,
                 int(guts['position']))
-        log.debug("'%s' comments loaded", len(self._comments))
-
-    def remove_existing(self, problems):
-        """Modifies the problems parameter removing
-        problems that already have matching comments.
-        Filters the problems based on existing comments.
-
-        Remove problems that match the line + comment body of
-        an existing comment. We'll assume the program put
-        the comment there, and not a human.
-        """
-        for comment in self._comments:
-            problems.remove(comment)
+        log.debug("'%s' comments loaded", len(existing))
+        return existing
 
     def _publish_pull_review(self, problems, head_commit):
         """Publish the issues contains in the problems

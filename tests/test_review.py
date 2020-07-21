@@ -70,10 +70,10 @@ class TestReview(TestCase):
 
         self.stub_comments()
         review = Review(repo, pull, self.config)
-        review.load_comments()
+        comments = review.load_comments()
 
         filename = "View/Helper/AssetCompressHelper.php"
-        self.assertEqual(0, len(review.comments(filename)))
+        self.assertEqual(0, len(comments.all(filename)))
 
     @responses.activate
     def test_load_comments__loads_comments(self):
@@ -82,61 +82,29 @@ class TestReview(TestCase):
 
         self.stub_comments('comments_current.json')
         review = Review(repo, pull, self.config)
-        review.load_comments()
+        comments = review.load_comments()
 
         filename = "Routing/Filter/AssetCompressor.php"
-        res = review.comments(filename)
+        res = comments.all(filename)
         self.assertEqual(1, len(res))
         expected = Comment(filename, None, 87, "A pithy remark")
         self.assertEqual(expected, res[0])
 
         filename = "View/Helper/AssetCompressHelper.php"
-        res = review.comments(filename)
+        res = comments.all(filename)
         self.assertEqual(2, len(res))
-        expected = Comment(filename, None, 40, "Some witty comment.")
+        expected = Comment(filename, None, 456, "Some witty comment.")
         self.assertEqual(expected, res[0])
 
         expected = Comment(filename, None, 89, "Not such a good comment")
         self.assertEqual(expected, res[1])
 
     @responses.activate
-    def test_filter_existing__removes_duplicates(self):
-        repo = create_repo()
-        pull = repo.pull_request(1)
-
-        self.stub_comments('comments_current.json')
-        problems = Problems()
-        review = Review(repo, pull, self.config)
-        filename_1 = "Routing/Filter/AssetCompressor.php"
-        filename_2 = "View/Helper/AssetCompressHelper.php"
-
-        problems.add(filename_1, 87, 'A pithy remark')
-        problems.add(filename_1, 87, 'Something different')
-        problems.add(filename_2, 88, 'I <3 it')
-        problems.add(filename_2, 89, 'Not such a good comment')
-
-        review.load_comments()
-        review.remove_existing(problems)
-
-        res = problems.all(filename_1)
-        self.assertEqual(1, len(res))
-        expected = Comment(filename_1,
-                           87,
-                           87,
-                           'A pithy remark\nSomething different')
-        self.assertEqual(res[0], expected)
-
-        res = problems.all(filename_2)
-        self.assertEqual(1, len(res))
-        expected = Comment(filename_2, 88, 88, 'I <3 it')
-        self.assertEqual(res[0], expected)
-
-    @responses.activate
     def test_publish_as_review(self):
         repo = create_repo()
         pull = repo.pull_request(1)
 
-        self.stub_comments()
+        self.stub_comments('comments_current.json')
         comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
         responses.add(responses.POST, comment_url, json={})
 
@@ -150,6 +118,8 @@ class TestReview(TestCase):
         errors = (
             Comment(filename, 454, 454, 'Something bad'),
             Comment(filename, 455, 455, 'Something bad'),
+            # This comment should be filtered out.
+            Comment(filename, 456, 456, 'Some witty comment.'),
         )
         problems = Problems()
         problems.add_many(errors)
@@ -160,7 +130,7 @@ class TestReview(TestCase):
 
         responses.assert_call_count(review_url, 1)
         data = responses.calls[-2].request.body
-        assert_review_data(data, errors, pull.head)
+        assert_review_data(data, errors[0:2], pull.head)
 
     @responses.activate
     def test_publish_as_review_no_changes(self):
@@ -453,6 +423,8 @@ class TestReview(TestCase):
             IssueComment('Terrible things'),
             Comment(filename, 454, 454, 'Something bad'),
             Comment(filename, 455, 455, 'Something bad'),
+            # This comment should be filtered out.
+            Comment(filename, 456, 456, 'Some witty comment.'),
         )
         problems = Problems()
         problems.add_many(errors)
