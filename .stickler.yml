@@ -2,7 +2,6 @@ linters:
   flake8:
     config: ./.flake8
     fixer: true
-  rubocop: {  }
 
 files:
   ignore:
