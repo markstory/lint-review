@@ -121,7 +121,7 @@ class TestGit(TestCase):
 
     def test_diff_commit_range(self):
         result = git.diff_commit_range(
-            root_dir,
+            clone_path,
             'aa7a9d074132280b54c0eee67221bb955adaaeaf',
             'c02fb764459f040c8007afa97479fedaf8587866'
         )

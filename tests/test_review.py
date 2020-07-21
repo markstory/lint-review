@@ -1,14 +1,11 @@
 import json
+import responses
 from unittest import TestCase
-from mock import Mock, patch
 
-from . import load_fixture, fixer_ini
+from . import load_fixture, fixer_ini, create_repo
 from lintreview.config import load_config, build_review_config
 from lintreview.diff import DiffCollection, parse_diff
 from lintreview.review import Review, Problems, Comment, IssueComment, InfoComment
-from lintreview.repo import GithubRepository, GithubPullRequest
-from github3.issues.comment import IssueComment as GhIssueComment
-from github3.session import GitHubSession
 
 config = load_config()
 
@@ -16,503 +13,589 @@ config = load_config()
 class TestReview(TestCase):
 
     def setUp(self):
-        repo = Mock(spec=GithubRepository)
-        pr = Mock(spec=GithubPullRequest,
-                  head='abc123',
-                  display_name='markstory/lint-review#1',
-                  number=2)
-        repo.pull_request.return_value = pr
-
-        self.repo, self.pr = repo, pr
         self.config = build_review_config(fixer_ini, config)
+        self.one_file = parse_diff(load_fixture('diff/one_file_pull_request.txt'))
 
-        self.session = GitHubSession()
+    def stub_labels(self):
+        # Labels require several operations to ensure they exist.
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/labels/No%20lint%20errors',
+            json={},
+            status=200)
+        responses.add(
+            responses.POST,
+            'https://api.github.com/repos/markstory/lint-test/labels',
+            json={},
+            status=201)
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/issues/1',
+            json=json.loads(load_fixture('issue.json')),
+            status=200)
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/issues/1/labels?per_page=100',
+            json=[
+                {
+                    "name": "No lint",
+                    "color": "#ff0000",
+                    "url": "https://api.github.com/repos/markstory/lint-test/labels/No%20lint"
+                }
+            ],
+            status=200)
+
+    def stub_comments(self, fixture='comments_none_current.json'):
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/pulls/1/comments?per_page=100',
+            json=json.loads(load_fixture(fixture))
+        )
+
+    def stub_pull_changes(self):
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/pulls/1/comments?per_page=100',
+            json=json.loads(load_fixture('one_file_pull_request.json'))
+        )
 
     def test_review_repr(self):
         comment = Comment('afile.txt', None, 40, "Some witty comment.")
         self.assertIn('Comment(filename=', str(comment))
 
+    @responses.activate
     def test_load_comments__none_active(self):
-        fixture_data = load_fixture('comments_none_current.json')
-        self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
-        ]
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
-        review = Review(self.repo, self.pr, self.config)
-        review.load_comments()
+        self.stub_comments()
+        review = Review(repo, pull, self.config)
+        comments = review.load_comments()
 
         filename = "View/Helper/AssetCompressHelper.php"
-        self.assertEqual(0, len(review.comments(filename)))
+        self.assertEqual(0, len(comments.all(filename)))
 
+    @responses.activate
     def test_load_comments__loads_comments(self):
-        fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
-        ]
-        review = Review(self.repo, self.pr, self.config)
-        review.load_comments()
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        self.stub_comments('comments_current.json')
+        review = Review(repo, pull, self.config)
+        comments = review.load_comments()
 
         filename = "Routing/Filter/AssetCompressor.php"
-        res = review.comments(filename)
+        res = comments.all(filename)
         self.assertEqual(1, len(res))
         expected = Comment(filename, None, 87, "A pithy remark")
         self.assertEqual(expected, res[0])
 
         filename = "View/Helper/AssetCompressHelper.php"
-        res = review.comments(filename)
+        res = comments.all(filename)
         self.assertEqual(2, len(res))
-        expected = Comment(filename, None, 40, "Some witty comment.")
+        expected = Comment(filename, None, 456, "Some witty comment.")
         self.assertEqual(expected, res[0])
 
         expected = Comment(filename, None, 89, "Not such a good comment")
         self.assertEqual(expected, res[1])
 
-    def test_filter_existing__removes_duplicates(self):
-        fixture_data = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture_data)
-        ]
-        problems = Problems()
-        review = Review(self.repo, self.pr, self.config)
-        filename_1 = "Routing/Filter/AssetCompressor.php"
-        filename_2 = "View/Helper/AssetCompressHelper.php"
+    @responses.activate
+    def test_publish_as_review(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
-        problems.add(filename_1, 87, 'A pithy remark')
-        problems.add(filename_1, 87, 'Something different')
-        problems.add(filename_2, 88, 'I <3 it')
-        problems.add(filename_2, 89, 'Not such a good comment')
+        self.stub_comments('comments_current.json')
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={})
 
-        review.load_comments()
-        review.remove_existing(problems)
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={})
 
-        res = problems.all(filename_1)
-        self.assertEqual(1, len(res))
-        expected = Comment(filename_1,
-                           87,
-                           87,
-                           'A pithy remark\nSomething different')
-        self.assertEqual(res[0], expected)
+        review_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
+        responses.add(responses.POST, review_url, json={})
 
-        res = problems.all(filename_2)
-        self.assertEqual(1, len(res))
-        expected = Comment(filename_2, 88, 88, 'I <3 it')
-        self.assertEqual(res[0], expected)
-
-    def test_publish_pull_review(self):
-        problems = Problems()
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        filename = 'View/Helper/AssetCompressHelper.php'
         errors = (
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+            Comment(filename, 454, 454, 'Something bad'),
+            Comment(filename, 455, 455, 'Something bad'),
+            # This comment should be filtered out.
+            Comment(filename, 456, 456, 'Some witty comment.'),
         )
-        problems.add_many(errors)
-        sha = 'abc123'
-
-        review = Review(self.repo, self.pr, self.config)
-        review.publish_pull_review(problems, sha)
-
-        assert self.pr.create_review.called
-        self.assertEqual(1, self.pr.create_review.call_count)
-
-        assert_review(
-            self,
-            self.pr.create_review.call_args,
-            errors,
-            sha)
-
-    def test_publish_pull_review__no_comments(self):
         problems = Problems()
-        sha = 'abc123'
+        problems.add_many(errors)
+        problems.set_changes(self.one_file)
 
-        review = Review(self.repo, self.pr, self.config)
-        review.publish_pull_review(problems, sha)
+        review = Review(repo, pull, self.config)
+        review.publish(problems)
 
-        assert self.pr.create_review.called is False
+        responses.assert_call_count(review_url, 1)
+        data = responses.calls[-2].request.body
+        assert_review_data(data, errors[0:2], pull.head)
 
-    def test_publish_pull_review__only_issue_comment(self):
+    @responses.activate
+    def test_publish_as_review_no_changes(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        self.stub_comments()
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={})
+
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={})
+
+        # No changes loaded.
+        problems = Problems()
+        review = Review(repo, pull, self.config)
+        review.publish(problems)
+
+        responses.assert_call_count(comment_url, 1)
+        assert_no_changes_comment(responses.calls[-2].request.body)
+
+    @responses.activate
+    def test_publish_as_review__only_issue_comment(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        self.stub_comments()
+
+        url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
+        responses.add(responses.POST, url, json={})
+
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={})
+
         problems = Problems()
         problems.add(IssueComment('Very bad'))
-        sha = 'abc123'
+        problems.set_changes(self.one_file)
 
-        review = Review(self.repo, self.pr, self.config)
-        review.publish_pull_review(problems, sha)
+        review = Review(repo, pull, self.config)
+        review.publish(problems)
 
-        assert self.pr.create_review.called
-        assert_review(
-            self,
-            self.pr.create_review.call_args,
-            [],
-            sha,
-            body='Very bad')
+        responses.assert_call_count(url, 1)
+        data = responses.calls[-2].request.body
+        assert_review_data(data, [], pull.head, body='Very bad')
 
-    def test_publish__join_issue_comments(self):
+    @responses.activate
+    def test_publish_as_review__join_issue_comments(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
         problems = Problems()
 
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        self.stub_comments()
+
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={})
+
+        url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
+        responses.add(responses.POST, url, json={})
+
+        filename = 'View/Helper/AssetCompressHelper.php'
         errors = (
             IssueComment('First'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+            Comment(filename, 454, 454, 'Something bad'),
             IssueComment('Second'),
         )
         problems.add_many(errors)
-        sha = 'abc123'
+        problems.set_changes(self.one_file)
+        review = Review(repo, pull, self.config)
+        review.publish(problems)
 
-        review = Review(self.repo, self.pr, self.config)
-        review.publish_pull_review(problems, sha)
-
-        assert self.pr.create_review.called
-        self.assertEqual(1, self.pr.create_review.call_count)
-
-        assert_review(
-            self,
-            self.pr.create_review.call_args,
+        responses.assert_call_count(url, 1)
+        data = responses.calls[-2].request.body
+        assert_review_data(
+            data,
             [errors[1]],
-            sha,
+            pull.head,
             body='First\n\nSecond')
 
+    @responses.activate
     def test_publish_status__ok_no_comment_or_label(self):
         app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'OK_COMMENT': None,
             'OK_LABEL': None,
             'PULLREQUEST_STATUS': False,
         }
-        tst_config = build_review_config(fixer_ini, app_config)
-        review = Review(self.repo, self.pr, tst_config)
+
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        review_config = build_review_config(fixer_ini, app_config)
+
+        sha = pull.head
+        url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        responses.add(responses.POST, url, json={}, status=201)
+
+        review = Review(repo, pull, review_config)
         review.publish_status(False)
 
-        assert self.repo.create_status.called, 'Create status called'
-        assert not self.pr.create_comment.called, 'Comment not created'
-        assert not self.pr.add_label.called, 'Label added created'
+        responses.assert_call_count(url, 1)
+        responses.assert_call_count('https://api.github.com/repos/markstory/lint-test', 1)
+        assert len(responses.calls) == 3
 
+    @responses.activate
     def test_publish_status__ok_with_comment_label(self):
         app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'OK_COMMENT': 'Great job!',
             'OK_LABEL': 'No lint errors',
             'PULLREQUEST_STATUS': True,
         }
-        tst_config = build_review_config(fixer_ini, app_config)
-        Review(self.repo, self.pr, tst_config)
-        review = Review(self.repo, self.pr, tst_config)
+
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        review_config = build_review_config(fixer_ini, app_config)
+
+        self.stub_labels()
+
+        label_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels'
+        responses.add(responses.POST, label_url, json={}, status=201)
+
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={}, status=201)
+
+        sha = pull.head
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        responses.add(responses.POST, status_url, json={}, status=201)
+
+        review = Review(repo, pull, review_config)
         review.publish_status(False)
 
-        assert self.repo.create_status.called, 'Create status not called'
-        self.repo.create_status.assert_called_with(
-            self.pr.head,
-            'success',
-            'No lint errors found.')
+        responses.assert_call_count(label_url, 1)
+        data = responses.calls[-3].request.body
+        assert "No lint errors" == json.loads(data)[0]
 
-        assert self.pr.create_comment.called, 'Issue comment created'
-        self.pr.create_comment.assert_called_with('Great job!')
+        responses.assert_call_count(comment_url, 1)
+        data = responses.calls[-2].request.body
+        assert_comment(data, 'Great job!')
 
-        assert self.pr.add_label.called, 'Label added created'
-        self.pr.add_label.assert_called_with('No lint errors')
+        responses.assert_call_count(status_url, 1)
+        data = responses.calls[-1].request.body
+        assert_status(data, 'success', 'No lint errors found.')
 
+    @responses.activate
     def test_publish_status__has_errors(self):
         app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'OK_COMMENT': 'Great job!',
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        tst_config = build_review_config(fixer_ini, app_config)
-        review = Review(self.repo, self.pr, tst_config)
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        sha = pull.head
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + sha
+        responses.add(responses.POST, status_url, json={}, status=201)
+
+        review_config = build_review_config(fixer_ini, app_config)
+
+        review = Review(repo, pull, review_config)
         review.publish_status(True)
 
-        assert self.repo.create_status.called, 'Create status not called'
+        responses.assert_call_count(status_url, 1)
+        data = responses.calls[-1].request.body
+        assert_status(data, 'failure', 'Lint errors found, see pull request comments.')
 
-        self.repo.create_status.assert_called_with(
-            self.pr.head,
-            'failure',
-            'Lint errors found, see pull request comments.')
-        assert not self.pr.create_comment.called, 'Comment not created'
-        assert not self.pr.add_label.called, 'Label added created'
-
+    @responses.activate
     def test_publish_status__has_errors__success_status(self):
         app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'PULLREQUEST_STATUS': False,
             'OK_COMMENT': 'Great job!',
             'OK_LABEL': 'No lint errors',
             'APP_NAME': 'custom-name'
         }
-        tst_config = build_review_config(fixer_ini, app_config)
-        self.assertEqual('success', tst_config.failed_review_status(),
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={}, status=201)
+
+        review_config = build_review_config(fixer_ini, app_config)
+        self.assertEqual('success', review_config.failed_review_status(),
                          'config object changed')
 
-        review = Review(self.repo, self.pr, tst_config)
+        review = Review(repo, pull, review_config)
         review.publish_status(True)
 
-        assert self.repo.create_status.called, 'Create status not called'
-        self.repo.create_status.assert_called_with(
-            self.pr.head,
-            'success',
-            'Lint errors found, see pull request comments.')
-        assert not self.pr.create_comment.called, 'Comment not created'
-        assert not self.pr.add_label.called, 'Label added created'
+        responses.assert_call_count(status_url, 1)
+        data = responses.calls[-1].request.body
+        assert_status(data, 'success', 'Lint errors found, see pull request comments.')
 
-    def test_publish_pull_review_remove_ok_label(self):
-        problems = Problems()
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+    @responses.activate
+    def test_publish_as_review_remove_ok_label(self):
+        filename = 'View/Helper/AssetCompressHelper.php'
         errors = (
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+            Comment(filename, 454, 454, 'Something bad'),
+            Comment(filename, 455, 455, 'Something bad'),
         )
+        problems = Problems()
         problems.add_many(errors)
-        tst_config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
+        problems.set_changes(self.one_file)
 
-        review = Review(self.repo, self.pr, tst_config)
-        sha = 'abc123'
-        review.publish_pull_review(problems, sha)
+        app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+            'OK_LABEL': 'No lint',
+        }
+        review_config = build_review_config(fixer_ini, app_config)
 
-        assert self.pr.remove_label.called, 'Label should be removed'
-        assert self.pr.create_review.called, 'Review should be added'
-        self.assertEqual(1, self.pr.create_review.call_count)
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
-        self.pr.remove_label.assert_called_with(tst_config['OK_LABEL'])
-        assert_review(
-            self,
-            self.pr.create_review.call_args,
-            errors,
-            sha)
+        self.stub_comments()
+        self.stub_labels()
 
-    def test_publish_review_empty_comment(self):
-        problems = Problems(changes=DiffCollection([]))
-        review = Review(self.repo, self.pr, self.config)
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={}, status=201)
 
-        sha = 'abc123'
-        review.publish_review(problems, sha)
+        review_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
+        responses.add(responses.POST, review_url, json={}, status=200)
 
-        assert self.pr.create_comment.called, 'Should create a comment'
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={}, status=200)
 
-        msg = ('Could not review pull request. '
-               'It may be too large, or contain no reviewable changes.')
-        self.pr.create_comment.assert_called_with(msg)
+        label_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
+        responses.add(responses.DELETE, label_url, json={}, status=200)
 
-    def test_publish_review_empty_comment_add_ok_label(self):
-        problems = Problems(changes=DiffCollection([]))
-        tst_config = build_review_config(fixer_ini, {'OK_LABEL': 'No lint'})
-        review = Review(self.repo, self.pr, tst_config)
+        review = Review(repo, pull, review_config)
+        review.publish(problems)
 
-        sha = 'abc123'
-        review.publish_review(problems, sha)
+        responses.assert_call_count(label_url, 1)
 
-        assert self.pr.create_comment.called, 'ok comment should be added.'
-        assert self.pr.remove_label.called, 'label should be removed.'
-        self.pr.remove_label.assert_called_with(tst_config['OK_LABEL'])
+    @responses.activate
+    def test_publish_as_review_empty_comment_remove_ok_label(self):
+        app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+            'OK_LABEL': 'No lint',
+        }
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        self.stub_labels()
 
-        msg = ('Could not review pull request. '
-               'It may be too large, or contain no reviewable changes.')
-        self.pr.create_comment.assert_called_with(msg)
+        label_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
+        responses.add(responses.DELETE, label_url, json={}, status=200)
 
-    def test_publish_review_empty_comment_with_comment_status(self):
-        tst_config = build_review_config(fixer_ini,
-                                         {'PULLREQUEST_STATUS': True})
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={}, status=201)
+
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={}, status=201)
 
         problems = Problems(changes=DiffCollection([]))
-        review = Review(self.repo, self.pr, tst_config)
+        review_config = build_review_config(fixer_ini, app_config)
+        review = Review(repo, pull, review_config)
 
-        sha = 'abc123'
-        review.publish_review(problems, sha)
+        review.publish(problems)
 
-        assert self.pr.create_comment.called, 'Should create a comment'
-
+        responses.assert_call_count(comment_url, 1)
         msg = ('Could not review pull request. '
                'It may be too large, or contain no reviewable changes.')
+        data = responses.calls[-2].request.body
+        assert_comment(data, msg)
 
-        self.repo.create_status.assert_called_with(
-            self.pr.head,
-            'success',
-            msg)
+        responses.assert_call_count(status_url, 1)
+        data = responses.calls[-1].request.body
+        assert_status(data, 'success', msg)
 
-        self.pr.create_comment.assert_called_with(msg)
+    @responses.activate
+    def test_publish_as_review_summary_output(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        app_config = {
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+            'SUMMARY_THRESHOLD': 1,
+        }
 
-    def test_publish_review_comment_threshold_checks(self):
-        fixture = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture)
-        ]
-
-        problems = Problems()
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+        responses.add(
+            responses.GET,
+            'https://api.github.com/repos/markstory/lint-test/pulls/1/comments',
+            json=json.loads(load_fixture('comments_current.json'))
         )
-        problems.add_many(errors)
-        problems.set_changes([1])
-        sha = 'abc123'
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={}, status=200)
 
-        tst_config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
-        review = Review(self.repo, self.pr, tst_config)
-        with patch('lintreview.review.Review.publish_summary') as pub_sum_mock:
-            review.publish_review(problems, sha)
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={}, status=201)
 
-            self.assertTrue(pub_sum_mock.called)
-
-    @patch('lintreview.review.Review.publish_summary')
-    @patch('lintreview.review.Review.publish_status')
-    def test_publish_review_no_count_change(self, pub_status_mock, _):
-        fixture = load_fixture('comments_current.json')
-        self.pr.review_comments.return_value = [
-            GhIssueComment(f, self.session) for f in json.loads(fixture)]
-        problems = Problems()
-
-        # Match the line/positions in comments_current.json
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            Comment(filename_1, 40, 40, '2. Something bad'),
-            Comment(filename_1, 87, 87, '1. Something bad'),
-            Comment(filename_1, 89, 89, '2. Something bad'),
-        )
-        problems.add_many(errors)
-        problems.set_changes([1])
-        sha = 'abc123'
-
-        tst_config = build_review_config(fixer_ini, {'SUMMARY_THRESHOLD': 1})
-        review = Review(self.repo, self.pr, tst_config)
-
-        review.publish_review(problems, sha)
-        # Ensure publish_status(True) means the status=failed
-        pub_status_mock.assert_called_with(True)
-
-    def test_publish_summary(self):
-        problems = Problems()
-
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        filename = "View/Helper/AssetCompressHelper.php"
         errors = (
             IssueComment('Terrible things'),
-            Comment(filename_1, 117, 117, 'Something bad'),
-            Comment(filename_1, 119, 119, 'Something bad'),
+            Comment(filename, 454, 454, 'Something bad'),
+            Comment(filename, 455, 455, 'Something bad'),
+            # This comment should be filtered out.
+            Comment(filename, 456, 456, 'Some witty comment.'),
         )
+        problems = Problems()
         problems.add_many(errors)
-        problems.set_changes([1])
+        problems.set_changes(self.one_file)
 
-        review = Review(self.repo, self.pr, self.config)
-        review.publish_summary(problems)
+        review_config = build_review_config(fixer_ini, app_config)
+        review = Review(repo, pull, review_config)
+        review.publish(problems)
 
-        assert self.pr.create_comment.called
-        self.assertEqual(1, self.pr.create_comment.call_count)
-
+        responses.assert_call_count(comment_url, 1)
         msg = """There are 3 errors:
 
 * Terrible things
-* Console/Command/Task/AssetBuildTask.php, line 117 - Something bad
-* Console/Command/Task/AssetBuildTask.php, line 119 - Something bad
+* View/Helper/AssetCompressHelper.php, line 454 - Something bad
+* View/Helper/AssetCompressHelper.php, line 455 - Something bad
 """
-        self.pr.create_comment.assert_called_with(msg)
+        data = responses.calls[-2].request.body
+        assert_comment(data, msg)
 
-    def test_publish_checkrun(self):
-        tst_config = build_review_config(fixer_ini,
-                                         {'PULLREQUEST_STATUS': True})
-        problems = Problems()
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
-        errors = (
-            Comment(filename_1, 117, 8, 'Something bad'),
-            Comment(filename_1, 119, 9, 'Something worse'),
-        )
-        problems.add_many(errors)
+        responses.assert_call_count(status_url, 1)
+        data = responses.calls[-1].request.body
+        assert_status(data, 'failure')
+
+    @responses.activate
+    def test_publish_as_checkrun(self):
+        app_config = {
+            'PULLREQUEST_STATUS': True,
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+        }
+        review_config = build_review_config(fixer_ini, app_config)
+
+        self.stub_comments()
+
         run_id = 42
+        run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
+        responses.add(responses.PATCH, run_url, json={}, status=200)
 
-        review = Review(self.repo, self.pr, tst_config)
-        review.publish_checkrun(problems, run_id)
-
-        assert self.repo.update_checkrun.called
-        self.assertEqual(1, self.repo.update_checkrun.call_count)
-
-        assert_checkrun(
-            self.repo.update_checkrun.call_args,
-            errors,
-            run_id)
-        assert self.repo.create_status.called is False, 'no status required'
-
-    def test_publish_checkrun__multiple_chunks(self):
-        tst_config = build_review_config(fixer_ini,
-                                         {'PULLREQUEST_STATUS': True})
+        filename = "View/Helper/AssetCompressHelper.php"
+        errors = (
+            Comment(filename, 454, 8, 'Something bad'),
+            Comment(filename, 455, 9, 'Something worse'),
+        )
         problems = Problems()
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        problems.add_many(errors)
+        problems.set_changes(self.one_file)
+
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        review = Review(repo, pull, review_config)
+        review.publish(problems, run_id, 'log contents')
+
+        responses.assert_call_count(run_url, 1)
+        body = responses.calls[-1].request.body
+        assert_checkrun_data(body, problems, 'log contents')
+
+    @responses.activate
+    def test_publish_as_checkrun__multiple_chunks(self):
+        filename = "View/Helper/AssetCompressHelper.php"
         errors = [
-            Comment(filename_1, i, i, 'Something worse')
+            Comment(filename, 454 + i, 454 + i, 'Something worse {}'.format(i))
             for i in range(0, 70)
         ]
+        problems = Problems()
+        problems.set_changes(parse_diff(load_fixture('diff/long_diff.txt')))
         problems.add_many(errors)
         problems.add(IssueComment('In the body'))
+
+        self.stub_comments()
+
         run_id = 42
+        run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
+        responses.add(responses.PATCH, run_url, json={}, status=200)
 
-        review = Review(self.repo, self.pr, tst_config)
-        review.publish_checkrun(problems, run_id)
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        app_config = {
+            'PULLREQUEST_STATUS': True,
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+        }
+        review_config = build_review_config(fixer_ini, app_config)
+        review = Review(repo, pull, review_config)
+        review.publish(problems, run_id, 'log contents')
 
-        assert self.repo.update_checkrun.call_count == 2
-        assert self.repo.create_status.called is False, 'no status required'
+        responses.assert_call_count(run_url, 2)
+        first_payload = json.loads(responses.calls[-2].request.body)
 
-        first_call = self.repo.update_checkrun.call_args_list[0]
-        assert run_id == first_call[0][0]
-
-        first_payload = first_call[0][1]
         assert 'failure' == first_payload['conclusion']
 
         assert 'completed_at' in first_payload
         assert 'title' in first_payload['output']
         assert 'summary' in first_payload['output']
+        assert 'text' in first_payload['output']
         assert 'annotations' in first_payload['output']
 
-        assert 'In the body' == first_payload['output']['summary']
+        assert 'Your linters output the following general' in first_payload['output']['summary']
+        assert 'In the body' in first_payload['output']['summary']
+        assert 'log contents' in first_payload['output']['text']
         assert 50 == len(first_payload['output']['annotations'])
 
-        second_call = self.repo.update_checkrun.call_args_list[1]
-        assert run_id == second_call[0][0]
-
         # The second payload should only contain additional annotations.
-        second_payload = second_call[0][1]
+        second_payload = json.loads(responses.calls[-1].request.body)
         assert 'completed_at' not in second_payload
         assert 'title' in second_payload['output']
         assert 'summary' in second_payload['output']
+        assert 'text' in second_payload['output']
         assert 'annotations' in second_payload['output']
-        assert 'In the body' == second_payload['output']['summary']
-
+        assert 'In the body' in second_payload['output']['summary']
+        assert 'log contents' in second_payload['output']['text']
         assert 20 == len(second_payload['output']['annotations'])
 
-    def test_publish_checkrun__has_errors_force_success_status(self):
-        tst_config = build_review_config(fixer_ini,
-                                         {'PULLREQUEST_STATUS': False})
-        self.assertEqual('success', tst_config.failed_review_status(),
-                         'config object changed')
+    @responses.activate
+    def test_publish_as_checkrun__has_errors_force_success_status(self):
+        app_config = {
+            'PULLREQUEST_STATUS': False,
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+        }
+        review_config = build_review_config(fixer_ini, app_config)
+        assert 'success' == review_config.failed_review_status(), 'config object changed'
 
-        review = Review(self.repo, self.pr, tst_config)
+        run_id = 42
+        run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
+        responses.add(responses.PATCH, run_url, json={}, status=200)
 
-        problems = Problems()
-        filename_1 = 'Console/Command/Task/AssetBuildTask.php'
+        self.stub_comments()
+
+        filename = "View/Helper/AssetCompressHelper.php"
         errors = (
-            Comment(filename_1, 117, 8, 'Something bad'),
-            Comment(filename_1, 119, 9, 'Something worse'),
+            Comment(filename, 454, 8, 'Something bad'),
+            Comment(filename, 455, 9, 'Something worse'),
         )
-        problems.add_many(errors)
-        run_id = 42
-        review.publish_checkrun(problems, run_id)
-
-        assert self.repo.create_status.called is False, 'no status required'
-
-        checkrun = self.repo.update_checkrun.call_args[0][1]
-        self.assertEqual('success', checkrun['conclusion'])
-        assert len(checkrun['output']['annotations']) > 0
-
-    def test_publish_checkrun__no_problems(self):
-        tst_config = build_review_config(fixer_ini,
-                                         {'PULLREQUEST_STATUS': True})
         problems = Problems()
+        problems.add_many(errors)
+        problems.set_changes(self.one_file)
+
+        repo = create_repo()
+        pull = repo.pull_request(1)
+        review = Review(repo, pull, review_config)
+        review.publish(problems, run_id)
+
+        responses.assert_call_count(run_url, 1)
+        request_data = json.loads(responses.calls[-1].request.body)
+        assert 'success' == request_data['conclusion']
+        assert len(request_data['output']['annotations']) > 0
+
+    @responses.activate
+    def test_publish_as_checkrun__no_problems(self):
+        app_config = {
+            'PULLREQUEST_STATUS': True,
+            'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
+        }
+        review_config = build_review_config(fixer_ini, app_config)
+
         run_id = 42
+        run_url = 'https://api.github.com/repos/markstory/lint-test/check-runs/' + str(run_id)
+        responses.add(responses.PATCH, run_url, json={}, status=200)
 
-        review = Review(self.repo, self.pr, tst_config)
-        review.publish_checkrun(problems, run_id)
+        self.stub_comments()
 
-        assert self.repo.update_checkrun.called
-        self.assertEqual(1, self.repo.update_checkrun.call_count)
+        problems = Problems()
+        problems.set_changes(self.one_file)
 
-        assert_checkrun(
-            self.repo.update_checkrun.call_args,
-            [],
-            run_id)
-        assert self.repo.create_status.called is False, 'no status required'
+        repo = create_repo()
+        pull = repo.pull_request(1)
+
+        review = Review(repo, pull, review_config)
+        review.publish(problems, run_id)
+
+        responses.assert_call_count(run_url, 1)
+        body = responses.calls[-1].request.body
+        assert_checkrun_data(body, problems)
 
 
 class TestProblems(TestCase):
@@ -523,7 +606,6 @@ class TestProblems(TestCase):
 
     def setUp(self):
         self.problems = Problems()
-        self.session = GitHubSession()
 
     def test_add(self):
         self.problems.add('file.py', 10, 'Not good')
@@ -580,7 +662,7 @@ class TestProblems(TestCase):
     def test_add_zero(self):
         self.problems.add('file.py', 0, 'Not good')
         result = self.problems.all('file.py')
-        assert len(result) == 1, problems
+        assert len(result) == 1, self.problems
         assert result[0].line == Comment.FIRST_LINE_IN_DIFF
 
     def test_add_many(self):
@@ -678,11 +760,31 @@ class TestProblems(TestCase):
         assert problems.has_changes()
 
 
-def assert_review(test_case, call_args, errors, sha, body=''):
-    """
-    Check that the review comments match the error list.
-    """
-    actual = call_args[0][0]
+def assert_label(request_data, label):
+    data = json.loads(request_data)
+    assert data['label'] == label
+
+
+def assert_comment(request_data, comment):
+    data = json.loads(request_data)
+    assert data['body'] == comment
+
+
+def assert_no_changes_comment(request_data):
+    data = json.loads(request_data)
+    assert 'Could not review pull request' in data['body']
+    assert 'no reviewable changes' in data['body']
+
+
+def assert_status(request_data, state, description=None):
+    data = json.loads(request_data)
+    assert data['state'] == state
+    if description is not None:
+        assert data['description'] == description
+
+
+def assert_review_data(request_data, errors, sha, body=''):
+    data = json.loads(request_data)
     comments = [error.payload() for error in errors]
     expected = {
         'commit_id': sha,
@@ -690,19 +792,15 @@ def assert_review(test_case, call_args, errors, sha, body=''):
         'body': body,
         'comments': comments
     }
-    test_case.assertEqual(actual.keys(), expected.keys())
-    test_case.assertEqual(len(comments),
-                          len(actual['comments']),
-                          'Error and comment counts are off.')
+    assert data.keys() == expected.keys()
+    assert len(comments) == len(data['comments']), 'Error and comment counts are off.'
 
 
-def assert_checkrun(call_args, errors, run_id, body=''):
+def assert_checkrun_data(request_data, errors, logs=None):
     """
     Check that the review comments match the error list.
     """
-    assert run_id == call_args[0][0], 'Runid should match'
-
-    actual = call_args[0][1]
+    actual = json.loads(request_data)
     actual_annotations = actual['output']['annotations']
     expected = []
     for error in errors:
@@ -724,3 +822,10 @@ def assert_checkrun(call_args, errors, run_id, body=''):
     assert actual['completed_at'], 'required field completed_at missing'
     assert actual['output']['title'], 'required field output.title missing'
     assert 'summary' in actual['output'], 'required field output.summary missing'
+    assert 'text' in actual['output'], 'required field output.text missing'
+    if logs:
+        assert '<details>' in actual['output']['text']
+        assert '</details>' in actual['output']['text']
+        assert '<summary>' in actual['output']['text']
+        assert '</summary>' in actual['output']['text']
+        assert logs in actual['output']['text']

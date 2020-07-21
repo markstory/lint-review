@@ -1,16 +1,18 @@
-from . import load_fixture, fixer_ini, create_pull_files
 from unittest import TestCase
+from mock import patch, sentinel, ANY
+import json
+import responses
+
 from lintreview.config import build_review_config
 from lintreview.diff import DiffCollection
 from lintreview.processor import Processor
-from lintreview.repo import GithubPullRequest
 from lintreview.fixers.error import ConfigurationError, WorkflowError
-from github3.pulls import PullRequest
-from github3.session import GitHubSession
-from mock import patch, sentinel, Mock, ANY
+
+from . import load_fixture, test_dir, requires_image, fixer_ini, create_repo
 
 
 app_config = {
+    'GITHUB_OAUTH_TOKEN': 'fake-token',
     'GITHUB_AUTHOR_NAME': 'bot',
     'GITHUB_AUTHOR_EMAIL': 'bot@example.com',
     'SUMMARY_THRESHOLD': 50,
@@ -20,7 +22,6 @@ app_config = {
 class TestProcessor(TestCase):
 
     def setUp(self):
-        self.session = GitHubSession()
         self.tool_patcher = patch('lintreview.processor.tools')
         self.tool_stub = self.tool_patcher.start()
         self.fixer_patcher = patch('lintreview.processor.fixers')
@@ -30,42 +31,34 @@ class TestProcessor(TestCase):
         self.tool_patcher.stop()
         self.fixer_patcher.stop()
 
-    def get_pull_request(self):
-        fixture = load_fixture('pull_request.json')
-        model = PullRequest.from_json(fixture, self.session)
-
-        # TODO This needs to be adapted for local diffs
-        # Perhaps pull.read_diff can be added and mocked
-        # here?
-        files = load_fixture('one_file_pull_request.json')
-        model.files = lambda: create_pull_files(files)
-
-        return GithubPullRequest(model)
-
+    @responses.activate
     def test_load_changes(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         config = build_review_config('', app_config)
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
 
-        self.assertEqual(1, len(subject._changes), 'File count is wrong')
+        assert subject._changes
         assert isinstance(subject._changes, DiffCollection)
+        assert 1 == len(subject._changes), 'File count is wrong'
 
+    @responses.activate
     def test_run_tools__no_changes(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         config = build_review_config('', app_config)
         subject = Processor(repo, pull, './tests', config)
         self.assertRaises(RuntimeError,
                           subject.run_tools)
 
+    @responses.activate
     def test_run_tools__import_error(self):
         self.tool_patcher.stop()
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         ini = """
 [tools]
@@ -82,13 +75,13 @@ linters = nope
         assert len(problems) == 1
         assert 'could not load linters' in problems[0].body
 
+    @responses.activate
     def test_run_tools__ignore_patterns(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         config = build_review_config(fixer_ini, app_config)
-        config.ignore_patterns = lambda: [
-            'View/Helper/*']
+        config.ignore_patterns = lambda: ['View/Helper/*']
 
         subject = Processor(repo, pull, './tests', config)
         subject.load_changes()
@@ -100,9 +93,10 @@ linters = nope
             ANY
         )
 
+    @responses.activate
     def test_run_tools__execute_fixers(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
 
@@ -133,9 +127,10 @@ linters = nope
         )
         self.tool_stub.run.assert_called()
 
+    @responses.activate
     def test_run_tools__execute_fixers_fail(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
 
@@ -153,6 +148,7 @@ linters = nope
         self.fixer_stub.rollback_changes.assert_called()
         self.tool_stub.run_assert_called()
 
+    @responses.activate
     def test_run_tools_fixer_error_scenario(self):
         errors = [
             WorkflowError('A bad workflow thing'),
@@ -164,8 +160,8 @@ linters = nope
             self._test_run_tools_fixer_error_scenario(error)
 
     def _test_run_tools_fixer_error_scenario(self, error):
-        pull = self.get_pull_request()
-        repo = Mock()
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
         self.tool_stub.factory.return_value = sentinel.tools
 
@@ -181,45 +177,39 @@ linters = nope
         self.fixer_stub.run_fixers.assert_called()
         self.tool_stub.run.assert_called()
         self.fixer_stub.rollback_changes.assert_called_with('./tests', pull.head)
+
+        assert subject.problems
         assert 1 == len(subject.problems), 'strategy error adds pull comment'
         assert 0 == subject.problems.error_count(), 'fixer failure should be info level'
+
         assert 'Unable to apply fixers. ' + str(error) == subject.problems.all()[0].body
         assert 1 == len(subject.problems), 'strategy error adds pull comment'
 
-    def test_publish(self):
-        pull = self.get_pull_request()
-        repo = Mock()
 
-        config = build_review_config(fixer_ini, app_config)
-        subject = Processor(repo, pull, './tests', config)
-        subject.problems = Mock()
-        subject._review = Mock()
+class TestProcessorIntegration(TestCase):
+    @responses.activate
+    @requires_image('php')
+    def test_execute__integration(self):
+        repo = create_repo()
+        pull = repo.pull_request(1)
 
-        subject.publish()
-        self.assertTrue(subject.problems.limit_to_changes.called,
-                        'Problems should be filtered.')
-        self.assertTrue(subject._review.publish_review.called,
-                        'Review should be published.')
-        subject._review.publish_review.assert_called_with(
-            subject.problems,
-            pull.head)
+        file_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/files'
+        responses.replace(
+            responses.GET,
+            file_url,
+            json=json.loads(load_fixture('integration_test_files.json'))
+        )
+        responses.add_passthru('http+docker://localhost')
 
-    def test_publish_checkrun(self):
-        pull = self.get_pull_request()
-        repo = Mock()
+        config = """
+[tools]
+linters = phpcs
+"""
+        config = build_review_config(config, app_config)
+        subject = Processor(repo, pull, test_dir, config)
+        subject.load_changes()
+        review, problems = subject.execute()
 
-        config = build_review_config(fixer_ini, app_config)
-        subject = Processor(repo, pull, './tests', config)
-        subject.problems = Mock()
-        subject._review = Mock()
-
-        subject.publish(check_run_id=9)
-        self.assertEqual(True,
-                         subject.problems.limit_to_changes.called,
-                         'Problems should be filtered.')
-        self.assertEqual(True,
-                         subject._review.publish_checkrun.called,
-                         'Review should be published.')
-        subject._review.publish_checkrun.assert_called_with(
-            subject.problems,
-            9)
+        assert review is not None
+        assert problems is not None
+        assert len(problems) > 0

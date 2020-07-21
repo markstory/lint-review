@@ -53,8 +53,8 @@ def process_pull_request(self, user, repo_name, number, lintrc):
 
         processor = Processor(repo, pull_request, target_path, review_config)
         processor.load_changes()
-        processor.run_tools()
-        processor.publish()
+        review, problems = processor.execute()
+        review.publish(problems)
 
         log.info('Completed lint processing for %s/%s/%s' % (
             user, repo_name, number))
@@ -74,11 +74,3 @@ def process_pull_request(self, user, repo_name, number, lintrc):
                      user, repo_name, number)
         except Exception as e:
             log.exception(e)
-
-
-@celery.task(ignore_result=True)
-def cleanup_pull_request(user, repo, number):
-    """
-    No-op for backwards compat.
-    """
-    log.info("Doing nothing cleanup happens after review now.")

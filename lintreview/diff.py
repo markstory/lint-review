@@ -194,7 +194,6 @@ class DiffCollection(object):
         return None
 
 
-
 class Diff(object):
     """Contains the changes for a single file.
 

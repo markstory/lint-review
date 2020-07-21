@@ -145,21 +145,40 @@ class Comment(BaseComment):
 
 
 class Review(object):
-    """Holds the comments from a review can
-    add track problems logged and post new problems
+    """
+    Holds the comments from a review can
+    add/track problems logged and post new problems
     to github.
     """
 
     def __init__(self, repo, pull_request, config):
         self._repo = repo
         self._comments = Problems()
-        self._pr = pull_request
+        # TODO add diff collection to the review so that state is in fewer places.
+        # TODO rename to self.pull
+        self._pull = pull_request
         self.config = config
 
     def comments(self, filename):
         return self._comments.all(filename)
 
-    def publish_checkrun(self, problems, check_run_id):
+    def publish(self, problems, check_run_id=None, logs=None):
+        """
+        Publish the review.
+
+        Use the check_run_id to either publish a check suite result
+        or a commit status (deprecated)
+
+        The optional `logs` parameter is used by checkrun publishing
+        to update the result description with the logs.
+        """
+        problems.limit_to_changes()
+        if check_run_id:
+            self._publish_checkrun(problems, check_run_id, logs)
+        else:
+            self._publish_review(problems, self._pull.head)
+
+    def _publish_checkrun(self, problems, check_run_id, logs):
         """Publish the review as a checkrun
 
         GitHub check-runs require a GitHub app which isn't
@@ -171,10 +190,10 @@ class Review(object):
         log.info("Publishing result for checkrun=%s. %s new comments for %s",
                  check_run_id,
                  comment_count,
-                 self._pr.display_name)
+                 self._pull.display_name)
 
         has_problems = problems.error_count() > 0
-        self.remove_ok_label()
+        self._remove_ok_label()
 
         def build_annotations(chunk):
             # Convert line comments into the format
@@ -197,73 +216,93 @@ class Review(object):
             if isinstance(comment, IssueComment)
         ]
 
-        # Some reviews have no comments and get marked as success.
+        conclusion = self.config.failed_review_status()
+        title = 'Review failed'
+        if not has_problems:
+            conclusion = 'success'
+            title = 'Review Passed'
+
+        check_data = {
+            'conclusion': conclusion,
+            'title': title,
+            'text': '',
+            'summary': '',
+        }
+
+        if len(summary):
+            check_data['summary'] = "\n\n".join(
+                ["Your linters output the following general problems:"] +
+                summary
+            ).strip()
+
+        if logs:
+            check_data['text'] = """
+<details>
+<summary>Review Logs</summary>
+<pre>
+{}
+</pre>
+</details>
+""".format(logs)
+
+        # Some reviews have no comments and should be marked as success.
         if not (summary or annotation_payloads):
-            review = self._build_checkrun(
-                0,
-                annotation_payloads,
-                summary,
-                has_problems)
+            review = self._build_checkrun(0, annotation_payloads, check_data)
             self._repo.update_checkrun(check_run_id, review)
 
         for i, chunk in enumerate(annotation_payloads):
-            review = self._build_checkrun(i, chunk, summary, has_problems)
+            review = self._build_checkrun(i, chunk, check_data)
             self._repo.update_checkrun(check_run_id, review)
 
-    def _build_checkrun(self, index, comments, summary, has_problems):
+    def _build_checkrun(self, index, comments, check_data):
         """Because github3.py doesn't support creating checkruns
         we use some workarounds.
         """
-        conclusion = self.config.failed_review_status()
-        title = 'Lint errors found'
-        if not has_problems:
-            conclusion = 'success'
-            title = 'No lint errors found'
-
         # Publish metadata on the first chunk. Subsequent
         # chunks only append annotations.
         if index == 0:
             return {
-                'conclusion': conclusion,
+                'conclusion': check_data['conclusion'],
                 'completed_at': datetime.utcnow().isoformat() + 'Z',
                 'output': {
-                    'title': title,
-                    'summary': "\n\n".join(summary).strip(),
+                    'title': check_data['title'],
+                    'summary': check_data['summary'],
+                    'text': check_data['text'],
                     'annotations': comments
                 },
             }
         # Update the checkrun with additional annotations.
         return {
             'output': {
-                'title': title,
-                'summary': "\n".join(summary),
+                'title': check_data['title'],
+                'summary': check_data['summary'],
+                'text': check_data['text'],
                 'annotations': comments
             }
         }
 
-    def publish_review(self, problems, head_sha):
+    def _publish_review(self, problems, head_sha):
         """Publish the review as a pull request review.
 
         Existing comments are loaded, and compared
         to new problems. Once the new unique problems
         are distilled new comments are published.
-
-        TODO consider extracting publishing from the
-        review and making checks/comment based publishers.
         """
         # If the pull request has no changes notify why
         if not problems.has_changes():
-            return self.publish_empty_comment()
+            return self._publish_empty_comment()
 
         has_problems = problems.error_count() > 0
 
         # If we are submitting a comment review
         # we drop comments that have already been posted.
-        self.load_comments()
+        existing_comments = self.load_comments()
 
         # Remove comments we made in the past, so that we only
-        # post previously un-reported issues
-        self.remove_existing(problems)
+        # post previously un-reported issues. We assume that comments
+        # that with the same line and body are from us.
+        for comment in existing_comments:
+            problems.remove(comment)
         new_problem_count = len(problems)
 
         threshold = self.config.summary_threshold()
@@ -271,19 +310,18 @@ class Review(object):
                            new_problem_count < threshold)
 
         if under_threshold:
-            self.publish_pull_review(problems, head_sha)
+            self._publish_pull_review(problems, head_sha)
         else:
-            self.publish_summary(problems)
+            self._publish_summary(problems)
         self.publish_status(has_problems)
 
     def load_comments(self):
         """Load the existing comments on a pull request
-
-        Results in a structure that is similar to the one used
-        for problems
+        Return a Problems instance with the existing review comments.
         """
-        log.debug("Loading comments for pull request '%s'", self._pr.number)
-        comments = list(self._pr.review_comments())
+        log.debug("Loading comments for pull request '%s'", self._pull.number)
+        existing = Problems()
+        comments = list(self._pull.review_comments())
 
         for comment in comments:
             # Workaround github3 not exposing attributes for what we need.
@@ -292,26 +330,15 @@ class Review(object):
             if not guts['position']:
                 log.debug("Ignoring outdated diff comment '%s'", comment.id)
                 continue
-            self._comments.add(
+            existing.add(
                 filename,
                 None,
                 comment.body,
                 int(guts['position']))
-        log.debug("'%s' comments loaded", len(self._comments))
+        log.debug("'%s' comments loaded", len(existing))
+        return existing
 
-    def remove_existing(self, problems):
-        """Modifies the problems parameter removing
-        problems that already have matching comments.
-        Filters the problems based on existing comments.
-
-        Remove problems that match the line + comment body of
-        an existing comment. We'll assume the program put
-        the comment there, and not a human.
-        """
-        for comment in self._comments:
-            problems.remove(comment)
-
-    def publish_pull_review(self, problems, head_commit):
+    def _publish_pull_review(self, problems, head_commit):
         """Publish the issues contains in the problems
         parameter. changes is used to fetch the commit sha
         for the comments on a given file.
@@ -320,11 +347,11 @@ class Review(object):
         buildlog.info('Publishing %s new comments', comment_count)
         log.info("Publishing review of %s new comments for %s",
                  comment_count,
-                 self._pr.display_name)
-        self.remove_ok_label()
+                 self._pull.display_name)
+        self._remove_ok_label()
         review = self._build_review(problems, head_commit)
         if len(review['comments']) or len(review['body']):
-            self._pr.create_review(review)
+            self._pull.create_review(review)
 
     def _build_review(self, problems, head_commit):
         """Because github3.py doesn't support creating reviews
@@ -350,62 +377,64 @@ class Review(object):
 
     def publish_status(self, has_problems):
         """Update the build status for the tip commit.
-        The build will be a success if there are 0 problems.
+        The build will be a success if there are 0 problems,
+        or if the review configuration coerces failures into
+        success.
         """
         state = self.config.failed_review_status()
         description = 'Lint errors found, see pull request comments.'
         if not has_problems:
-            self.publish_ok_label()
-            self.publish_ok_comment()
+            self._publish_ok_label()
+            self._publish_ok_comment()
             state = 'success'
             description = 'No lint errors found.'
         self._repo.create_status(
-            self._pr.head,
+            self._pull.head,
             state,
             description
         )
 
-    def remove_ok_label(self):
+    def _remove_ok_label(self):
         label = self.config.passed_review_label()
         if label:
-            IssueLabel(label).remove(self._pr)
+            IssueLabel(label).remove(self._pull)
 
-    def publish_ok_label(self):
+    def _publish_ok_label(self):
         """Optionally publish the OK_LABEL if it is enabled.
         """
         label = self.config.passed_review_label()
         if label:
             issue_label = IssueLabel(label)
-            issue_label.publish(self._repo, self._pr)
+            issue_label.publish(self._repo, self._pull)
 
-    def publish_ok_comment(self):
+    def _publish_ok_comment(self):
         """Optionally publish the OK_COMMENT if it is enabled.
         """
         comment = self.config.get('OK_COMMENT', False)
         if comment:
-            self._pr.create_comment(comment)
+            self._pull.create_comment(comment)
 
-    def publish_empty_comment(self):
+    def _publish_empty_comment(self):
         log.info('Publishing empty comment.')
-        self.remove_ok_label()
+        self._remove_ok_label()
         body = ('Could not review pull request. '
                 'It may be too large, or contain no reviewable changes.')
-        self._pr.create_comment(body)
+        self._pull.create_comment(body)
         self._repo.create_status(
-            self._pr.head,
+            self._pull.head,
             'success',
             body
         )
 
-    def publish_summary(self, problems):
+    def _publish_summary(self, problems):
         num_comments = len(problems)
         log.info('Publishing summary comment for %s errors', num_comments)
 
-        self.remove_ok_label()
+        self._remove_ok_label()
         body = u"There are {0} errors:\n\n".format(num_comments)
         for problem in problems:
             body += u"* {}\n".format(problem.summary_text())
-        self._pr.create_comment(body)
+        self._pull.create_comment(body)
 
 
 class Problems(object):
@@ -491,7 +520,7 @@ class Problems(object):
                 lineno = changes.first_changed_line(err.filename)
                 err.line = lineno
                 err.position = changes.line_position(err.filename, lineno)
-            if changes.has_line_changed(err.filename, err.line):
+            if changes and changes.has_line_changed(err.filename, err.line):
                 return True
             return False
 

@@ -1,14 +1,18 @@
 import os
 import json
+import responses
 import tempfile
+
 from unittest import skipIf
 from mock import patch
 
 import lintreview.git as git
 import lintreview.docker as docker
+
 from github3.pulls import PullFile
 from github3.repos.commit import ShortCommit
 from github3.session import GitHubSession
+from lintreview.repo import GithubRepository
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 test_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +36,30 @@ def create_pull_files(data):
 def create_commits(data):
     session = GitHubSession()
     return [ShortCommit(f, session) for f in json.loads(data)]
+
+
+def create_repo():
+    app_config = {
+        'GITHUB_OAUTH_TOKEN': 'fake-token',
+    }
+
+    # Stub the repository, pull request and files endpoints.
+    responses.add(
+        responses.GET,
+        'https://api.github.com/repos/markstory/lint-test',
+        json=json.loads(load_fixture('repository.json'))
+    )
+    responses.add(
+        responses.GET,
+        'https://api.github.com/repos/markstory/lint-test/pulls/1',
+        json=json.loads(load_fixture('pull_request.json'))
+    )
+    responses.add(
+        responses.GET,
+        'https://api.github.com/repos/markstory/lint-test/pulls/1/files',
+        json=json.loads(load_fixture('one_file_pull_request.json'))
+    )
+    return GithubRepository(app_config, 'markstory', 'lint-test')
 
 
 def read_file(path):

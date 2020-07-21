@@ -2,11 +2,9 @@ linters:
   flake8:
     config: ./.flake8
     fixer: true
-  rubocop: {  }
 
 files:
   ignore:
-    - 'bower_components/*'
     - 'node_modules/*'
     - 'tests/fixtures/black/*'
     - 'tests/fixtures/pep8/*'

@@ -14,7 +14,7 @@ python:
   - "3.8"
 
 env:
-  - LINTREVIEW_SETTINGS="./settings.py" GOPATH="${TRAVIS_BUILD_DIR}/gocode"
+  - LINTREVIEW_SETTINGS="./settings.py" GITHUB_OAUTH_TOKEN="fake-token-value"
 
 before_install:
   - travis_wait make images
@@ -22,7 +22,6 @@ before_install:
   - docker tag markstory/swiftlint swiftlint
 
 install:
-  - git fetch origin master
   - pip install -r requirements-dev.txt
   - pip install .
   # Sample config file
