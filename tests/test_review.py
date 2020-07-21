@@ -354,14 +354,15 @@ class TestReview(TestCase):
         assert_status(data, 'success', 'Lint errors found, see pull request comments.')
 
     @responses.activate
-    def test_publish_pull_review_remove_ok_label(self):
-        filename = 'Console/Command/Task/AssetBuildTask.php'
+    def test_publish_as_review_remove_ok_label(self):
+        filename = 'View/Helper/AssetCompressHelper.php'
         errors = (
-            Comment(filename, 117, 117, 'Something bad'),
-            Comment(filename, 119, 119, 'Something bad'),
+            Comment(filename, 454, 454, 'Something bad'),
+            Comment(filename, 455, 455, 'Something bad'),
         )
         problems = Problems()
         problems.add_many(errors)
+        problems.set_changes(self.one_file)
 
         app_config = {
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
@@ -371,25 +372,29 @@ class TestReview(TestCase):
 
         repo = create_repo()
         pull = repo.pull_request(1)
+
+        self.stub_comments()
         self.stub_labels()
 
-        status_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
-        responses.add(responses.POST, status_url, json={}, status=200)
+        status_url = 'https://api.github.com/repos/markstory/lint-test/statuses/' + pull.head
+        responses.add(responses.POST, status_url, json={}, status=201)
 
-        label_remove_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
-        responses.add(responses.DELETE, label_remove_url, json={}, status=200)
+        review_url = 'https://api.github.com/repos/markstory/lint-test/pulls/1/reviews'
+        responses.add(responses.POST, review_url, json={}, status=200)
+
+        comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
+        responses.add(responses.POST, comment_url, json={}, status=200)
+
+        label_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
+        responses.add(responses.DELETE, label_url, json={}, status=200)
 
         review = Review(repo, pull, review_config)
-        review.publish_pull_review(problems, pull.head)
+        review.publish(problems)
 
-        responses.assert_call_count(status_url, 1)
-        data = responses.calls[-1].request.body
-        assert_review_data(data, errors, pull.head)
-
-        responses.assert_call_count(label_remove_url, 1)
+        responses.assert_call_count(label_url, 1)
 
     @responses.activate
-    def test_publish_review_empty_comment_remove_ok_label(self):
+    def test_publish_as_review_empty_comment_remove_ok_label(self):
         app_config = {
             'GITHUB_OAUTH_TOKEN': config['GITHUB_OAUTH_TOKEN'],
             'OK_LABEL': 'No lint',
@@ -398,8 +403,8 @@ class TestReview(TestCase):
         pull = repo.pull_request(1)
         self.stub_labels()
 
-        label_remove_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
-        responses.add(responses.DELETE, label_remove_url, json={}, status=200)
+        label_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/labels/No%20lint'
+        responses.add(responses.DELETE, label_url, json={}, status=200)
 
         comment_url = 'https://api.github.com/repos/markstory/lint-test/issues/1/comments'
         responses.add(responses.POST, comment_url, json={}, status=201)
@@ -411,7 +416,7 @@ class TestReview(TestCase):
         review_config = build_review_config(fixer_ini, app_config)
         review = Review(repo, pull, review_config)
 
-        review.publish_review(problems, pull.head)
+        review.publish(problems)
 
         responses.assert_call_count(comment_url, 1)
         msg = ('Could not review pull request. '
