@@ -475,11 +475,11 @@ class TestReview(TestCase):
         pull = repo.pull_request(1)
 
         review = Review(repo, pull, review_config)
-        review.publish(problems, run_id)
+        review.publish(problems, run_id, 'log contents')
 
         responses.assert_call_count(run_url, 1)
         body = responses.calls[-1].request.body
-        assert_checkrun_data(body, problems)
+        assert_checkrun_data(body, problems, 'log contents')
 
     @responses.activate
     def test_publish_as_checkrun__multiple_chunks(self):
@@ -507,7 +507,7 @@ class TestReview(TestCase):
         }
         review_config = build_review_config(fixer_ini, app_config)
         review = Review(repo, pull, review_config)
-        review.publish(problems, run_id)
+        review.publish(problems, run_id, 'log contents')
 
         responses.assert_call_count(run_url, 2)
         first_payload = json.loads(responses.calls[-2].request.body)
@@ -517,9 +517,12 @@ class TestReview(TestCase):
         assert 'completed_at' in first_payload
         assert 'title' in first_payload['output']
         assert 'summary' in first_payload['output']
+        assert 'text' in first_payload['output']
         assert 'annotations' in first_payload['output']
 
-        assert 'In the body' == first_payload['output']['summary']
+        assert 'Your linters output the following general' in first_payload['output']['summary']
+        assert 'In the body' in first_payload['output']['summary']
+        assert 'log contents' in first_payload['output']['text']
         assert 50 == len(first_payload['output']['annotations'])
 
         # The second payload should only contain additional annotations.
@@ -527,8 +530,10 @@ class TestReview(TestCase):
         assert 'completed_at' not in second_payload
         assert 'title' in second_payload['output']
         assert 'summary' in second_payload['output']
+        assert 'text' in second_payload['output']
         assert 'annotations' in second_payload['output']
-        assert 'In the body' == second_payload['output']['summary']
+        assert 'In the body' in second_payload['output']['summary']
+        assert 'log contents' in second_payload['output']['text']
         assert 20 == len(second_payload['output']['annotations'])
 
     @responses.activate
@@ -791,7 +796,7 @@ def assert_review_data(request_data, errors, sha, body=''):
     assert len(comments) == len(data['comments']), 'Error and comment counts are off.'
 
 
-def assert_checkrun_data(request_data, errors):
+def assert_checkrun_data(request_data, errors, logs=None):
     """
     Check that the review comments match the error list.
     """
@@ -817,3 +822,10 @@ def assert_checkrun_data(request_data, errors):
     assert actual['completed_at'], 'required field completed_at missing'
     assert actual['output']['title'], 'required field output.title missing'
     assert 'summary' in actual['output'], 'required field output.summary missing'
+    assert 'text' in actual['output'], 'required field output.text missing'
+    if logs:
+        assert '<details>' in actual['output']['text']
+        assert '</details>' in actual['output']['text']
+        assert '<summary>' in actual['output']['text']
+        assert '</summary>' in actual['output']['text']
+        assert logs in actual['output']['text']

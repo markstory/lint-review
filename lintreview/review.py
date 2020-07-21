@@ -192,7 +192,7 @@ class Review(object):
                  comment_count,
                  self._pull.display_name)
 
-        has_pulloblems = problems.error_count() > 0
+        has_problems = problems.error_count() > 0
         self._remove_ok_label()
 
         def build_annotations(chunk):
@@ -216,46 +216,67 @@ class Review(object):
             if isinstance(comment, IssueComment)
         ]
 
-        # Some reviews have no comments and get marked as success.
+        conclusion = self.config.failed_review_status()
+        title = 'Review failed'
+        if not has_problems:
+            conclusion = 'success'
+            title = 'Review Passed'
+
+        check_data = {
+            'conclusion': conclusion,
+            'title': title,
+            'text': '',
+            'summary': '',
+        }
+
+        if len(summary):
+            check_data['summary'] = "\n\n".join(
+                ["Your linters output the following general problems:"] +
+                summary
+            ).strip()
+
+        if logs:
+            check_data['text'] = """
+<details>
+<summary>Review Logs</summary>
+<pre>
+{}
+</pre>
+</details>
+""".format(logs)
+
+        # Some reviews have no comments and should be marked as success.
         if not (summary or annotation_payloads):
-            review = self._build_checkrun(
-                0,
-                annotation_payloads,
-                summary,
-                has_pulloblems)
+            review = self._build_checkrun(0, annotation_payloads, check_data)
             self._repo.update_checkrun(check_run_id, review)
 
         for i, chunk in enumerate(annotation_payloads):
-            review = self._build_checkrun(i, chunk, summary, has_pulloblems)
+            review = self._build_checkrun(i, chunk, check_data)
             self._repo.update_checkrun(check_run_id, review)
 
-    def _build_checkrun(self, index, comments, summary, has_pulloblems):
+    def _build_checkrun(self, index, comments, check_data):
         """Because github3.py doesn't support creating checkruns
         we use some workarounds.
         """
-        conclusion = self.config.failed_review_status()
-        title = 'Lint errors found'
-        if not has_pulloblems:
-            conclusion = 'success'
-            title = 'No lint errors found'
-
         # Publish metadata on the first chunk. Subsequent
         # chunks only append annotations.
         if index == 0:
             return {
-                'conclusion': conclusion,
+                'conclusion': check_data['conclusion'],
                 'completed_at': datetime.utcnow().isoformat() + 'Z',
                 'output': {
-                    'title': title,
-                    'summary': "\n\n".join(summary).strip(),
+                    'title': check_data['title'],
+                    'summary': check_data['summary'],
+                    'text': check_data['text'],
                     'annotations': comments
                 },
             }
         # Update the checkrun with additional annotations.
         return {
             'output': {
-                'title': title,
-                'summary': "\n".join(summary),
+                'title': check_data['title'],
+                'summary': check_data['summary'],
+                'text': check_data['text'],
                 'annotations': comments
             }
         }
@@ -271,7 +292,7 @@ class Review(object):
         if not problems.has_changes():
             return self._publish_empty_comment()
 
-        has_pulloblems = problems.error_count() > 0
+        has_problems = problems.error_count() > 0
 
         # If we are submitting a comment review
         # we drop comments that have already been posted.
@@ -292,7 +313,7 @@ class Review(object):
             self._publish_pull_review(problems, head_sha)
         else:
             self._publish_summary(problems)
-        self.publish_status(has_pulloblems)
+        self.publish_status(has_problems)
 
     def load_comments(self):
         """Load the existing comments on a pull request
@@ -354,7 +375,7 @@ class Review(object):
         }
         return review
 
-    def publish_status(self, has_pulloblems):
+    def publish_status(self, has_problems):
         """Update the build status for the tip commit.
         The build will be a success if there are 0 problems,
         or if the review configuration coerces failures into
@@ -362,7 +383,7 @@ class Review(object):
         """
         state = self.config.failed_review_status()
         description = 'Lint errors found, see pull request comments.'
-        if not has_pulloblems:
+        if not has_problems:
             self._publish_ok_label()
             self._publish_ok_comment()
             state = 'success'
