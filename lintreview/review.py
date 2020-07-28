@@ -38,7 +38,7 @@ class BaseComment(object):
 
     def key(self):
         """Define the identifying tuple for a comment.
-        This should be a tuple of the file/position of the comment.
+        This should be a tuple of the file/line of the comment.
         """
         raise NotImplementedError()
 
@@ -125,7 +125,8 @@ class Comment(BaseComment):
         return payload
 
     def key(self):
-        return (self.filename, self.position)
+        offset = self.position if self.position else self.line
+        return (self.filename, offset)
 
     def summary_text(self):
         return u"{0.filename}, line {0.line} - {0.body}".format(self)
