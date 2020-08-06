@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="CakePHP Core">
+    <config name="installed_paths" value="../../cakephp/cakephp-codesniffer" />
+    <!-- enable colours and progress in an attempt to corrupt XML parsing -->
+    <arg value="p" />
+    <arg name="colors" />
+
+    <rule ref="CakePHP" />
+</ruleset>

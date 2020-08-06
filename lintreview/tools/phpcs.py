@@ -56,8 +56,9 @@ class Phpcs(Tool):
         output = docker.run(image, command, source_dir=self.base_path)
         self._cleanup()
 
-        # Check for errors from PHPCS
-        if output.startswith('ERROR'):
+        # Check for errors from PHPCS or PHP
+        output = output.strip()
+        if output.startswith('ERROR') or 'Fatal Error' in output:
             msg = ('Your PHPCS configuration output the following error:\n'
                    '```\n'
                    '{}\n'
@@ -77,7 +78,7 @@ class Phpcs(Tool):
 
     def create_command(self, files):
         command = ['phpcs-run', 'phpcs']
-        command += ['--report=checkstyle']
+        command += ['-q', '--report=checkstyle']
         command = self._apply_options(command)
         command += docker.replace_basedir(self.base_path, files)
         return command

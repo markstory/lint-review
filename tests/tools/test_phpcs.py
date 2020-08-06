@@ -122,6 +122,18 @@ class TestPhpcs(TestCase):
                          'exclude option should reduce errors.')
 
     @requires_image('php')
+    def test_process_files__with_custom_config(self):
+        config = {
+            'standard': 'tests/fixtures/phpcs/standard.xml',
+        }
+        tool = Phpcs(self.problems, config, root_dir)
+        tool.process_files([self.fixtures[1]])
+
+        problems = self.problems.all(self.fixtures[1])
+
+        assert len(problems), 'progress and colors should not break output'
+
+    @requires_image('php')
     def test_process_files__with_invalid_exclude(self):
         config = {
             'standard': 'PSR2',
@@ -149,6 +161,7 @@ class TestPhpcs(TestCase):
         expected = [
             'phpcs-run',
             'phpcs',
+            '-q',
             '--report=checkstyle',
             '--standard=Zend',
             '--extensions=php',
@@ -167,6 +180,7 @@ class TestPhpcs(TestCase):
         expected = [
             'phpcs-run',
             'phpcs',
+            '-q',
             '--report=checkstyle',
             '--standard=/src/test/CodeStandards',
             '--extensions=php',
@@ -187,6 +201,7 @@ class TestPhpcs(TestCase):
         expected = [
             'phpcs-run',
             'phpcs',
+            '-q',
             '--report=checkstyle',
             '--standard=PSR2',
             '--ignore=tests/fixtures/phpcs/*,tests/fixtures/eslint/*',
