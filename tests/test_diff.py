@@ -128,8 +128,8 @@ class TestDiffCollection(TestCase):
         self.assertEqual(False, log.error.called)
 
     def test_parse_diff__no_input(self):
-        with pytest.raises(ParseError):
-            parse_diff('')
+        diff = parse_diff('')
+        assert len(diff) == 0
 
     def test_parse_diff__changed_lines_parsed(self):
         data = load_fixture('diff/one_file.txt')

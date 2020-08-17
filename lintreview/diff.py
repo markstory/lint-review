@@ -22,7 +22,7 @@ def parse_diff(text):
     a DiffCollection and set of diff objects
     """
     if not text:
-        raise ParseError('No diff provided')
+        return DiffCollection([])
     blocks = re.split(block_pattern, text)
     diffs = []
     for chunk in blocks:
