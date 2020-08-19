@@ -8,6 +8,7 @@ from lintreview.fixers.error import ConfigurationError, WorkflowError
 from lintreview.review import Problems, Review, IssueComment, InfoComment
 
 log = logging.getLogger(__name__)
+buildlog = logging.getLogger('buildlog')
 
 
 class Processor(object):
@@ -98,13 +99,18 @@ class Processor(object):
         tools.run(tool_list, files_to_check, commits_to_check)
 
     def apply_fixers(self, tool_list, files_to_check):
+        fixer_context = fixers.create_context(
+            self._config,
+            self._target_path,
+            self._repository,
+            self._pull_request,
+        )
+        if not fixers.should_run(fixer_context):
+            buildlog.info('Did not run fixers as HEAD commit is from {}'.format(
+                fixer_context['author_email']
+            ))
+            return
         try:
-            fixer_context = fixers.create_context(
-                self._config,
-                self._target_path,
-                self._repository,
-                self._pull_request,
-            )
             fixer_diff = fixers.run_fixers(
                 tool_list,
                 self._target_path,

@@ -1,9 +1,14 @@
 from unittest import TestCase
+from mock import Mock, sentinel
+
+import re
 import lintreview.fixers as fixers
+import lintreview.git as git
+
 from lintreview.config import build_review_config
 from lintreview.diff import parse_diff, Diff
 from lintreview.tools.phpcs import Phpcs
-from mock import Mock, sentinel
+
 from .. import requires_image, load_fixture, fixtures_path, fixer_ini
 from ..test_git import setup_repo, teardown_repo, clone_path
 
@@ -162,3 +167,20 @@ class TestInit(TestCase):
                           clone_path,
                           sentinel.repo,
                           sentinel.pull_request)
+
+    def test_should_run(self):
+        config = build_review_config(fixer_ini, app_config)
+        context = fixers.create_context(
+            config,
+            clone_path,
+            sentinel.repo,
+            sentinel.pull_request
+        )
+        assert fixers.should_run(context) is True
+
+        commit = git.show(context['repo_path'])
+        match = re.search(r'Author:\s*(.*)<', commit)
+        context['author_name'] = match.group(1)
+
+        # Should not run as author matches
+        assert fixers.should_run(context) is False

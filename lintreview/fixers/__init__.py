@@ -4,6 +4,7 @@ from lintreview.fixers.error import ConfigurationError
 import lintreview.docker as docker
 import lintreview.git as git
 import logging
+import re
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,20 @@ def create_context(review_config, repo_path,
         'repository': head_repository,
     }
     return context
+
+
+def should_run(fixer_context):
+    """Check whether or not fixers should run.
+
+    We don't run fixers when the head commit is from
+    the bot user. Doing so can cause autofix commits
+    to incrementally update the entire file.
+    """
+    commit = git.show(fixer_context['repo_path'])
+    pattern = r'Author:\s*{}'.format(fixer_context['author_name'])
+    if re.search(pattern, commit):
+        return False
+    return True
 
 
 def run_fixers(tools, base_path, files):
