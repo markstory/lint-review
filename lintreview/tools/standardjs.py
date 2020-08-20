@@ -1,5 +1,4 @@
 import os
-from cached_property import cached_property
 
 from lintreview.tools import Tool, process_quickfix, extract_version
 import lintreview.docker as docker
@@ -9,7 +8,6 @@ class Standardjs(Tool):
 
     name = 'standardjs'
 
-    @cached_property
     def version(self):
         output = docker.run('nodejs', ['standard', '--version'], self.base_path)
         return extract_version(output)

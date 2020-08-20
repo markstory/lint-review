@@ -1,5 +1,4 @@
 import os
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.tools import Tool, process_quickfix, extract_version
@@ -9,7 +8,6 @@ class Puppet(Tool):
 
     name = 'puppet-lint'
 
-    @cached_property
     def version(self):
         output = docker.run('ruby2', ['puppet-lint', '--version'], self.base_path)
         return extract_version(output)

@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-from cached_property import cached_property
 
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_checkstyle, commalist, extract_version
@@ -16,7 +15,6 @@ class Eslint(Tool):
     name = 'eslint'
     custom_image = None
 
-    @cached_property
     def version(self):
         output = docker.run('eslint', ['eslint', '--version'], self.base_path)
         return extract_version(output)

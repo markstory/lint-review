@@ -2,7 +2,6 @@ import hashlib
 import os
 import re
 import logging
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.tools import Tool, extract_version
@@ -15,7 +14,6 @@ class Pytype(Tool):
 
     name = 'pytype'
 
-    @cached_property
     def version(self):
         output = docker.run('pytype', ['pytype', '--version'], self.base_path)
         return extract_version(output)

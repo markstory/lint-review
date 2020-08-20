@@ -1,5 +1,4 @@
 import os
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -10,7 +9,6 @@ class Mypy(Tool):
 
     name = 'mypy'
 
-    @cached_property
     def version(self):
         output = docker.run('python3', ['mypy', '--version'], self.base_path)
         return extract_version(output)

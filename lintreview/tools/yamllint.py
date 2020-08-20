@@ -1,5 +1,4 @@
 import os
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -10,7 +9,6 @@ class Yamllint(Tool):
 
     name = 'yamllint'
 
-    @cached_property
     def version(self):
         output = docker.run('python2', ['yamllint', '--version'], self.base_path)
         return extract_version(output)

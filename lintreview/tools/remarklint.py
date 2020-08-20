@@ -1,6 +1,5 @@
 import os
 import re
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.tools import Tool, extract_version
@@ -15,7 +14,6 @@ class Remarklint(Tool):
 
     name = 'remarklint'
 
-    @cached_property
     def version(self):
         output = docker.run('nodejs', ['run-remark', '--version'], self.base_path)
         return extract_version(output)

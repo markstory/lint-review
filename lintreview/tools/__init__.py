@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import collections
+import threading
 
 import lintreview.docker as docker
 
@@ -12,6 +13,7 @@ log = logging.getLogger(__name__)
 buildlog = logging.getLogger('buildlog')
 
 version_re = re.compile(r'([\d]+[\d.a-z]+)')
+_version_cache = threading.local()
 
 
 def extract_version(text):
@@ -22,6 +24,23 @@ def extract_version(text):
     if match:
         return match.group(1)
     return ''
+
+
+def _get_tool_version(tool):
+    """
+    Get a tool version.
+
+    Unlike Tool.version this function caches the result for
+    the duration of the process as a way to save time.
+    Tool images change infrequently and getting the version
+    on each review just heats the earth.
+    """
+    classname = tool.__class__.name
+    if hasattr(_version_cache, classname):
+        return getattr(_version_cache, classname)
+    result = tool.version()
+    setattr(_version_cache, classname, result)
+    return result
 
 
 class Tool(object):
@@ -44,12 +63,9 @@ class Tool(object):
         """
         return True
 
-    @property
     def version(self):
         """
-        Get the version number for the tool. Implementations
-        should consider using functools.cached_property to
-        avoid wasting time.
+        Get the version number for the tool.
         """
         return ''
 
@@ -212,8 +228,9 @@ def run(lint_tools, files, commits):
     log.info('Running for %d files', len(files))
     for tool in lint_tools:
         previous_total = len(tool.problems)
-        if tool.version:
-            buildlog.info('%s version is: %s', tool.name, tool.version)
+        version = _get_tool_version(tool)
+        if version:
+            buildlog.info('%s version is: %s', tool.name, version)
         tool.execute(files)
         tool.execute_commits(commits)
         buildlog.info('%s added %s review notes', tool.name, len(tool.problems) - previous_total)

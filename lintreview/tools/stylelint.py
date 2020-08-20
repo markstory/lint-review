@@ -1,5 +1,4 @@
 import os
-from cached_property import cached_property
 
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, process_quickfix, extract_version
@@ -10,7 +9,6 @@ class Stylelint(Tool):
 
     name = 'stylelint'
 
-    @cached_property
     def version(self):
         output = docker.run('nodejs', ['stylelint', '--version'], self.base_path)
         return extract_version(output)
