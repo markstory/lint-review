@@ -167,7 +167,7 @@ def create_branch(path, name):
     command = ['git', 'checkout', '-b', name]
     return_code, output = _process(command, chdir=path)
     if return_code:
-        raise IOError(u"Unable to create branch {}:{}. {}'".format(
+        raise IOError(u"Unable to create branch {}. {}'".format(
                       name,
                       output))
 
@@ -230,6 +230,20 @@ def reset_hard(path):
 
 
 @log_io_error
+def show(path, ref=None):
+    """Get the details of a specific commit.
+    Default behavior is to show the current commit.
+    """
+    command = ['git', 'show']
+    if ref:
+        command.append(ref)
+    return_code, output = _process(command, chdir=path)
+    if return_code:
+        raise IOError(u"Unable to show ref '{}'".format(ref))
+    return output
+
+
+@log_io_error
 def destroy(path):
     """Blow up a repo and all its contents.
     """
@@ -254,9 +268,9 @@ def exists(path):
 def _process(command, input_val=None, chdir=False):
     """Helper method for running processes related to git.
     """
+    cwd = os.getcwd()
     if chdir:
         log.debug('Changing directories to %s', chdir)
-        cwd = os.getcwd()
         os.chdir(chdir)
 
     log.debug('Running %s', command)
