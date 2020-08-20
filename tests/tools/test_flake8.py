@@ -18,7 +18,7 @@ class TestFlake8(TestCase):
         self.tool = Flake8(self.problems, {}, root_dir)
 
     def test_version(self):
-        assert self.tool.version != ''
+        assert self.tool.version() != ''
 
     def test_match_file(self):
         self.assertFalse(self.tool.match_file('test.php'))

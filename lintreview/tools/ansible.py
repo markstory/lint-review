@@ -1,6 +1,5 @@
 import os
 import logging
-from cached_property import cached_property
 
 import lintreview.docker as docker
 
@@ -13,7 +12,6 @@ class Ansible(Tool):
 
     name = 'ansible'
 
-    @cached_property
     def version(self):
         output = docker.run('python2', ['ansible-lint', '--version'], self.base_path)
         return extract_version(output)

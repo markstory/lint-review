@@ -1,6 +1,5 @@
 import logging
 import os
-from cached_property import cached_property
 
 import lintreview.docker as docker
 from lintreview.review import IssueComment
@@ -48,7 +47,6 @@ class Flake8(Tool):
         'flake8-docstrings',
     )
 
-    @cached_property
     def version(self):
         output = docker.run('python3', ['flake8', '--version'], self.base_path)
         return extract_version(output)

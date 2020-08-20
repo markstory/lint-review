@@ -1,6 +1,5 @@
 import os
 import lintreview.docker as docker
-from cached_property import cached_property
 
 from lintreview.review import IssueComment
 from lintreview.tools import Tool, extract_version
@@ -10,7 +9,6 @@ class Black(Tool):
 
     name = 'black'
 
-    @cached_property
     def version(self):
         output = docker.run('python3', ['black', '--version'], self.base_path)
         return extract_version(output)

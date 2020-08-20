@@ -2,7 +2,6 @@ import os
 import logging
 
 from collections import namedtuple
-from cached_property import cached_property
 
 from lintreview import docker
 from lintreview.review import IssueComment
@@ -29,7 +28,6 @@ class Phpcs(Tool):
     name = 'phpcs'
     custom_image = None
 
-    @cached_property
     def version(self):
         output = docker.run('php', ['phpcs', '--version'], self.base_path)
         return extract_version(output)
