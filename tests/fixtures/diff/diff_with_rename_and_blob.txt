@@ -5,3 +5,17 @@ Binary files /dev/null and b/images/example.png
 diff --git a/Test/test_files/View/Parse/singel.ctp b/Test/test_files/View/Parse/single.ctp
 rename from Test/test_files/View/Parse/singel.ctp
 rename to Test/test_files/View/Parse/single.ctp
+diff --git a/rename_small.py b/rename_small_diff.py
+similarity index 90%
+rename from rename_small.py
+rename to rename_small_diff.py
+index 4dd2313b499..90f92848f08 100644
+--- a/rename_small.py
++++ b/rename_small_diff.py
+@@ -202,3 +202,12 @@ def test_push__fails():
+         git.push(clone_path, 'origin', 'master')
+     except IOError as e:
+         assert_in('origin:master', str(e))
++
++
++@skipIf(cant_write_to_test, 'Cannot write to ./tests skipping')

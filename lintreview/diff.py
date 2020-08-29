@@ -41,8 +41,11 @@ def parse_file_diff(chunk):
     patch = []
     chunks = chunk.lstrip().split('\n')
 
-    # Skip deleted and renamed files.
     first_line = chunks[0]
+    # Advance a line if there is similarity marker.
+    if first_line.startswith('similarity'):
+        first_line = chunks[1]
+    # Skip deleted and renamed files.
     if first_line.startswith('deleted file') or first_line.startswith('rename from'):
         return None
 
@@ -99,7 +102,7 @@ class DiffCollection(object):
             log.warn('Could not process diff %s. content=%s error=%s',
                      str(content),
                      content.patch,
-                     e.message)
+                     e)
 
     def _add_diff(self, content):
         if not self._has_additions(content):

@@ -4,7 +4,6 @@ from unittest import TestCase
 from mock import patch
 
 import re
-import pytest
 
 
 class TestDiffCollection(TestCase):
@@ -117,7 +116,7 @@ class TestDiffCollection(TestCase):
 
     def test_parsing_diffs__renamed_file_and_blob(self):
         changes = parse_diff(self.renamed_files)
-        assert len(changes) == 0, 'Should be no files as a blob and a rename happened'
+        assert len(changes) == 0, 'Should be no files as a blob and renames happened'
         assert [] == changes.get_files()
 
     @patch('lintreview.diff.log')
