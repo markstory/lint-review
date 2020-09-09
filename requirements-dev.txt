@@ -4,4 +4,5 @@ pytest-cov~=2.6
 mock~=2.0
 codecov
 coverage
+urllib3>=1.25.10,<1.27.0
 responses
