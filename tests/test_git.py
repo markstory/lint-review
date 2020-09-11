@@ -119,20 +119,6 @@ class TestGit(TestCase):
             path
         )
 
-    def test_diff_commit_range(self):
-        result = git.diff_commit_range(
-            clone_path,
-            'aa7a9d074132280b54c0eee67221bb955adaaeaf',
-            'c02fb764459f040c8007afa97479fedaf8587866'
-        )
-        assert 'lintreview/tools/rubocop.py' in result
-        assert 'tests/tools/test_rubocop.py' in result
-
-    def test_diff_commit_range__invalid(self):
-        with pytest.raises(IOError) as err:
-            git.diff_commit_range(root_dir, 'bad', 'nope')
-        assert 'unknown revision' in str(err)
-
     @pytest.mark.skipif(cant_write_to_test, reason='Cannot write to ./tests skipping')
     def test_apply_cached(self):
         with open(clone_path + '/README.mdown', 'w') as f:

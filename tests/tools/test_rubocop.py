@@ -103,7 +103,7 @@ class TestRubocop(TestCase):
         # Check config warning.
         assert 'Your rubocop configuration' in problems[0].body
         assert 'The following cops were added' in problems[0].body
-        assert '- Style/HashEachMethods' in problems[0].body
+        assert 'Style/StringConcatenation' in problems[0].body
 
         # Has other errors too.
         assert 'C: Missing frozen string literal comment.' in problems[1].body

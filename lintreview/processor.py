@@ -37,17 +37,6 @@ class Processor(object):
         self._changes = DiffCollection(files)
         self.problems.set_changes(self._changes)
 
-    def parse_local_changes(self):
-        head = self._pull_request.head
-        base = self._pull_request.base
-
-        diff_text = git.diff_commit_range(self._target_path, base, head)
-        return parse_diff(diff_text)
-
-    def parse_changes(self):
-        self._changes = self.parse_local_changes()
-        self.problems.set_changes(self._changes)
-
     def execute(self):
         """
         Run the review and return the completed review.

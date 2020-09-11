@@ -1,9 +1,10 @@
-from . import load_fixture
-from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
+import re
+
 from unittest import TestCase
 from mock import patch
 
-import re
+from . import load_fixture, create_pull_files
+from lintreview.diff import DiffCollection, Diff, parse_diff, ParseError
 
 
 class TestDiffCollection(TestCase):
@@ -22,6 +23,14 @@ class TestDiffCollection(TestCase):
     single_line_add = load_fixture('diff/diff_single_line_add.txt')
 
     new_empty_file = load_fixture('diff/new_empty_file.txt')
+
+    one_file_json = load_fixture('one_file_pull_request.json')
+
+    def test_constructor_one_file(self):
+        patches = create_pull_files(self.one_file_json)
+        changes = DiffCollection(patches)
+        self.assertEqual(1, len(changes))
+        self.assert_instances(changes, 1, Diff)
 
     def test_create_one_element(self):
         changes = parse_diff(self.one_file)
