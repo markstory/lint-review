@@ -22,7 +22,7 @@ class Rubocop(Tool):
     def match_file(self, filename):
         base = os.path.basename(filename)
         name, ext = os.path.splitext(base)
-        return ext == '.rb'
+        return ext in ('.rb', '.rake')
 
     def process_files(self, files):
         """

@@ -26,6 +26,7 @@ class TestRubocop(TestCase):
         self.assertFalse(self.tool.match_file('dir/name/test.py'))
         self.assertTrue(self.tool.match_file('test.rb'))
         self.assertTrue(self.tool.match_file('dir/name/test.rb'))
+        self.assertTrue(self.tool.match_file('deploy.rake'))
 
     @requires_image('ruby2')
     def test_process_files__one_file_pass(self):
