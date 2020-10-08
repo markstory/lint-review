@@ -36,18 +36,18 @@ class TestAnsible(TestCase):
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        self.assertEqual(11, len(problems))
+        self.assertGreaterEqual(len(problems), 11)
 
         fname = self.fixtures[1]
         expected = Comment(
             fname, 12, 12,
-            '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
+            '[E301] Commands should not change things if nothing needs doing'  # noqa
         )
-        self.assertEqual(expected, problems[0])
+        self.assertEqual(expected, problems[1])
 
         expected = Comment(
-            fname, 18, 18,
-            '[EANSIBLE0004] Git checkouts must contain explicit version'  # noqa
+            fname, 15, 15,
+            '[E401] Git checkouts must contain explicit version'  # noqa
         )
         self.assertEqual(expected, problems[3])
 
@@ -58,18 +58,18 @@ class TestAnsible(TestCase):
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
         problems = self.problems.all(self.fixtures[1])
-        self.assertEqual(11, len(problems))
+        self.assertGreaterEqual(len(problems), 10)
         expected = Comment(
             self.fixtures[1], 12, 12,
-            '[EANSIBLE0012] Commands should not change things if nothing needs doing'  # noqa
+            '[E301] Commands should not change things if nothing needs doing'  # noqa
         )
-        self.assertEqual(expected, problems[0])
+        self.assertEqual(expected, problems[1])
 
         expected = Comment(
             self.fixtures[1], 27, 27,
-            '[EANSIBLE0006] git used in place of git module'
+            '[E303] git used in place of git module'
         )
-        self.assertEqual(expected, problems[5])
+        self.assertEqual(expected, problems[6])
 
     @requires_image('python2')
     def test_config_options_and_process_file(self):
@@ -79,7 +79,7 @@ class TestAnsible(TestCase):
         self.tool = Ansible(self.problems, options, root_dir)
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
-        self.assertEqual(7, len(problems))
+        self.assertGreaterEqual(len(problems), 7)
         for p in problems:
             self.assertFalse('ANSIBLE0012' in p.body)
             self.assertFalse('ANSIBLE0006' in p.body)
