@@ -40,9 +40,8 @@ In the free plan, Stickler CI provides the following for open source projects:
 - Robust documentation
 - Automatic upgrades for linting tools.
 
-A paid plan of Stickler CI allows you to enable private repositories and
-leverage organization user accounts to do reviews instead of adding the `stickler-ci`
-account as a collaborator.
+A paid plan of Stickler CI allows you to enable private repositories
+and fine grained access control to repositories via the GitHubApp integration.
 
 ## Installation
 
