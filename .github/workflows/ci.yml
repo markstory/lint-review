@@ -41,6 +41,10 @@ jobs:
 
     - name: Run Pytest
       run: |
+        # Setup git so we can test commits.
+        git config --global user.email lintreview@example.com
+        git config --global user.name robot
+        # Run test
         pytest -p no:cacheprovider --cov=lintreview
 
     - name: Code Coverage Report

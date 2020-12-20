@@ -75,7 +75,7 @@ def register_hook(repo, hook_url):
     if found:
         msg = ("Found existing hook. "
                "No additional hooks registered.")
-        log.warn(msg)
+        log.warning(msg)
         return
 
     hook = {
