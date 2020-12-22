@@ -66,10 +66,10 @@ class TestAnsible(TestCase):
         self.assertEqual(expected, problems[1])
 
         expected = Comment(
-            self.fixtures[1], 27, 27,
+            self.fixtures[1], 21, 21,
             '[E303] git used in place of git module'
         )
-        self.assertEqual(expected, problems[6])
+        self.assertEqual(expected, problems[5])
 
     @requires_image('python2')
     def test_config_options_and_process_file(self):

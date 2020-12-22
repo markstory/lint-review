@@ -2,7 +2,7 @@ pep8>=1.7.0,<2.0.0
 flake8>=3.3.0,<3.8.0
 autopep8>=1.5.0,<2.0.0
 black==20.8b1
-ansible-lint>=3.4.11,<3.5.0
+ansible-lint>=4.1.0,<5.0.0
 mypy
 django-stubs
 djangorestframework-stubs
