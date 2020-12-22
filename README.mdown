@@ -1,6 +1,6 @@
 # Lint Review
 
-[![Build Status](https://api.travis-ci.org/markstory/lint-review.svg?branch=master)](https://travis-ci.org/markstory/lint-review)
+[![Build Status](https://github.com/markstory/lint-review/workflows/ci/badge.svg)](https://github.com/markstory/lint-review/actions)
 [![codecov.io](https://codecov.io/github/markstory/lint-review/coverage.svg?branch=master)](https://codecov.io/github/markstory/lint-review?branch=master)
 [![Docker Pulls](https://img.shields.io/docker/pulls/markstory/lint-review.svg?maxAge=2592000)](https://hub.docker.com/r/markstory/lint-review/)
 [![Docker Stars](https://img.shields.io/docker/stars/markstory/lint-review.svg?maxAge=2592000)](https://hub.docker.com/r/markstory/lint-review/)

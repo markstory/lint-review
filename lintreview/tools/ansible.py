@@ -34,12 +34,13 @@ class Ansible(Tool):
         if self.options.get('ignore'):
             command += ['-x', self.options.get('ignore')]
         command += files
-        output = docker.run('python2', command, self.base_path)
+        output = docker.run('python3', command, self.base_path)
         if not output:
             log.debug('No ansible-lint errors found.')
             return False
 
         output = output.split("\n")
         output.sort()
+        print(output)
 
         process_quickfix(self.problems, output, docker.strip_base)
