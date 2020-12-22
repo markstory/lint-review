@@ -27,12 +27,12 @@ class TestAnsible(TestCase):
         self.assertTrue(self.tool.match_file('test.yml'))
         self.assertTrue(self.tool.match_file('dir/name/test.yml'))
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_process_files__one_file_pass(self):
         self.tool.process_files([self.fixtures[0]])
         self.assertEqual([], self.problems.all(self.fixtures[0]))
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_process_files__one_file_fail(self):
         self.tool.process_files([self.fixtures[1]])
         problems = self.problems.all(self.fixtures[1])
@@ -51,7 +51,7 @@ class TestAnsible(TestCase):
         )
         self.assertEqual(expected, problems[3])
 
-    @requires_image('python2')
+    @requires_image('python3')
     def test_process_files_two_files(self):
         self.tool.process_files(self.fixtures)
 
@@ -66,10 +66,10 @@ class TestAnsible(TestCase):
         self.assertEqual(expected, problems[1])
 
         expected = Comment(
-            self.fixtures[1], 27, 27,
+            self.fixtures[1], 21, 21,
             '[E303] git used in place of git module'
         )
-        self.assertEqual(expected, problems[6])
+        self.assertEqual(expected, problems[5])
 
     @requires_image('python2')
     def test_config_options_and_process_file(self):

@@ -1,11 +1,11 @@
 import logging
 import os
 import re
-import collections
 import threading
 
 import lintreview.docker as docker
 
+from collections.abc import Iterable
 from lintreview.review import IssueComment
 from xml.etree import ElementTree
 
@@ -350,7 +350,7 @@ def stringify(value):
     """
     if isinstance(value, str):
         return value
-    if isinstance(value, collections.Iterable):
+    if isinstance(value, Iterable):
         return ','.join(value)
     return str(value)
 

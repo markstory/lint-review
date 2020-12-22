@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  testsuite-linux:
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.8']
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    # Fetch all the docker images we need
+    - name: Build tool images
+      run: |
+        make images
+        docker pull markstory/swiftlint
+        docker tag markstory/swiftlint swiftlint
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        pip install .
+        cp settings.sample.py settings.py
+
+    - name: Run Pytest
+      run: |
+        # Setup git so we can test commits.
+        git config --global user.email lintreview@example.com
+        git config --global user.name robot
+        # Run test
+        pytest -p no:cacheprovider --cov=lintreview
+
+    - name: Code Coverage Report
+      if: success() && matrix.php-version == '7.4' && matrix.db-type == 'mysql'
+      uses: codecov/codecov-action@v1

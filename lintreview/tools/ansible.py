@@ -13,11 +13,11 @@ class Ansible(Tool):
     name = 'ansible'
 
     def version(self):
-        output = docker.run('python2', ['ansible-lint', '--version'], self.base_path)
+        output = docker.run('python3', ['ansible-lint', '--version'], self.base_path)
         return extract_version(output)
 
     def check_dependencies(self):
-        return docker.image_exists('python2')
+        return docker.image_exists('python3')
 
     def match_file(self, filename):
         base = os.path.basename(filename)
@@ -34,7 +34,7 @@ class Ansible(Tool):
         if self.options.get('ignore'):
             command += ['-x', self.options.get('ignore')]
         command += files
-        output = docker.run('python2', command, self.base_path)
+        output = docker.run('python3', command, self.base_path)
         if not output:
             log.debug('No ansible-lint errors found.')
             return False
