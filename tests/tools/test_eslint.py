@@ -141,22 +141,6 @@ class TestEslint(TestCase):
         expected = 'ESLint couldn\'t find the plugin "eslint-plugin-nopers"'
         self.assertIn(expected, error.body)
 
-    @pytest.mark.xfail(reason='eslint does not emit deprecations in eslint7 for our usecase')
-    @requires_image('eslint')
-    def test_process_files__deprecated_option(self):
-        options = {'config': 'tests/fixtures/eslint/deprecatedoption.json'}
-        tool = Eslint(self.problems, options, root_dir)
-        tool.process_files([FILE_WITH_ERRORS])
-        problems = self.problems.all()
-        self.assertGreater(len(problems), 0,
-                           'Invalid config should report an error')
-        error = problems[0]
-        self.assertIn('Your eslint configuration output the following error',
-                      error.body)
-        self.assertIn('DeprecationWarning', error.body)
-        style_error = problems[1]
-        self.assertNotIn('DeprecationWarning', style_error.body)
-
     @requires_image('eslint')
     def test_process_files_with_config(self):
         options = {
@@ -237,11 +221,14 @@ class TestEslint(TestCase):
             'fixer': True
         }, custom_dir)
         target = 'has_errors.js'
-        tool.process_files([target])
+        with self.assertLogs() as ctx:
+            tool.process_files([target])
+            logs = [log.message for log in ctx.records]
 
         problems = self.problems.all()
         self.assertEqual(2, len(problems), 'Should find errors')
         self.assertIn('Unexpected var', problems[0].body)
+        self.assertIn('eslint-config-airbnb-base', "\n".join(logs))
 
         self.assertTrue(docker.image_exists('eslint'),
                         'original image is present')

@@ -89,12 +89,15 @@ class Eslint(Tool):
             docker.rm_container(container_name)
             self.custom_image = container_name
 
+            buildlog.info('Installed eslint plugins:')
             installed = [
                 line.strip('add:').strip()
                 for line in output.splitlines()
                 if line.startswith('add:')
             ]
-            buildlog.info('Installed eslint plugins %s', installed)
+            for line in installed:
+                buildlog.info(line)
+
         return container_name
 
     def _create_command(self):
