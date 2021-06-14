@@ -1,11 +1,13 @@
-FROM python:3.8-alpine
+FROM python:3.8-slim-buster
 
 RUN mkdir /src \
   && mkdir /tool
 
-RUN apk update \
-  && apk add openssl-dev make libc-dev linux-headers gcc libffi-dev \
-  && rm -rf /var/cache/apk/*
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    gcc build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-py3.txt /tool
 COPY flake8-install.sh /usr/bin/flake8-install
