@@ -1,10 +1,10 @@
-FROM php:7.2-alpine
+FROM php:8.0-alpine
 
 RUN mkdir /src \
   && mkdir /tool
 
 RUN apk update \
-  && apk add zip libzip-dev \
+  && apk add libzip-dev \
   && docker-php-ext-install zip \
   && rm -rf /var/cache/apk/*
 
