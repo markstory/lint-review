@@ -42,7 +42,7 @@ class TestRubocop(TestCase):
         assert long_line.filename == self.fixtures[1]
         assert long_line.line == 3
         assert long_line.position == 3
-        assert 'W: Unused method argument' in long_line.body
+        assert 'W: [Correctable] Unused method argument' in long_line.body
 
     @requires_image('ruby2')
     def test_process_files_two_files(self):
@@ -101,13 +101,9 @@ class TestRubocop(TestCase):
 
         problems = self.problems.all()
         assert 4 == len(problems)
-        # Check config warning.
         assert 'Your rubocop configuration' in problems[0].body
         assert 'The following cops were added' in problems[0].body
-        assert 'Style/StringConcatenation' in problems[0].body
-
-        # Has other errors too.
-        assert 'C: Missing frozen string literal comment.' in problems[1].body
+        assert 'Enabled: true' in problems[0].body
 
     def test_has_fixer__not_enabled(self):
         tool = Rubocop(self.problems, {}, root_dir)
